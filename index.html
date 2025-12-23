@@ -35,8 +35,10 @@
         .stat-box { background: rgba(51, 65, 85, 0.6); padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #475569; }
         .progress-bar { background: #475569; border-radius: 10px; height: 12px; width: 100%; overflow: hidden; margin: 10px 0; }
         .progress-fill { background: linear-gradient(90deg, #3b82f6, #60a5fa); height: 100%; width: 0%; transition: width 0.5s ease; }
+        
         input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: none; font-size: 16px; box-sizing: border-box; background: white !important; color: black !important; }
         button { cursor: pointer; padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; transition: 0.3s; }
+        
         .btn-auth { background: #3b82f6; width: 100%; margin-bottom: 10px; }
         .btn-check { background: #22c55e; padding: 8px 15px; }
         .btn-del { background: #ef4444; padding: 8px 12px; margin-left: 5px; }
@@ -44,16 +46,19 @@
         .btn-physic { background: #ef4444; margin-top: 5px; width: 100%; }
         .btn-penalty { background: #991b1b; border: 1px solid #ef4444; width: 100%; }
         .btn-buy { background: #f59e0b; padding: 8px 15px; }
+
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #1e293b; display: flex; justify-content: space-around; padding: 10px 0; border-top: 2px solid #3b82f6; z-index: 1000; }
         .nav-item { color: #94a3b8; text-decoration: none; font-size: 12px; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
         .nav-item.active { color: #3b82f6; }
+        
         table { width: 100%; border-collapse: collapse; }
-        th, td { border-bottom: 1px solid rgba(51, 65, 85, 0.5); padding: 12px 8px; text-align: left; }
+        th, td { border-bottom: 1px solid rgba(51, 65, 85, 0.5); padding: 12px 8px; text-align: left; font-size: 14px; }
         .hidden { display: none !important; }
+        
         .ad-banner { background: linear-gradient(45deg, #1e3a8a, #1e40af); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 10px; border: 1px solid #3b82f6; }
         .ad-banner a { color: #ffffff; font-weight: bold; text-decoration: underline; display: block; margin-top: 5px; }
 
-        /* --- ESTILOS ARENA DE DUELO RPG --- */
+        /* --- ESTILOS ARENA DE DUELO --- */
         #arena-duelo { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: #0f172a; z-index: 2000; display: none; 
@@ -76,10 +81,10 @@
             padding: 15px; border-radius: 12px; font-size: 14px; overflow-y: auto; 
             border: 1px solid var(--primary); color: #60a5fa; text-align: center;
         }
-        /* Animações */
+        /* Animações de Batalha */
         .atacar-p { transform: translate(120px, -80px) scale(1.1); z-index: 10; }
         .atacar-e { transform: translate(-120px, 80px) scale(1.1); z-index: 10; }
-        .dano-shake { animation: shake 0.3s; filter: brightness(2) red; }
+        .dano-shake { animation: shake 0.3s; filter: brightness(2) contrast(2); }
         @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(5px);} 75% {transform: translateX(-5px);} }
     </style>
 </head>
@@ -127,7 +132,7 @@
             <p style="text-align:center; font-size:14px">Novo? <a href="#" onclick="alternarTela(true)" style="color:#60a5fa">Criar Conta</a></p>
         </div>
         <div id="register-area" class="hidden">
-            <h2 style="text-align:center">Novo Player's</h2>
+            <h2 style="text-align:center">Novo Player</h2>
             <input type="text" id="reg-nick" placeholder="Nick do Personagem">
             <input type="email" id="reg-email" placeholder="E-mail">
             <input type="password" id="reg-pass" placeholder="Senha">
@@ -141,7 +146,7 @@
             <div class="card header">
                 <div style="display:flex; justify-content:space-between; align-items:center">
                     <div style="display:flex; align-items:center; gap:10px">
-                        <img id="p-img" class="player-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                        <img id="p-img" class="player-img" src="" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
                         <span>👤 <b><span id="player-name">---</span></b></span>
                     </div>
                     <button onclick="logout()" style="background:#ef4444; padding:5px 10px; font-size:12px">Sair</button>
@@ -156,17 +161,21 @@
 
             <div class="card">
                 <h3>🏆 Ranking de Honra</h3>
-                <table id="ranking-table">
-                    <thead><tr><th>#</th><th>Player's</th><th>Lvl</th><th>XP</th><th>Duelo</th></tr></thead>
-                    <tbody id="ranking-body"></tbody>
-                </table>
+                <div style="overflow-x:auto;">
+                    <table id="ranking-table">
+                        <thead><tr><th>#</th><th>Player</th><th>Lvl</th><th>XP</th><th>Duelo</th></tr></thead>
+                        <tbody id="ranking-body"></tbody>
+                    </table>
+                </div>
             </div>
 
             <div class="card">
                 <h3>🔥 Evolução Física</h3>
                 <div id="grid-fisico" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
+                
                 <div style="margin-top:20px; padding:15px; background:rgba(153, 27, 27, 0.3); border-radius:10px; border:1px solid #ef4444;">
                     <h4 style="margin:0 0 5px 0; color:#fca5a5;">⚠️ Câmara de Penalidades</h4>
+                    <p style="font-size:11px; margin-bottom:10px;">Falhou? Pague 300 XP por deslize.</p>
                     <div style="display:flex; gap:10px;">
                         <input type="number" id="input-penalidade" placeholder="Qtd">
                         <button class="btn-penalty" onclick="aplicarPenalidade()">Corrigir</button>
@@ -193,7 +202,7 @@
                     <option value="15">⚙️ Comum (+15 XP)</option>
                     <option value="-30">⚠️ Hábito Sombrio (-30 XP)</option>
                 </select>
-                <button onclick="addMissao()" style="background:#3b82f6; width:100%">Registar</button>
+                <button onclick="addMissao()" style="background:#3b82f6; width:100%">Registrar</button>
             </div>
         </div>
 
@@ -214,7 +223,7 @@
     </div>
 
     <script>
-        // CONFIG FIREBASE
+        // CONFIG FIREBASE (Ares RPG Oficial)
         const firebaseConfig = {
             apiKey: "AIzaSyBanevR51ejaTE0ccqlmlU6VRh7Qg4EETs",
             authDomain: "aresrpg-7daf4.firebaseapp.com",
@@ -242,7 +251,6 @@
             const lvlP = Math.floor((p.xp || 0) / 1000) + 1;
             const lvlE = Math.floor((e.xp || 0) / 1000) + 1;
 
-            // STATUS BASEADOS EM LEVEL/XP (LUTA LONGA)
             statsP.maxHp = statsP.hp = (lvlP * 1500) + (p.xp || 0);
             statsE.maxHp = statsE.hp = (lvlE * 1500) + (e.xp || 0);
             statsP.atk = Math.floor((lvlP * 50) + ((p.xp || 0) / 40));
@@ -289,7 +297,7 @@
                 }, 400);
             } else {
                 statsP.def = true;
-                log.innerHTML = "Você se defendeu! Dano inimigo será reduzido.";
+                log.innerHTML = "Você se defendeu! Próximo dano reduzido.";
                 setTimeout(turnoInimigo, 1200);
             }
         }
@@ -338,7 +346,7 @@
 
         function fecharArena() { document.getElementById('arena-duelo').style.display = 'none'; }
 
-        // --- FUNÇÕES DE NAVEGAÇÃO E AUTH ---
+        // --- SISTEMA CORE (AUTH E NAVEGAÇÃO) ---
         function mudarAba(aba) {
             document.getElementById('tab-home').classList.toggle('hidden', aba !== 'home');
             document.getElementById('tab-profile').classList.toggle('hidden', aba !== 'profile');
@@ -351,7 +359,7 @@
 
         function fazerLogin() {
             const e = document.getElementById('login-email').value, p = document.getElementById('login-pass').value;
-            auth.signInWithEmailAndPassword(e, p).catch(err => alert("Erro ao entrar!"));
+            auth.signInWithEmailAndPassword(e, p).catch(err => alert("E-mail ou senha incorretos!"));
         }
 
         function fazerCadastro() {
@@ -371,11 +379,15 @@
                 jogadorAtual = limparNome(u.email);
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('game-content').classList.remove('hidden');
-                db.ref('rpg_data').on('value', s => { dadosGerais = s.val() || {}; atualizarTela(); atualizarRanking(); });
+                db.ref('rpg_data').on('value', s => { 
+                    dadosGerais = s.val() || {}; 
+                    atualizarTela(); 
+                    atualizarRanking(); 
+                });
                 db.ref('notificacoes/' + jogadorAtual).on('value', s => {
                     const n = s.val();
                     if(n) {
-                        alert(`⚔️ Resultado do Duelo: Você ${n.resultado} de ${n.de}!`);
+                        alert(`⚔️ Duelo: Você ${n.resultado} de ${n.de}!`);
                         db.ref('notificacoes/' + jogadorAtual).remove();
                     }
                 });
@@ -385,36 +397,41 @@
             }
         });
 
-        // --- ATUALIZAÇÃO DA TELA (RESTAURADO) ---
+        // --- ATUALIZAÇÃO DA INTERFACE ---
         function atualizarRanking() {
             const tb = document.getElementById('ranking-body'); tb.innerHTML = "";
             Object.keys(dadosGerais).map(k => ({id: k, n: dadosGerais[k].nick || k, xp: dadosGerais[k].xp || 0}))
             .sort((a,b) => b.xp - a.xp).forEach((p, i) => {
                 tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.n}</td><td>${Math.floor(p.xp/1000)+1}</td><td>${p.xp}</td>
-                <td>${p.id !== jogadorAtual ? `<button onclick="iniciarDuelo('${p.id}','${p.n}')" style="background:#ef4444; padding:5px;">Lutar</button>` : '-'}</td></tr>`;
+                <td>${p.id !== jogadorAtual ? `<button onclick="iniciarDuelo('${p.id}','${p.n}')" style="background:#ef4444; padding:5px; font-size:10px;">Lutar</button>` : '-'}</td></tr>`;
             });
         }
 
         function atualizarTela() {
             const p = dadosGerais[jogadorAtual] || {xp:0, coins:0, missoes:[], records:{}};
             const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
+            
             document.getElementById('player-name').innerText = p.nick || jogadorAtual;
             document.getElementById('xp').innerText = p.xp || 0;
             document.getElementById('coins').innerText = p.coins || 0;
             document.getElementById('lvl').innerText = Math.floor((p.xp || 0)/1000)+1;
             document.getElementById('progress').style.width = ((p.xp || 0)%1000)/10 + "%";
-            document.getElementById('p-img').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-            document.getElementById('p-img-large').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            
+            const photoUrl = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            document.getElementById('p-img').src = photoUrl;
+            document.getElementById('p-img-large').src = photoUrl;
 
+            // Missões Diárias
             const dO = document.getElementById('lista-obrigatoria'); dO.innerHTML = "";
             ["Treino Fisico", "Trabalho", "Estudo"].forEach(n => {
                 const id = `d-${n}-${hoje}`, feito = (p.missoes||[]).some(m => m.id === id && m.concluida);
                 dO.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:8px"><span>${n}</span><button class="${feito?'btn-done':'btn-check'}" onclick="concluirMissao('${id}', 10, true)" ${feito?'disabled':''}>${feito?'OK':'✔'}</button></div>`;
             });
 
+            // Exercícios
             const g = document.getElementById('grid-fisico'); g.innerHTML = "";
             const exArr = [
-                {id:'supino', n:'💪 Supino Reto/Máq', m:'kg', c:'#3b82f6', d:20}, {id:'puxada', n:'👐 Puxada Aberta', m:'kg', c:'#3b82f6', d:20}, {id:'remada', n:'🚣 Remada', m:'kg', c:'#3b82f6', d:20}, {id:'elevacao_halters', n:'🦋 Elevação Halters', m:'kg', c:'#3b82f6', d:4},
+                {id:'supino', n:'💪 Supino Reto', m:'kg', c:'#3b82f6', d:20}, {id:'puxada', n:'👐 Puxada Aberta', m:'kg', c:'#3b82f6', d:20}, {id:'remada', n:'🚣 Remada', m:'kg', c:'#3b82f6', d:20}, {id:'elevacao_halters', n:'🦋 Elevação Halters', m:'kg', c:'#3b82f6', d:4},
                 {id:'leg_press', n:'🦵 Leg Press 45', m:'kg', c:'#f59e0b', d:30}, {id:'hack', n:'🍑 Hack Machine', m:'kg', c:'#f59e0b', d:40}, {id:'extensora', n:'🦵 Extensora', m:'kg', c:'#f59e0b', d:20}, {id:'panturrilha', n:'🦶 Panturrilha', m:'kg', c:'#f59e0b', d:40},
                 {id:'flexao', n:'🧘 Flexão Braço', m:'reps', c:'#10b981', d:10}, {id:'barra', n:'🧗 Barra Fixa', m:'reps', c:'#10b981', d:10}, {id:'agachamentoLivre', n:'🤸 Agach. Livre', m:'reps', c:'#10b981', d:10}, {id:'stamina', n:'🏃‍♀️ Cardio/Dança', m:'min', c:'#ec4899', d:10}
             ];
@@ -425,43 +442,53 @@
                     <div style="display:flex; gap:3px; margin-top:5px;"><input type="number" id="in-${ex.id}" placeholder="+" style="width:55%; height:25px; font-size:12px;"><button class="btn-physic" style="background:${ex.c}; height:25px; width:45%; margin:0; font-size:10px;" onclick="upFisico('${ex.id}','${ex.m}',${r})">UP</button></div></div>`;
             });
 
+            // Missões Pessoais
             const dP = document.getElementById('lista-missoes-pessoais'); dP.innerHTML = "";
             (p.missoes || []).filter(m => m.id.startsWith('m-')).forEach(m => {
                 dP.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;">
-                <span>${m.nome}</span><div><button class="${m.concluida?'btn-done':'btn-check'}" onclick="concluirMissao('${m.id}', ${m.valor})" ${m.concluida?'disabled':''}>✔</button><button class="btn-del" onclick="removerMissao('${m.id}')">🗑️</button></div></div>`;
+                <span style="font-size:13px">${m.nome}</span><div><button class="${m.concluida?'btn-done':'btn-check'}" onclick="concluirMissao('${m.id}', ${m.valor})" ${m.concluida?'disabled':''}>✔</button><button class="btn-del" onclick="removerMissao('${m.id}')">🗑️</button></div></div>`;
             });
 
+            // Loja
             const tL = document.querySelector('#tabela-loja tbody'); tL.innerHTML = "";
             [{n:'Passear',p:900},{n:'Presente',p:5000},{n:'Lanche',p:400}].forEach(i => {
                 tL.innerHTML += `<tr><td>${i.n}</td><td>💰${i.p}</td><td><button class="btn-buy" onclick="comprar(${i.p},'${i.n}')">Resgatar</button></td></tr>`;
             });
         }
 
-        // TRAVAS ANTI-TRAPAÇA (RESTAURADO)
+        // --- FUNÇÕES DE EVOLUÇÃO ---
         function upFisico(id, m, r) {
             const inputField = document.getElementById('in-'+id);
             const v = parseInt(inputField.value);
             const p = dadosGerais[jogadorAtual];
-            if(!v || v <= r) return alert("Supera o recorde!");
+            if(!v || v <= r) return alert("Supere o seu recorde!");
+            
             const agora = Date.now();
             const ultimoTreino = (p.last_train && p.last_train[id]) ? p.last_train[id] : 0;
-            if ((agora - ultimoTreino) / (1000 * 60 * 60) < 20) return alert("Descanso muscular! Tente em 20h.");
-            if((v - r) > 50) return alert("Aumento suspeito!");
+            if ((agora - ultimoTreino) / (1000 * 60 * 60) < 20) return alert("Aguarde o descanso muscular (20h)!");
+            if((v - r) > 50) return alert("Aumento exagerado! Treine com segurança.");
 
             let mult = (id === 'elevacao_halters') ? 500 : 100;
             let g = (m==='kg') ? (v-r)*mult : (v-r)*45;
+            
             const rec = {...(p.records || {})}; rec[id] = v;
             const treinos = {...(p.last_train || {})}; treinos[id] = agora;
 
             db.ref('rpg_data/'+jogadorAtual).update({ xp: (p.xp || 0) + g, coins: (p.coins || 0) + g, records: rec, last_train: treinos })
-            .then(() => { alert(`UP de ${g} XP!`); inputField.value = ""; });
+            .then(() => { alert(`Sucesso! Ganhou ${g} XP!`); inputField.value = ""; });
         }
 
         function concluirMissao(id, v, d=false) {
             const p = dadosGerais[jogadorAtual], ms = p.missoes || [];
             let m = ms.find(x => x.id === id);
-            if(!m && d) { ms.push({id, nome:id.split('-')[1], valor:10, concluida:true}); db.ref('rpg_data/'+jogadorAtual).update({xp:(p.xp||0)+10, coins:(p.coins||0)+10, missoes:ms}); }
-            else if(m && !m.concluida) { m.concluida = true; db.ref('rpg_data/'+jogadorAtual).update({xp:(p.xp||0)+v, coins:(p.coins||0)+(v>0?v:0), missoes:ms}); }
+            if(!m && d) { 
+                ms.push({id, nome:id.split('-')[1], valor:10, concluida:true}); 
+                db.ref('rpg_data/'+jogadorAtual).update({xp:(p.xp||0)+10, coins:(p.coins||0)+10, missoes:ms}); 
+            }
+            else if(m && !m.concluida) { 
+                m.concluida = true; 
+                db.ref('rpg_data/'+jogadorAtual).update({xp:(p.xp||0)+v, coins:(p.coins||0)+(v>0?v:0), missoes:ms}); 
+            }
         }
 
         function removerMissao(id) {
@@ -474,6 +501,7 @@
             if(!qtd) return;
             const p = dadosGerais[jogadorAtual];
             db.ref('rpg_data/'+jogadorAtual).update({ xp: Math.max(0, (p.xp||0) - (qtd*300)), coins: Math.max(0, (p.coins||0) - (qtd*300)) });
+            document.getElementById('input-penalidade').value = "";
         }
 
         function addMissao() {
@@ -482,12 +510,15 @@
             const ms = dadosGerais[jogadorAtual].missoes || [];
             ms.push({ id:'m-'+Date.now(), nome:n, valor:v, concluida:false });
             db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms);
+            document.getElementById('missao-input').value = "";
         }
 
         function comprar(pr, n) {
             const p = dadosGerais[jogadorAtual];
-            if(p.coins >= pr) { db.ref('rpg_data/'+jogadorAtual).update({coins:p.coins-pr}); alert("Resgatado!"); }
-            else alert("Moedas insuficientes!");
+            if(p.coins >= pr) { 
+                db.ref('rpg_data/'+jogadorAtual).update({coins:p.coins-pr}); 
+                alert(`Resgatado: ${n}!`); 
+            } else alert("Você não tem moedas suficientes!");
         }
 
         function salvarPerfil() {
