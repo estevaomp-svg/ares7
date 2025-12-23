@@ -48,24 +48,62 @@
         .nav-item { color: #94a3b8; text-decoration: none; font-size: 12px; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
         .nav-item.active { color: #3b82f6; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { border-bottom: 1px solid rgba(51, 65, 85, 0.5); padding: 12px 8px; text-align: left; font-size: 14px; }
+        th, td { border-bottom: 1px solid rgba(51, 65, 85, 0.5); padding: 12px 8px; text-align: left; }
         .hidden { display: none !important; }
         .ad-banner { background: linear-gradient(45deg, #1e3a8a, #1e40af); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 10px; border: 1px solid #3b82f6; }
         .ad-banner a { color: #ffffff; font-weight: bold; text-decoration: underline; display: block; margin-top: 5px; }
 
-        /* Estilos Arena Duelo e Jogo da Velha (Mantidos) */
-        #arena-duelo, #arena-velha { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: space-around; padding: 20px; box-sizing: border-box; }
+        /* --- ESTILOS ARENA DE DUELO RPG --- */
+        #arena-duelo { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #0f172a; z-index: 2000; display: none; 
+            flex-direction: column; align-items: center; justify-content: space-around;
+            padding: 20px; box-sizing: border-box;
+        }
+        .battle-stage { width: 100%; max-width: 400px; position: relative; height: 350px; background: rgba(255,255,255,0.05); border-radius: 20px; border: 1px solid #334155; }
+        .char-container { position: absolute; text-align: center; transition: 0.3s; width: 120px; }
+        #char-enemy { top: 30px; right: 20px; }
+        #char-player { bottom: 30px; left: 20px; }
+        .battle-img { width: 90px; height: 90px; border-radius: 50%; border: 4px solid white; object-fit: cover; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .hp-bg { width: 110px; height: 12px; background: #444; border-radius: 6px; margin-top: 8px; overflow: hidden; border: 1px solid #000; }
+        .hp-fill { height: 100%; background: var(--success); width: 100%; transition: 0.4s ease; }
+        .battle-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 400px; }
+        .btn-action { padding: 18px; border-radius: 12px; font-weight: bold; border: none; color: white; cursor: pointer; font-size: 16px; text-transform: uppercase; }
+        .btn-atk { background: var(--danger); box-shadow: 0 4px #991b1b; }
+        .btn-def { background: var(--primary); box-shadow: 0 4px #1e3a8a; }
+        #battle-log { 
+            background: rgba(0,0,0,0.7); width: 100%; max-width: 400px; height: 100px; 
+            padding: 15px; border-radius: 12px; font-size: 14px; overflow-y: auto; 
+            border: 1px solid var(--primary); color: #60a5fa; text-align: center;
+        }
+        .atacar-p { transform: translate(120px, -80px) scale(1.1); z-index: 10; }
+        .atacar-e { transform: translate(-120px, 80px) scale(1.1); z-index: 10; }
+        .dano-shake { animation: shake 0.3s; filter: brightness(2) red; }
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(5px);} 75% {transform: translateX(-5px);} }
+
+        /* --- ESTILOS JOGO DA VELHA ONLINE --- */
+        #arena-velha { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.98); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; }
         .velha-grid { display: grid; grid-template-columns: repeat(3, 90px); gap: 10px; background: #334155; padding: 10px; border-radius: 10px; }
         .velha-cell { width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px; color: white; cursor: pointer; }
-        #res-velha-msg { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); z-index: 5000; padding: 30px; border-radius: 20px; text-align: center; font-size: 32px; font-weight: 900; transition: 0.5s; pointer-events: none; border: 4px solid white; }
+        #convite-velha { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #fbbf24; color: #000; padding: 15px; border-radius: 10px; z-index: 4000; display: none; width: 85%; text-align: center; }
+        
+        /* Overlay de Vitória/Derrota */
+        #res-velha-msg {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+            z-index: 5000; padding: 30px; border-radius: 20px; text-align: center;
+            font-size: 32px; font-weight: 900; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none; width: 80%; border: 4px solid white;
+        }
         #res-velha-msg.show { transform: translate(-50%, -50%) scale(1); }
+        .msg-win { background: var(--success); color: white; box-shadow: 0 0 50px var(--success); }
+        .msg-lose { background: var(--danger); color: white; box-shadow: 0 0 50px var(--danger); }
     </style>
 </head>
 <body>
 
     <div id="res-velha-msg"></div>
 
-    <div id="convite-velha" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #fbbf24; color: #000; padding: 15px; border-radius: 10px; z-index: 4000; display: none; width: 85%; text-align: center;">
+    <div id="convite-velha">
         <b id="msg-convite">Desafio!</b>
         <div style="display:flex; gap:10px; margin-top:10px">
             <button onclick="aceitarVelha()" style="background:#22c55e; flex:1">Aceitar</button>
@@ -87,6 +125,30 @@
             <div class="velha-cell" onclick="cliqueVelha(8)"></div>
         </div>
         <button onclick="sairVelha()" style="margin-top:20px; background:var(--danger)">Sair</button>
+    </div>
+
+    <div id="arena-duelo">
+        <h1 style="color:var(--warning); margin:0; font-weight: 900;">ARENA DE DUELO</h1>
+        <div class="battle-stage">
+            <div id="char-enemy" class="char-container">
+                <div style="font-size: 13px; font-weight: bold; color:var(--danger)" id="name-e">Inimigo</div>
+                <img id="img-e" class="battle-img" src="">
+                <div class="hp-bg"><div id="hp-e-fill" class="hp-fill"></div></div>
+                <div id="hp-text-e" style="font-size:10px">0/0</div>
+            </div>
+            <div id="char-player" class="char-container">
+                <div id="hp-text-p" style="font-size:10px">0/0</div>
+                <div class="hp-bg"><div id="hp-p-fill" class="hp-fill"></div></div>
+                <img id="img-p" class="battle-img" src="">
+                <div style="font-size: 13px; font-weight: bold; color:var(--success)" id="name-p">Você</div>
+            </div>
+        </div>
+        <div id="battle-log">Aguardando comando...</div>
+        <div class="battle-controls">
+            <button id="btn-atk" class="btn-action btn-atk" onclick="comandoBatalha('atacar')">Atacar</button>
+            <button id="btn-def" class="btn-action btn-def" onclick="comandoBatalha('defender')">Defender</button>
+            <button id="btn-fechar-duelo" class="btn-action hidden" style="background:#3b82f6; grid-column: span 2;" onclick="fecharArena()">Sair da Arena</button>
+        </div>
     </div>
 
     <div class="ad-banner" style="background: linear-gradient(45deg, #ff0000, #cc0000);">
@@ -121,7 +183,7 @@
             <div class="card header">
                 <div style="display:flex; justify-content:space-between; align-items:center">
                     <div style="display:flex; align-items:center; gap:10px">
-                        <img id="p-img" class="player-img" src="">
+                        <img id="p-img" class="player-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
                         <span>👤 <b><span id="player-name">---</span></b></span>
                     </div>
                     <button onclick="logout()" style="background:#ef4444; padding:5px 10px; font-size:12px">Sair</button>
@@ -143,7 +205,7 @@
             </div>
 
             <div class="card" style="border-top: 4px solid var(--warning);">
-                <h3 style="color: var(--warning);">⭕ Ranking Old Game (Vitórias)</h3>
+                <h3 style="color: var(--warning);">⭕ Ranking Old Game (Vítórias)</h3>
                 <table id="ranking-velha-table">
                     <thead><tr><th>#</th><th>Player's</th><th>Vitórias</th></tr></thead>
                     <tbody id="ranking-velha-body"></tbody>
@@ -153,7 +215,6 @@
             <div class="card">
                 <h3>🔥 Evolução Física</h3>
                 <div id="grid-fisico" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
-                
                 <div style="margin-top:20px; padding:15px; background:rgba(153, 27, 27, 0.3); border-radius:10px; border:1px solid #ef4444;">
                     <h4 style="margin:0 0 5px 0; color:#fca5a5;">⚠️ Câmara de Penalidades</h4>
                     <div style="display:flex; gap:10px;">
@@ -203,7 +264,6 @@
     </div>
 
     <script>
-        // Configuração Firebase (Sua configuração original)
         const firebaseConfig = {
             apiKey: "AIzaSyBanevR51ejaTE0ccqlmlU6VRh7Qg4EETs",
             authDomain: "aresrpg-7daf4.firebaseapp.com",
@@ -217,20 +277,7 @@
         const db = firebase.database(), auth = firebase.auth();
         let jogadorAtual = "", dadosGerais = {}, vitoriasVelha = {};
 
-        // Dados Fixos da Evolução Física e Loja
-        const exercicios = {
-            supino: "Supino", puxada: "Puxada", remada: "Remada", elevacao_halters: "Elevação",
-            leg_press: "Leg Press", hack: "Hack", extensora: "Extensora", panturrilha: "Panto",
-            flexao: "Flexão", barra: "Barra", agachamentoLivre: "Agachamento", stamina: "Stamina"
-        };
-
-        const itensLoja = [
-            { id: 'comida', nome: '🍖 Refeição Épica', custo: 50, xp: 100 },
-            { id: 'descanso', nome: '💤 Descanso Divino', custo: 30, xp: 50 },
-            { id: 'suplemento', nome: '🧪 Poção de Força', custo: 100, xp: 250 }
-        ];
-
-        // --- LÓGICA JOGO DA VELHA ONLINE (Mantida) ---
+        // --- LÓGICA JOGO DA VELHA ONLINE ---
         let salaV = null, meuS = "";
         function desafiarVelha(idOponente) {
             salaV = [jogadorAtual, idOponente].sort().join("_vs_");
@@ -243,7 +290,6 @@
                 ouvirVelha();
             });
         }
-
         function ouvirVelha() {
             db.ref('velha_online/' + salaV).on('value', s => {
                 const d = s.val(); if(!d) return;
@@ -251,18 +297,20 @@
                 const cells = document.querySelectorAll('.velha-cell');
                 d.tabuleiro.forEach((v, i) => { cells[i].innerText = v; });
                 document.getElementById('velha-info').innerText = (d.turno === jogadorAtual) ? "SUA VEZ!" : "ESPERANDO...";
+                
                 if(d.vencedor) {
                     const resMsg = document.getElementById('res-velha-msg');
-                    if(d.vencedor === "EMPATE") { resMsg.innerText = "EMPATE!"; resMsg.className = "show"; resMsg.style.background = "#64748b"; }
+                    if(d.vencedor === "EMPATE") { resMsg.innerText = "EMPATE!"; resMsg.className = "show msg-win"; }
                     else if(d.vencedor === jogadorAtual) { 
-                        resMsg.innerText = "GANHOU!"; resMsg.className = "show"; resMsg.style.background = "var(--success)";
+                        resMsg.innerText = "VOCÊ GANHOU!"; resMsg.className = "show msg-win";
+                        // Incrementa vitoria apenas uma vez (o vencedor processa)
                         db.ref('vitorias_velha/'+jogadorAtual).transaction(c => (c||0)+1);
-                    } else { resMsg.innerText = "PERDEU!"; resMsg.className = "show"; resMsg.style.background = "var(--danger)"; }
+                    } else { resMsg.innerText = "VOCÊ PERDEU!"; resMsg.className = "show msg-lose"; }
+                    
                     setTimeout(() => { resMsg.className = ""; sairVelha(); }, 3000);
                 }
             });
         }
-
         function cliqueVelha(i) {
             db.ref('velha_online/'+salaV).get().then(s => {
                 const d = s.val();
@@ -275,80 +323,131 @@
                 });
             });
         }
-
         function checarWinV(b) {
             const w = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,4,8],[0,4,8],[2,4,6]];
             return w.some(z => b[z[0]] && b[z[0]] === b[z[1]] && b[z[0]] === b[z[2]]);
         }
-        function aceitarVelha() { db.ref('velha_online/'+salaV).update({status:"jogando"}).then(() => { document.getElementById('convite-velha').style.display='none'; document.getElementById('arena-velha').style.display='flex'; ouvirVelha(); }); }
+        function aceitarVelha() { 
+            db.ref('velha_online/'+salaV).update({status:"jogando"}).then(() => {
+                document.getElementById('convite-velha').style.display='none';
+                document.getElementById('arena-velha').style.display='flex';
+                ouvirVelha();
+            });
+        }
         function recusarVelha() { db.ref('velha_online/'+salaV).remove(); document.getElementById('convite-velha').style.display='none'; }
         function sairVelha() { document.getElementById('arena-velha').style.display='none'; if(salaV){db.ref('velha_online/'+salaV).off(); db.ref('velha_online/'+salaV).remove(); salaV=null;}}
 
-        // --- FUNÇÕES DE EVOLUÇÃO (Restauradas) ---
-        function treinar(id) {
+        // --- LÓGICA DE BATALHA RPG ORIGINAL ---
+        let batalhaAtiva = false;
+        let statsP = { hp: 0, maxHp: 0, atk: 0, def: false };
+        let statsE = { hp: 0, maxHp: 0, atk: 0, def: false };
+        let idInimigoAtual = "";
+
+        function iniciarDuelo(idAdversario, nickAdversario) {
             const p = dadosGerais[jogadorAtual];
-            const novoRecord = (p.records[id] || 0) + 1;
-            db.ref('rpg_data/'+jogadorAtual+'/records/'+id).set(novoRecord);
-            db.ref('rpg_data/'+jogadorAtual).update({ xp: (p.xp || 0) + 5 });
+            const e = dadosGerais[idAdversario];
+            idInimigoAtual = idAdversario;
+            const lvlP = Math.floor((p.xp || 0) / 1000) + 1;
+            const lvlE = Math.floor((e.xp || 0) / 1000) + 1;
+            statsP.maxHp = statsP.hp = (lvlP * 1500) + (p.xp || 0);
+            statsE.maxHp = statsE.hp = (lvlE * 1500) + (e.xp || 0);
+            statsP.atk = Math.floor((lvlP * 50) + ((p.xp || 0) / 40));
+            statsE.atk = Math.floor((lvlE * 50) + ((e.xp || 0) / 40));
+            document.getElementById('name-p').innerText = `${p.nick || "Você"} Lv.${lvlP}`;
+            document.getElementById('name-e').innerText = `${nickAdversario} Lv.${lvlE}`;
+            document.getElementById('img-p').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            document.getElementById('img-e').src = e.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            atualizarBarras();
+            document.getElementById('battle-log').innerHTML = "Batalha iniciada!<br>Sua vez de agir.";
+            document.getElementById('arena-duelo').style.display = 'flex';
+            document.getElementById('btn-fechar-duelo').classList.add('hidden');
+            document.getElementById('btn-atk').disabled = false;
+            document.getElementById('btn-def').disabled = false;
+            batalhaAtiva = true;
         }
 
-        function aplicarPenalidade() {
-            const qtd = parseInt(document.getElementById('input-penalidade').value);
-            if(!qtd) return;
-            const p = dadosGerais[jogadorAtual];
-            db.ref('rpg_data/'+jogadorAtual).update({ xp: Math.max(0, (p.xp || 0) - (qtd * 2)) });
-            alert(`Penalidade aplicada: -${qtd * 2} XP`);
+        function atualizarBarras() {
+            document.getElementById('hp-p-fill').style.width = (statsP.hp / statsP.maxHp * 100) + "%";
+            document.getElementById('hp-e-fill').style.width = (statsE.hp / statsE.maxHp * 100) + "%";
+            document.getElementById('hp-text-p').innerText = `${Math.max(0, statsP.hp)} / ${statsP.maxHp}`;
+            document.getElementById('hp-text-e').innerText = `${Math.max(0, statsE.hp)} / ${statsE.maxHp}`;
         }
 
-        function comprarItem(custo, xp) {
-            const p = dadosGerais[jogadorAtual];
-            if(p.coins < custo) return alert("Moedas insuficientes!");
-            db.ref('rpg_data/'+jogadorAtual).update({
-                coins: p.coins - custo,
-                xp: (p.xp || 0) + xp
-            });
+        function comandoBatalha(tipo) {
+            if (!batalhaAtiva) return;
+            const log = document.getElementById('battle-log');
+            document.getElementById('btn-atk').disabled = true;
+            document.getElementById('btn-def').disabled = true;
+            if (tipo === 'atacar') {
+                document.getElementById('char-player').classList.add('atacar-p');
+                setTimeout(() => {
+                    document.getElementById('char-player').classList.remove('atacar-p');
+                    let dano = statsP.atk + Math.floor(Math.random() * 20);
+                    statsE.hp -= dano;
+                    log.innerHTML = `Você causou <b>${dano}</b> de dano!`;
+                    document.getElementById('char-enemy').classList.add('dano-shake');
+                    setTimeout(() => document.getElementById('char-enemy').classList.remove('dano-shake'), 300);
+                    atualizarBarras();
+                    if (!verificarFim()) setTimeout(turnoInimigo, 1200);
+                }, 400);
+            } else {
+                statsP.def = true;
+                log.innerHTML = "Você se defendeu! Dano inimigo será reduzido.";
+                setTimeout(turnoInimigo, 1200);
+            }
         }
 
-        function toggleMissaoObrigatoria(id) {
-            const p = dadosGerais[jogadorAtual];
-            const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
-            const missaoRef = db.ref(`rpg_data/${jogadorAtual}/missoes_diarias/${hoje}/${id}`);
-            missaoRef.get().then(s => {
-                if(!s.exists()) {
-                    missaoRef.set(true);
-                    db.ref('rpg_data/'+jogadorAtual).update({ xp: (p.xp || 0) + 10, coins: (p.coins || 0) + 2 });
+        function turnoInimigo() {
+            if (!batalhaAtiva) return;
+            const log = document.getElementById('battle-log');
+            document.getElementById('char-enemy').classList.add('atacar-e');
+            setTimeout(() => {
+                document.getElementById('char-enemy').classList.remove('atacar-e');
+                let dano = statsE.atk + Math.floor(Math.random() * 20);
+                if (statsP.def) { dano = Math.floor(dano * 0.4); statsP.def = false; }
+                statsP.hp -= dano;
+                log.innerHTML += `<br>Inimigo causou <b>${dano}</b> de dano!`;
+                document.getElementById('char-player').classList.add('dano-shake');
+                setTimeout(() => document.getElementById('char-player').classList.remove('dano-shake'), 300);
+                atualizarBarras();
+                if (!verificarFim()) {
+                    document.getElementById('btn-atk').disabled = false;
+                    document.getElementById('btn-def').disabled = false;
                 }
-            });
+            }, 400);
         }
 
-        function addMissao() {
-            const texto = document.getElementById('missao-input').value;
-            const valor = parseInt(document.getElementById('cat-input').value);
-            if(!texto) return;
-            const p = dadosGerais[jogadorAtual];
-            const novaMissao = { texto, valor, feita: false };
-            const ref = db.ref('rpg_data/'+jogadorAtual+'/missoes_pessoais').push();
-            ref.set(novaMissao);
-            document.getElementById('missao-input').value = "";
+        function verificarFim() {
+            if (statsE.hp <= 0) {
+                document.getElementById('battle-log').innerHTML = "🏆 <b>VITÓRIA!</b><br>Você ganhou +5 XP!";
+                batalhaAtiva = false;
+                const p = dadosGerais[jogadorAtual];
+                db.ref('rpg_data/' + jogadorAtual).update({ xp: (p.xp || 0) + 5, coins: (p.coins || 0) + 5 });
+                db.ref('notificacoes/' + idInimigoAtual).set({ de: p.nick || jogadorAtual, resultado: "perdeu" });
+                document.getElementById('btn-fechar-duelo').classList.remove('hidden');
+                return true;
+            } else if (statsP.hp <= 0) {
+                document.getElementById('battle-log').innerHTML = "💀 <b>DERROTA!</b><br>O oponente venceu.";
+                batalhaAtiva = false;
+                db.ref('notificacoes/' + idInimigoAtual).set({ de: dadosGerais[jogadorAtual].nick || jogadorAtual, resultado: "ganhou" });
+                document.getElementById('btn-fechar-duelo').classList.remove('hidden');
+                return true;
+            }
+            return false;
         }
 
-        function concluirMissao(id, valor) {
-            const p = dadosGerais[jogadorAtual];
-            db.ref(`rpg_data/${jogadorAtual}/missoes_pessoais/${id}`).update({feita: true});
-            db.ref('rpg_data/'+jogadorAtual).update({ xp: (p.xp || 0) + valor, coins: (p.coins || 0) + 5 });
-        }
+        function fecharArena() { document.getElementById('arena-duelo').style.display = 'none'; }
 
-        function deletarMissao(id) { db.ref(`rpg_data/${jogadorAtual}/missoes_pessoais/${id}`).remove(); }
-
-        // --- SISTEMA DE TELAS E AUTH ---
-        function limparNome(e) { return e.split('@')[0].replace(/[.#$[\]]/g, "_"); }
-        function alternarTela(c) { document.getElementById('login-area').className = c?'hidden':''; document.getElementById('register-area').className = c?'':'hidden'; }
+        // --- FUNÇÕES DE NAVEGAÇÃO E AUTH ---
         function mudarAba(aba) {
             document.getElementById('tab-home').classList.toggle('hidden', aba !== 'home');
             document.getElementById('tab-profile').classList.toggle('hidden', aba !== 'profile');
             document.getElementById('nav-home').classList.toggle('active', aba === 'home');
             document.getElementById('nav-profile').classList.toggle('active', aba === 'profile');
         }
+
+        function limparNome(e) { return e.split('@')[0].replace(/[.#$[\]]/g, "_"); }
+        function alternarTela(c) { document.getElementById('login-area').className = c?'hidden':''; document.getElementById('register-area').className = c?'':'hidden'; }
 
         function fazerLogin() {
             const e = document.getElementById('login-email').value, p = document.getElementById('login-pass').value;
@@ -362,17 +461,9 @@
             auth.createUserWithEmailAndPassword(e,p).then(() => {
                 db.ref('rpg_data/'+limparNome(e)).set({
                     nick: nick, photo: "", xp: 0, coins: 0,
-                    records: { supino: 0, puxada: 0, remada: 0, elevacao_halters: 0, leg_press: 0, hack: 0, extensora: 0, panturrilha: 0, flexao: 0, barra: 0, agachamentoLivre: 0, stamina: 0 }
+                    records: { supino: 20, puxada: 20, remada: 20, elevacao_halters: 4, leg_press: 30, hack: 40, extensora: 20, panturrilha: 40, flexao: 10, barra: 10, agachamentoLivre: 10, stamina: 10 }
                 });
             }).catch(err => alert("Erro no cadastro!"));
-        }
-
-        function logout() { auth.signOut(); }
-
-        function salvarPerfil() {
-            const nick = document.getElementById('edit-nick').value;
-            const photo = document.getElementById('edit-photo').value;
-            db.ref('rpg_data/'+jogadorAtual).update({ nick, photo }).then(() => alert("Perfil Salvo!"));
         }
 
         auth.onAuthStateChanged(u => {
@@ -383,7 +474,6 @@
                 db.ref('rpg_data').on('value', s => { dadosGerais = s.val() || {}; atualizarTela(); atualizarRanking(); });
                 db.ref('vitorias_velha').on('value', s => { vitoriasVelha = s.val() || {}; atualizarRankingVelha(); });
                 
-                // Monitorar convites de Jogo da Velha
                 db.ref('velha_online').on('value', s => {
                     const salas = s.val();
                     for(let id in salas) {
@@ -394,92 +484,107 @@
                         }
                     }
                 });
+
+                db.ref('notificacoes/' + jogadorAtual).on('value', s => {
+                    const n = s.val();
+                    if(n) { alert(`⚔️ Duelo: Você ${n.resultado} de ${n.de}!`); db.ref('notificacoes/' + jogadorAtual).remove(); }
+                });
             } else {
                 document.getElementById('auth-screen').classList.remove('hidden');
                 document.getElementById('game-content').classList.add('hidden');
             }
         });
 
-        function atualizarTela() {
-            const p = dadosGerais[jogadorAtual] || {xp:0, coins:0, missoes_pessoais:{}, records:{}};
-            const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
-            const missoesHoje = p.missoes_diarias ? (p.missoes_diarias[hoje] || {}) : {};
-
-            document.getElementById('player-name').innerText = p.nick || jogadorAtual;
-            document.getElementById('p-img').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-            document.getElementById('p-img-large').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-            
-            const level = Math.floor(p.xp / 1000) + 1;
-            const xpProx = level * 1000;
-            const xpAtual = p.xp % 1000;
-            
-            document.getElementById('lvl').innerText = level;
-            document.getElementById('xp').innerText = p.xp;
-            document.getElementById('coins').innerText = p.coins || 0;
-            document.getElementById('progress').style.width = (xpAtual / 1000 * 100) + "%";
-
-            // Renderizar Evolução Física
-            const gridF = document.getElementById('grid-fisico'); gridF.innerHTML = "";
-            for(let id in exercicios) {
-                gridF.innerHTML += `
-                    <div class="stat-box">
-                        <small>${exercicios[id]}</small><br>
-                        <b>${p.records ? (p.records[id] || 0) : 0}</b>
-                        <button class="btn-physic" onclick="treinar('${id}')">+</button>
-                    </div>`;
-            }
-
-            // Renderizar Missões Diárias
-            const listaO = document.getElementById('lista-obrigatoria'); listaO.innerHTML = "";
-            ["Beber 3L Água", "15 min Leitura", "Treino Concluído"].forEach(m => {
-                const feita = missoesHoje[m];
-                listaO.innerHTML += `
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px">
-                        <span>${m}</span>
-                        <button class="${feita ? 'btn-done' : 'btn-check'}" onclick="toggleMissaoObrigatoria('${m}')">${feita ? '✓' : 'Fazer'}</button>
-                    </div>`;
-            });
-
-            // Renderizar Loja
-            const tbLoja = document.querySelector('#tabela-loja tbody'); tbLoja.innerHTML = "";
-            itensLoja.forEach(i => {
-                tbLoja.innerHTML += `<tr><td>${i.nome}</td><td>💰 ${i.custo}</td><td><button class="btn-buy" onclick="comprarItem(${i.custo}, ${i.xp})">Comprar</button></td></tr>`;
-            });
-
-            // Renderizar Missões Pessoais
-            const listaP = document.getElementById('lista-missoes-pessoais'); listaP.innerHTML = "";
-            const missP = p.missoes_pessoais || {};
-            for(let id in missP) {
-                const m = missP[id];
-                if(!m.feita) {
-                    listaP.innerHTML += `
-                        <div style="display:flex; justify-content:space-between; margin-bottom:8px; background:rgba(255,255,255,0.1); padding:10px; border-radius:8px">
-                            <span>${m.texto} (${m.valor} XP)</span>
-                            <div>
-                                <button class="btn-check" onclick="concluirMissao('${id}', ${m.valor})">✓</button>
-                                <button class="btn-del" onclick="deletarMissao('${id}')">×</button>
-                            </div>
-                        </div>`;
-                }
-            }
-        }
-
         function atualizarRanking() {
             const tb = document.getElementById('ranking-body'); tb.innerHTML = "";
             Object.keys(dadosGerais).map(k => ({id: k, n: dadosGerais[k].nick || k, xp: dadosGerais[k].xp || 0}))
-            .sort((a,b) => b.xp - a.xp).slice(0, 10).forEach((p, i) => {
+            .sort((a,b) => b.xp - a.xp).forEach((p, i) => {
                 tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.n}</td><td>${Math.floor(p.xp/1000)+1}</td><td>${p.xp}</td>
-                <td>${p.id !== jogadorAtual ? `<button onclick="desafiarVelha('${p.id}')" style="background:#3b82f6; padding:5px">⭕ Desafiar</button>` : '-'}</td></tr>`;
+                <td>
+                    ${p.id !== jogadorAtual ? `
+                        <button onclick="iniciarDuelo('${p.id}','${p.n}')" style="background:#ef4444; padding:5px; margin-bottom:2px">Lutar</button>
+                        <button onclick="desafiarVelha('${p.id}')" style="background:#3b82f6; padding:5px">⭕</button>
+                    ` : '-'}
+                </td></tr>`;
             });
         }
 
         function atualizarRankingVelha() {
             const tb = document.getElementById('ranking-velha-body'); tb.innerHTML = "";
             Object.keys(vitoriasVelha).map(k => ({id: k, v: vitoriasVelha[k] || 0, n: (dadosGerais[k] ? dadosGerais[k].nick : k)}))
-            .sort((a,b) => b.v - a.v).slice(0, 5).forEach((p, i) => {
+            .sort((a,b) => b.v - a.v).forEach((p, i) => {
                 tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.n}</td><td>${p.v}</td></tr>`;
             });
         }
+
+        function atualizarTela() {
+            const p = dadosGerais[jogadorAtual] || {xp:0, coins:0, missoes:[], records:{}};
+            const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
+            document.getElementById('player-name').innerText = p.nick || jogadorAtual;
+            document.getElementById('xp').innerText = p.xp || 0;
+            document.getElementById('coins').innerText = p.coins || 0;
+            document.getElementById('lvl').innerText = Math.floor((p.xp || 0)/1000)+1;
+            document.getElementById('progress').style.width = ((p.xp || 0)%1000)/10 + "%";
+            document.getElementById('p-img').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            document.getElementById('p-img-large').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+
+            const dO = document.getElementById('lista-obrigatoria'); dO.innerHTML = "";
+            ["Treino Fisico", "Trabalho", "Estudo"].forEach(n => {
+                const id = `d-${n}-${hoje}`, feito = (p.missoes||[]).some(m => m.id === id && m.concluida);
+                dO.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:8px"><span>${n}</span><button class="${feito?'btn-done':'btn-check'}" onclick="concluirMissao('${id}', 10, true)" ${feito?'disabled':''}>${feito?'OK':'✔'}</button></div>`;
+            });
+
+            const g = document.getElementById('grid-fisico'); g.innerHTML = "";
+            const exArr = [
+                {id:'supino', n:'💪 Supino Reto/Máq', m:'kg', c:'#3b82f6', d:20}, {id:'puxada', n:'👐 Puxada Aberta', m:'kg', c:'#3b82f6', d:20}, {id:'remada', n:'🚣 Remada', m:'kg', c:'#3b82f6', d:20}, {id:'elevacao_halters', n:'🦋 Elevação Halters', m:'kg', c:'#3b82f6', d:4},
+                {id:'leg_press', n:'🦵 Leg Press 45', m:'kg', c:'#f59e0b', d:30}, {id:'hack', n:'🍑 Hack Machine', m:'kg', c:'#f59e0b', d:40}, {id:'extensora', n:'🦵 Extensora', m:'kg', c:'#f59e0b', d:20}, {id:'panturrilha', n:'🦶 Panturrilha', m:'kg', c:'#f59e0b', d:40},
+                {id:'flexao', n:'🧘 Flexão Braço', m:'reps', c:'#10b981', d:10}, {id:'barra', n:'🧗 Barra Fixa', m:'reps', c:'#10b981', d:10}, {id:'agachamentoLivre', n:'🤸 Agach. Livre', m:'reps', c:'#10b981', d:10}, {id:'stamina', n:'🏃‍♀️ Cardio/Dança', m:'min', c:'#ec4899', d:10}
+            ];
+            exArr.forEach(ex => {
+                const r = (p.records && p.records[ex.id]) !== undefined ? p.records[ex.id] : ex.d;
+                g.innerHTML += `<div class="stat-box" style="border-top: 3px solid ${ex.c};">
+                    <b style="color:${ex.c}; font-size:11px;">${ex.n}</b><br><span style="font-size: 10px;">Rec: ${r}${ex.m}</span>
+                    <div style="display:flex; gap:3px; margin-top:5px;"><input type="number" id="in-${ex.id}" placeholder="+" style="width:55%; height:25px; font-size:12px;"><button class="btn-physic" style="background:${ex.c}; height:25px; width:45%; margin:0; font-size:10px;" onclick="upFisico('${ex.id}','${ex.m}',${r})">UP</button></div></div>`;
+            });
+
+            const dP = document.getElementById('lista-missoes-pessoais'); dP.innerHTML = "";
+            (p.missoes || []).filter(m => m.id.startsWith('m-')).forEach(m => {
+                dP.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;">
+                <span>${m.nome}</span><div><button class="${m.concluida?'btn-done':'btn-check'}" onclick="concluirMissao('${m.id}', ${m.valor})" ${m.concluida?'disabled':''}>✔</button><button class="btn-del" onclick="removerMissao('${m.id}')">🗑️</button></div></div>`;
+            });
+
+            const tL = document.querySelector('#tabela-loja tbody'); tL.innerHTML = "";
+            [{n:'Passear',p:900},{n:'Presente',p:5000},{n:'Lanche',p:400}].forEach(i => {
+                tL.innerHTML += `<tr><td>${i.n}</td><td>💰${i.p}</td><td><button class="btn-buy" onclick="comprar(${i.p},'${i.n}')">Resgatar</button></td></tr>`;
+            });
+        }
+
+        function upFisico(id, m, r) {
+            const v = parseInt(document.getElementById('in-'+id).value);
+            const p = dadosGerais[jogadorAtual];
+            if(!v || v <= r) return alert("Supera o recorde!");
+            const agora = Date.now(), ultimo = (p.last_train && p.last_train[id]) ? p.last_train[id] : 0;
+            if ((agora - ultimo) / (1000 * 60 * 60) < 20) return alert("Descanso de 20h!");
+            let mult = (id === 'elevacao_halters') ? 500 : 100;
+            let g = (m==='kg') ? (v-r)*mult : (v-r)*45;
+            const rec = {...(p.records || {})}; rec[id] = v;
+            const treinos = {...(p.last_train || {})}; treinos[id] = agora;
+            db.ref('rpg_data/'+jogadorAtual).update({ xp: (p.xp || 0) + g, coins: (p.coins || 0) + g, records: rec, last_train: treinos });
+        }
+
+        function concluirMissao(id, v, d=false) {
+            const p = dadosGerais[jogadorAtual], ms = p.missoes || [];
+            let m = ms.find(x => x.id === id);
+            if(!m && d) { ms.push({id, nome:id.split('-')[1], valor:10, concluida:true}); db.ref('rpg_data/'+jogadorAtual).update({xp:(p.xp||0)+10, coins:(p.coins||0)+10, missoes:ms}); }
+            else if(m && !m.concluida) { m.concluida = true; db.ref('rpg_data/'+jogadorAtual).update({xp:(p.xp||0)+v, coins:(p.coins||0)+(v>0?v:0), missoes:ms}); }
+        }
+        function removerMissao(id) { const ms = (dadosGerais[jogadorAtual].missoes || []).filter(m => m.id !== id); db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms); }
+        function aplicarPenalidade() { const qtd = parseInt(document.getElementById('input-penalidade').value); const p = dadosGerais[jogadorAtual]; db.ref('rpg_data/'+jogadorAtual).update({ xp: Math.max(0, (p.xp||0) - (qtd*300)) }); }
+        function addMissao() { const n = document.getElementById('missao-input').value, v = parseInt(document.getElementById('cat-input').value); const ms = dadosGerais[jogadorAtual].missoes || []; ms.push({ id:'m-'+Date.now(), nome:n, valor:v, concluida:false }); db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms); }
+        function comprar(pr, n) { const p = dadosGerais[jogadorAtual]; if(p.coins >= pr) { db.ref('rpg_data/'+jogadorAtual).update({coins:p.coins-pr}); alert("Resgatado!"); } }
+        function salvarPerfil() { const n = document.getElementById('edit-nick').value, f = document.getElementById('edit-photo').value.trim(); db.ref('rpg_data/'+jogadorAtual).update({ nick: n, photo: f }).then(() => { mudarAba('home'); }); }
+        function logout() { auth.signOut(); }
     </script>
 </body>
 </html>
+
