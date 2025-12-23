@@ -5,14 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ares RPG - Oficial</title>
     
-    <meta property="og:title" content="Ares RPG - Oficial">
-    <meta property="og:description" content="Evolua seu personagem na vida real! Treine, estude e conquiste recompensas.">
-    <meta property="og:image" content="https://i.ibb.co/X3vDggM/image.png">
-    <meta property="og:type" content="website">
-
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    
     <style>
         body { 
             font-family: 'Segoe UI', sans-serif; 
@@ -22,17 +18,12 @@
             color: #f8fafc; margin: 0; padding: 15px; padding-bottom: 80px;
         }
 
-        /* AJUSTE DO LOGO: Transparência Real */
-        .logo-container {
-            text-align: center;
-            padding: 20px 0;
-            background: transparent !important;
-        }
-        .logo-container img {
-            max-width: 180px;
-            background: transparent !important;
-            mix-blend-mode: screen; /* Remove fundos escuros/cinzas de logos não transparentes */
-            filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
+        /* MELHORIA 1: LOGO TRANSPARENTE */
+        .logo-container { text-align: center; padding: 15px 0; background: transparent !important; }
+        .logo-container img { 
+            max-width: 160px; 
+            mix-blend-mode: screen; /* Remove fundos não transparentes */
+            filter: drop-shadow(0 0 10px #3b82f6);
         }
 
         .card { 
@@ -40,6 +31,20 @@
             padding: 20px; border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); 
             margin-bottom: 15px; border: 1px solid rgba(51, 65, 85, 0.5); 
         }
+
+        /* MELHORIA 2: BOTÃO FECHAR ADS */
+        .ad-banner { position: relative; background: linear-gradient(45deg, #1e3a8a, #1e40af); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 10px; border: 1px solid #3b82f6; }
+        .ad-banner a { color: #ffffff; font-weight: bold; text-decoration: underline; display: block; margin-top: 5px; }
+        .close-ad { position: absolute; top: 5px; right: 10px; background: rgba(0,0,0,0.4); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 10px; }
+
+        /* Estilos Arena Duelo (Mantidos) */
+        #arena-duelo { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.98); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .container-duelo { width: 90%; text-align: center; }
+        .battle-bar-container { width: 100%; height: 40px; background: #ef4444; border-radius: 20px; overflow: hidden; margin: 30px 0; border: 3px solid #fff; position: relative; }
+        #battle-bar-fill { width: 50%; height: 100%; background: #22c55e; float: right; transition: width 3s cubic-bezier(0.1, 0.7, 1.0, 0.1); }
+        .vs-text { font-size: 40px; font-weight: 900; color: #fbbf24; text-shadow: 0 0 15px #fbbf24; }
+
+        /* Estilos Gerais (Mantidos) */
         .header { position: sticky; top: 0; z-index: 100; border-bottom: 3px solid #3b82f6; }
         .player-img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #3b82f6; object-fit: cover; background: #1e293b; display: inline-block; vertical-align: middle; }
         .lvl-badge { background: #fbbf24; color: #1e293b; padding: 5px 15px; border-radius: 20px; font-weight: bold; display: inline-block; margin: 10px 0; }
@@ -64,40 +69,6 @@
         table { width: 100%; border-collapse: collapse; }
         th, td { border-bottom: 1px solid rgba(51, 65, 85, 0.5); padding: 12px 8px; text-align: left; }
         .hidden { display: none !important; }
-
-        /* PROPAGANDAS CORRIGIDAS */
-        .ad-banner { 
-            position: relative;
-            background: linear-gradient(45deg, #1e3a8a, #1e40af); 
-            padding: 20px 15px; 
-            border-radius: 12px; 
-            text-align: center; 
-            margin-bottom: 10px; 
-            border: 1px solid #3b82f6; 
-        }
-        .ad-banner a { color: #ffffff; font-weight: bold; text-decoration: underline; display: block; margin-top: 5px; }
-        .close-ad {
-            position: absolute;
-            top: 5px;
-            right: 10px;
-            background: rgba(0,0,0,0.5);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 10px;
-            cursor: pointer;
-            line-height: 20px;
-            padding: 0;
-        }
-
-        /* Arena Duelo */
-        #arena-duelo { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.98); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        .container-duelo { width: 90%; text-align: center; }
-        .battle-bar-container { width: 100%; height: 40px; background: #ef4444; border-radius: 20px; overflow: hidden; margin: 30px 0; border: 3px solid #fff; position: relative; }
-        #battle-bar-fill { width: 50%; height: 100%; background: #22c55e; float: right; transition: width 3s cubic-bezier(0.1, 0.7, 1.0, 0.1); }
-        .vs-text { font-size: 40px; font-weight: 900; color: #fbbf24; text-shadow: 0 0 15px #fbbf24; }
     </style>
 </head>
 <body>
@@ -188,8 +159,13 @@
             </div>
 
             <div class="card">
-                <h3>⚡ Missões Diárias (+10 XP/Moedas)</h3>
+                <h3>⚡ Missões Diárias (+10 XP e Moedas)</h3>
                 <div id="lista-obrigatoria"></div>
+            </div>
+
+            <div class="card">
+                <h3>🛒 Arsenal (Loja)</h3>
+                <table id="tabela-loja"><tbody></tbody></table>
             </div>
 
             <div class="card">
@@ -203,10 +179,19 @@
                 </select>
                 <button onclick="addMissao()" style="background:#3b82f6; width:100%">Registar</button>
             </div>
+        </div>
 
-            <div class="card">
-                <h3>🛒 Arsenal (Loja)</h3>
-                <table id="tabela-loja"><tbody></tbody></table>
+        <div id="tab-taverna" class="hidden">
+            <div class="card" style="text-align:center;">
+                <h3>🍺 Taverna do Ares</h3>
+                <p>Abra o Baú ou tente a sorte nos dados!</p>
+                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; margin: 15px 0;">
+                    <img id="img-bau" src="https://i.ibb.co/v3n50XG/bau.png" style="width: 100px; cursor: pointer; transition: 0.3s;" onclick="abrirBau()" alt="Baú">
+                    <p id="bau-msg" style="font-size: 14px; margin-top: 10px;">Toque no Baú para coletar XP!</p>
+                </div>
+                <hr style="border-color: rgba(255,255,255,0.1)">
+                <button onclick="jogarDados()" style="background: #f59e0b; width: 100%; margin-top: 10px;">🎲 Apostar 50 Moedas</button>
+                <p id="dados-status" style="font-size: 14px; margin-top: 10px;"></p>
             </div>
         </div>
 
@@ -222,11 +207,13 @@
 
         <nav class="bottom-nav">
             <div class="nav-item active" id="nav-home" onclick="mudarAba('home')"><span>🏠</span><span>Início</span></div>
+            <div class="nav-item" id="nav-taverna" onclick="mudarAba('taverna')"><span>🍺</span><span>Taverna</span></div>
             <div class="nav-item" id="nav-profile" onclick="mudarAba('profile')"><span>👤</span><span>Perfil</span></div>
         </nav>
     </div>
 
     <script>
+        // Configuração Firebase (Mantida)
         const firebaseConfig = {
             apiKey: "AIzaSyBanevR51ejaTE0ccqlmlU6VRh7Qg4EETs",
             authDomain: "aresrpg-7daf4.firebaseapp.com",
@@ -242,13 +229,17 @@
 
         function mudarAba(aba) {
             document.getElementById('tab-home').classList.toggle('hidden', aba !== 'home');
+            document.getElementById('tab-taverna').classList.toggle('hidden', aba !== 'taverna');
             document.getElementById('tab-profile').classList.toggle('hidden', aba !== 'profile');
             document.getElementById('nav-home').classList.toggle('active', aba === 'home');
+            document.getElementById('nav-taverna').classList.toggle('active', aba === 'taverna');
             document.getElementById('nav-profile').classList.toggle('active', aba === 'profile');
         }
 
+        // Funções de Auth e Auxiliares (Mantidas)
         function limparNome(e) { return e.split('@')[0].replace(/[.#$[\]]/g, "_"); }
         function alternarTela(c) { document.getElementById('login-area').className = c?'hidden':''; document.getElementById('register-area').className = c?'':'hidden'; }
+        function logout() { auth.signOut(); }
 
         function fazerLogin() {
             const e = document.getElementById('login-email').value, p = document.getElementById('login-pass').value;
@@ -261,12 +252,42 @@
             if(!nick) return alert("Escolha um Nick!");
             auth.createUserWithEmailAndPassword(e,p).then(() => {
                 db.ref('rpg_data/'+limparNome(e)).set({
-                    nick: nick, photo: "", xp: 0, coins: 0,
+                    nick: nick, photo: "", xp: 0, coins: 100,
                     records: { supino: 20, puxada: 20, remada: 20, elevacao_halters: 4, leg_press: 30, hack: 40, extensora: 20, panturrilha: 40, flexao: 10, barra: 10, agachamentoLivre: 10, stamina: 10 }
                 });
             }).catch(err => alert("Erro no cadastro!"));
         }
 
+        // Lógica de Duelo (Mantida)
+        function iniciarDuelo(idAdversario, nickAdversario) {
+            const desafiante = dadosGerais[jogadorAtual];
+            const desafiado = dadosGerais[idAdversario];
+            document.getElementById('arena-duelo').style.display = 'flex';
+            document.getElementById('nome-desafiante').innerText = desafiante.nick || jogadorAtual;
+            document.getElementById('nome-desafiado').innerText = nickAdversario;
+            
+            const xpDesafiante = desafiante.xp || 0;
+            const xpDesafiado = desafiado.xp || 0;
+            let porcentagemVerde = (xpDesafiado / (xpDesafiante + xpDesafiado || 1)) * 100;
+
+            setTimeout(() => {
+                document.getElementById('battle-bar-fill').style.width = porcentagemVerde + "%";
+                setTimeout(() => {
+                    let venceu = xpDesafiante > xpDesafiado;
+                    document.getElementById('duelo-status').innerText = venceu ? "VITÓRIA!" : "DERROTA!";
+                    document.getElementById('btn-fechar-duelo').classList.remove('hidden');
+                    if(venceu) db.ref('rpg_data/'+jogadorAtual).update({ coins: (desafiante.coins||0) + 50 });
+                }, 3100);
+            }, 500);
+        }
+
+        function fecharArena() { 
+            document.getElementById('arena-duelo').style.display = 'none'; 
+            document.getElementById('battle-bar-fill').style.width = "50%";
+            document.getElementById('btn-fechar-duelo').classList.add('hidden');
+        }
+
+        // Observer do Auth (Mantido)
         auth.onAuthStateChanged(u => {
             if(u) {
                 jogadorAtual = limparNome(u.email);
@@ -297,23 +318,23 @@
             document.getElementById('progress').style.width = ((p.xp || 0)%1000)/10 + "%";
             document.getElementById('p-img').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
+            // MELHORIA: SEM TRAVA DE 24H
             const dO = document.getElementById('lista-obrigatoria'); dO.innerHTML = "";
             ["Treino Fisico", "Trabalho", "Estudo"].forEach(n => {
-                const id = `d-${n}`, ms = p.missoes || [], m = ms.find(x => x.id === id);
-                const feito = m && m.concluida;
-                dO.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:8px"><span>${n}</span><button class="${feito?'btn-done':'btn-check'}" onclick="concluirMissao('${id}', 10, true)" ${feito?'disabled':''}>${feito?'OK':'✔'}</button></div>`;
+                dO.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:8px"><span>${n}</span><button class="btn-check" onclick="concluirMissao('${n}', 15, true)">✔</button></div>`;
             });
 
+            // Resto da Tela (Fisico, Missões Pessoais, Loja - Mantidos)
             const g = document.getElementById('grid-fisico'); g.innerHTML = "";
             const exArr = [
-                {id:'supino', n:'💪 Supino Reto/Máq', m:'kg', c:'#3b82f6', d:20}, {id:'puxada', n:'👐 Puxada Aberta', m:'kg', c:'#3b82f6', d:20}, {id:'remada', n:'🚣 Remada', m:'kg', c:'#3b82f6', d:20}, {id:'elevacao_halters', n:'🦋 Elevação Halters', m:'kg', c:'#3b82f6', d:4},
-                {id:'leg_press', n:'🦵 Leg Press 45', m:'kg', c:'#f59e0b', d:30}, {id:'hack', n:'🍑 Hack Machine', m:'kg', c:'#f59e0b', d:40}, {id:'extensora', n:'🦵 Extensora', m:'kg', c:'#f59e0b', d:20}, {id:'panturrilha', n:'🦶 Panturrilha', m:'kg', c:'#f59e0b', d:40},
-                {id:'flexao', n:'🧘 Flexão Braço', m:'reps', c:'#10b981', d:10}, {id:'barra', n:'🧗 Barra Fixa', m:'reps', c:'#10b981', d:10}, {id:'agachamentoLivre', n:'🤸 Agach. Livre', m:'reps', c:'#10b981', d:10}, {id:'stamina', n:'🏃‍♀️ Cardio/Dança', m:'min', c:'#ec4899', d:10}
+                {id:'supino', n:'💪 Supino', m:'kg', c:'#3b82f6', d:20}, {id:'puxada', n:'👐 Puxada', m:'kg', c:'#3b82f6', d:20}, {id:'remada', n:'🚣 Remada', m:'kg', c:'#3b82f6', d:20}, {id:'elevacao_halters', n:'🦋 Elevação', m:'kg', c:'#3b82f6', d:4},
+                {id:'leg_press', n:'🦵 Leg Press', m:'kg', c:'#f59e0b', d:30}, {id:'hack', n:'🍑 Hack', m:'kg', c:'#f59e0b', d:40}, {id:'extensora', n:'🦵 Extensora', m:'kg', c:'#f59e0b', d:20}, {id:'panturrilha', n:'🦶 Panturrilha', m:'kg', c:'#f59e0b', d:40},
+                {id:'flexao', n:'🧘 Flexão', m:'reps', c:'#10b981', d:10}, {id:'barra', n:'🧗 Barra', m:'reps', c:'#10b981', d:10}, {id:'agachamentoLivre', n:'🤸 Agacham.', m:'reps', c:'#10b981', d:10}, {id:'stamina', n:'🏃‍♀️ Cardio', m:'min', c:'#ec4899', d:10}
             ];
             exArr.forEach(ex => {
                 const r = (p.records && p.records[ex.id]) !== undefined ? p.records[ex.id] : ex.d;
                 g.innerHTML += `<div class="stat-box" style="border-top: 3px solid ${ex.c}; background: rgba(255,255,255,0.03);">
-                    <b style="color:${ex.c}; font-size:11px;">${ex.n}</b><br><span style="font-size: 10px; color:#94a3b8;">Recorde: ${r}${ex.m}</span>
+                    <b style="color:${ex.c}; font-size:11px;">${ex.n}</b><br><span style="font-size: 10px; color:#94a3b8;">Rec: ${r}${ex.m}</span>
                     <div style="display:flex; gap:3px; margin-top:5px;"><input type="number" id="in-${ex.id}" placeholder="+" style="width:55%; height:25px; font-size:12px;"><button class="btn-physic" style="background:${ex.c}; height:25px; width:45%; margin:0; font-size:10px;" onclick="upFisico('${ex.id}','${ex.m}',${r})">UP</button></div></div>`;
             });
 
@@ -329,53 +350,60 @@
             });
         }
 
-        // LÓGICA DE MOEDAS E REMOÇÃO DE TRAVA DE TEMPO
-        function concluirMissao(id, v, d=false) {
-            const p = dadosGerais[jogadorAtual], ms = p.missoes || [];
-            let m = ms.find(x => x.id === id);
-            
-            // Se for missão diária (ex: Treino)
-            if(!m && d) { 
-                ms.push({id, nome:id.split('-')[1], valor:10, concluida:true}); 
-                db.ref('rpg_data/'+jogadorAtual).update({
-                    xp: (p.xp||0) + 10, 
-                    coins: (p.coins||0) + 10, 
-                    missoes: ms
-                }); 
+        // MELHORIA: Lógica de Missões Unificada e Sem Trava
+        function concluirMissao(id, v, isDaily=false) {
+            const p = dadosGerais[jogadorAtual];
+            const ms = p.missoes || [];
+            if(isDaily) {
+                db.ref('rpg_data/'+jogadorAtual).update({ xp: (p.xp||0)+v, coins: (p.coins||0)+v });
+                alert(`Missão ${id} Concluída! +${v} XP/Moedas`);
+            } else {
+                let m = ms.find(x => x.id === id);
+                if(m && !m.concluida) {
+                    m.concluida = true;
+                    db.ref('rpg_data/'+jogadorAtual).update({ xp: (p.xp||0)+(v>0?v:0), coins: (p.coins||0)+(v>0?v:0), missoes: ms });
+                }
             }
-            // Se for missão pessoal
-            else if(m && !m.concluida) { 
-                m.concluida = true; 
-                db.ref('rpg_data/'+jogadorAtual).update({
-                    xp: (p.xp||0) + (v > 0 ? v : 0), 
-                    coins: (p.coins||0) + (v > 0 ? v : 0), 
-                    missoes: ms
-                }); 
-            }
-            // OBS: Removido qualquer uso de 'hoje' ou limites de data.
         }
 
+        // MELHORIA: JOGOS DA TAVERNA
+        function jogarDados() {
+            const p = dadosGerais[jogadorAtual];
+            if(p.coins < 50) return alert("Moedas insuficientes!");
+            const n = Math.floor(Math.random() * 6) + 1;
+            const ganhou = n >= 4;
+            const res = ganhou ? 50 : -50;
+            db.ref('rpg_data/'+jogadorAtual).update({ coins: p.coins + res });
+            document.getElementById('dados-status').innerText = `Dado: ${n} - ${ganhou ? 'Ganhou 50!' : 'Perdeu 50!'}`;
+        }
+
+        function abrirBau() {
+            const p = dadosGerais[jogadorAtual];
+            const sorte = Math.floor(Math.random() * 50) + 10;
+            db.ref('rpg_data/'+jogadorAtual).update({ xp: (p.xp||0) + sorte });
+            document.getElementById('bau-msg').innerText = `Você encontrou +${sorte} XP no baú!`;
+            document.getElementById('img-bau').style.transform = "scale(1.2)";
+            setTimeout(() => document.getElementById('img-bau').style.transform = "scale(1)", 200);
+        }
+
+        // Funções de Gameplay (Mantidas)
         function upFisico(id, m, r) {
             const v = parseInt(document.getElementById('in-'+id).value);
             if(!v || v <= r) return alert("Supera o recorde!");
-            let mult = (id === 'elevacao_halters') ? 500 : 100;
-            let g = (m==='kg') ? (v-r)*mult : (v-r)*45;
+            let g = (m==='kg') ? (v-r)*100 : (v-r)*45;
             const rec = {...(dadosGerais[jogadorAtual].records || {})}; rec[id] = v;
             db.ref('rpg_data/'+jogadorAtual).update({xp:(dadosGerais[jogadorAtual].xp||0)+g, coins:(dadosGerais[jogadorAtual].coins||0)+g, records:rec});
         }
-
         function removerMissao(id) {
             const ms = (dadosGerais[jogadorAtual].missoes || []).filter(m => m.id !== id);
             db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms);
         }
-
         function aplicarPenalidade() {
             const qtd = parseInt(document.getElementById('input-penalidade').value);
             if(!qtd) return;
             const p = dadosGerais[jogadorAtual];
             db.ref('rpg_data/'+jogadorAtual).update({ xp: Math.max(0, (p.xp||0) - (qtd*300)), coins: Math.max(0, (p.coins||0) - (qtd*300)) });
         }
-
         function addMissao() {
             const n = document.getElementById('missao-input').value, v = parseInt(document.getElementById('cat-input').value);
             if(!n) return;
@@ -383,20 +411,16 @@
             ms.push({ id:'m-'+Date.now(), nome:n, valor:v, concluida:false });
             db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms);
         }
-
         function comprar(pr, n) {
             const p = dadosGerais[jogadorAtual];
             if(p.coins >= pr) { db.ref('rpg_data/'+jogadorAtual).update({coins:p.coins-pr}); alert("Resgatado!"); }
             else alert("Moedas insuficientes!");
         }
-
         function salvarPerfil() {
             const n = document.getElementById('edit-nick').value;
             let f = document.getElementById('edit-photo').value.trim();
-            if(!jogadorAtual) return;
             db.ref('rpg_data/'+jogadorAtual).update({ nick: n, photo: f }).then(() => { alert("Perfil Atualizado!"); mudarAba('home'); });
         }
-        function logout() { auth.signOut(); }
     </script>
 </body>
 </html>
