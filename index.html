@@ -240,7 +240,6 @@
                     let venceu = xpDesafiante > xpDesafiado;
                     document.getElementById('duelo-status').innerText = venceu ? "VITÓRIA DO DESAFIANTE!" : "VITÓRIA DO DESAFIADO!";
                     document.getElementById('btn-fechar-duelo').classList.remove('hidden');
-                    // Envia a notificação para o adversário no banco de dados
                     db.ref('notificacoes/' + idAdversario).set({
                         de: desafiante.nick || jogadorAtual,
                         resultado: venceu ? "perdeu" : "ganhou"
@@ -261,7 +260,6 @@
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('game-content').classList.remove('hidden');
                 db.ref('rpg_data').on('value', s => { dadosGerais = s.val() || {}; atualizarTela(); atualizarRanking(); });
-                // Escuta notificações de duelo
                 db.ref('notificacoes/' + jogadorAtual).on('value', s => {
                     const n = s.val();
                     if(n) {
@@ -325,13 +323,39 @@
             });
         }
 
+        // FUNÇÃO ATUALIZADA COM FILTROS ANTI-CHEAT
         function upFisico(id, m, r) {
-            const v = parseInt(document.getElementById('in-'+id).value);
+            const inputField = document.getElementById('in-'+id);
+            const v = parseInt(inputField.value);
+            
+            // 1. Validação de recorde
             if(!v || v <= r) return alert("Supera o recorde!");
+
+            // 2. Trava de incremento máximo (Não permite subir mais de 50 de uma vez)
+            if((v - r) > 50) {
+                alert("Aumento muito alto! Insira um valor realista.");
+                return;
+            }
+
             let mult = (id === 'elevacao_halters') ? 500 : 100;
             let g = (m==='kg') ? (v-r)*mult : (v-r)*45;
-            const rec = {...(dadosGerais[jogadorAtual].records || {})}; rec[id] = v;
-            db.ref('rpg_data/'+jogadorAtual).update({xp:(dadosGerais[jogadorAtual].xp||0)+g, coins:(dadosGerais[jogadorAtual].coins||0)+g, records:rec});
+
+            // 3. Trava de XP máximo por clique (Evita ganhos astronômicos)
+            if(g > 5000) {
+                alert("Ganho de XP suspeito. Tente um valor menor.");
+                return;
+            }
+
+            const rec = {...(dadosGerais[jogadorAtual].records || {})}; 
+            rec[id] = v;
+
+            db.ref('rpg_data/'+jogadorAtual).update({
+                xp:(dadosGerais[jogadorAtual].xp||0)+g, 
+                coins:(dadosGerais[jogadorAtual].coins||0)+g, 
+                records:rec
+            }).then(() => {
+                inputField.value = ""; // Limpa o campo após o sucesso
+            });
         }
 
         function concluirMissao(id, v, d=false) {
