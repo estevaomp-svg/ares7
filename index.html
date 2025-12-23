@@ -17,26 +17,25 @@
         .progress-bar { background: #475569; border-radius: 10px; height: 12px; width: 100%; overflow: hidden; margin: 10px 0; }
         .progress-fill { background: #3b82f6; height: 100%; width: 0%; transition: 0.5s; }
         input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: none; background: white; color: black; }
-        button { cursor: pointer; padding: 10px; border: none; border-radius: 8px; color: white; font-weight: bold; transition: 0.3s; }
+        button { cursor: pointer; padding: 10px; border: none; border-radius: 8px; color: white; font-weight: bold; }
         .hidden { display: none !important; }
         
-        /* ESTILO JOGO DA VELHA - ESSENCIAL PARA APARECER */
-        #arena-velha { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.98); z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        /* ESTILO DA VELHA QUE FALTAVA */
+        #arena-velha { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; }
         .velha-grid { display: grid; grid-template-columns: repeat(3, 90px); gap: 10px; background: #334155; padding: 10px; border-radius: 10px; }
         .velha-cell { width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px; color: white; cursor: pointer; }
-        #convite-velha { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #fbbf24; color: #000; padding: 15px; border-radius: 10px; z-index: 10000; display: none; width: 85%; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
+        #convite-velha { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #fbbf24; color: #000; padding: 15px; border-radius: 10px; z-index: 10000; display: none; width: 85%; text-align: center; }
 
-        /* TABELA E NAV */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #1e293b; display: flex; justify-content: space-around; padding: 10px 0; border-top: 2px solid #3b82f6; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; font-size: 14px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; font-size: 13px; }
     </style>
 </head>
 <body>
 
     <div id="arena-velha">
-        <h2 id="velha-info" style="color: var(--warning); margin-bottom: 20px;">Carregando...</h2>
-        <div class="velha-grid">
+        <h2 id="velha-info" style="color: var(--warning);">Sua vez!</h2>
+        <div class="velha-grid" id="tabuleiro-velha">
             <div class="velha-cell" onclick="cliqueVelha(0)"></div>
             <div class="velha-cell" onclick="cliqueVelha(1)"></div>
             <div class="velha-cell" onclick="cliqueVelha(2)"></div>
@@ -47,52 +46,38 @@
             <div class="velha-cell" onclick="cliqueVelha(7)"></div>
             <div class="velha-cell" onclick="cliqueVelha(8)"></div>
         </div>
-        <button onclick="sairVelha()" style="margin-top: 30px; background: var(--danger); width: 200px; padding: 15px;">Sair do Jogo</button>
+        <button onclick="sairVelha()" style="margin-top: 30px; background: var(--danger); width: 200px;">Fechar Jogo</button>
     </div>
 
     <div id="convite-velha">
-        <b id="msg-convite">Alguém te desafiou!</b>
+        <b id="msg-convite">Novo Desafio!</b>
         <div style="display:flex; gap:10px; margin-top:10px">
-            <button onclick="aceitarDesafio()" style="background:#22c55e; flex:1; padding:10px">ACEITAR</button>
-            <button onclick="recusarDesafio()" style="background:#ef4444; flex:1; padding:10px">RECUSAR</button>
+            <button onclick="aceitarDesafio()" style="background:#22c55e; flex:1">ACEITAR</button>
+            <button onclick="recusarDesafio()" style="background:#ef4444; flex:1">RECUSAR</button>
         </div>
     </div>
 
     <div id="auth-screen" class="card" style="max-width:400px; margin: 40px auto;">
-        <h2 style="text-align:center">Ares RPG Online</h2>
+        <h2 style="text-align:center">Ares RPG</h2>
         <div id="login-area">
             <input type="email" id="login-email" placeholder="E-mail">
             <input type="password" id="login-pass" placeholder="Senha">
-            <button onclick="fazerLogin()" style="background:var(--primary); width:100%; padding:15px">Entrar</button>
-            <p onclick="alternarAuth(true)" style="text-align:center; cursor:pointer; font-size:14px; margin-top:15px">Criar Nova Conta</p>
-        </div>
-        <div id="reg-area" class="hidden">
-            <input type="text" id="reg-nick" placeholder="Nome do Personagem">
-            <input type="email" id="reg-email" placeholder="Seu E-mail">
-            <input type="password" id="reg-pass" placeholder="Senha">
-            <button onclick="fazerCadastro()" style="background:var(--success); width:100%; padding:15px">Começar Jornada</button>
-            <p onclick="alternarAuth(false)" style="text-align:center; cursor:pointer; font-size:14px; margin-top:15px">Já tenho conta (Login)</p>
+            <button onclick="fazerLogin()" style="background:var(--primary); width:100%">Entrar</button>
         </div>
     </div>
 
     <div id="game-content" class="hidden">
         <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center">
-                <b id="player-name" style="font-size:20px">---</b>
-                <button onclick="auth.signOut()" style="background:var(--danger); padding:5px 10px; font-size:12px">Sair</button>
-            </div>
-            <div class="lvl-badge" style="margin:10px 0">LEVEL <span id="lvl">1</span></div>
+            <b>👤 <span id="player-name">---</span></b>
+            <div class="lvl-badge">LVL <span id="lvl">1</span></div>
             <div class="progress-bar"><div id="progress" class="progress-fill"></div></div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; text-align:center">
-                <div class="card" style="margin:0; padding:10px; background:#1e293b">XP: <span id="xp">0</span></div>
-                <div class="card" style="margin:0; padding:10px; background:#1e293b">Moedas: <span id="coins">0</span></div>
-            </div>
+            <p>💰 Moedas: <span id="coins">0</span> | XP: <span id="xp">0</span></p>
         </div>
 
         <div class="card">
-            <h3>🏆 Ranking de Jogadores</h3>
+            <h3>🏆 Ranking</h3>
             <table>
-                <thead><tr><th>Nome</th><th>Lvl</th><th>Desafiar</th></tr></thead>
+                <thead><tr><th>Nick</th><th>Lvl</th><th>Ação</th></tr></thead>
                 <tbody id="ranking-body"></tbody>
             </table>
         </div>
@@ -113,14 +98,7 @@
         let jogadorAtual = "", dadosGerais = {}, salaAtiva = null, meuSimbolo = "";
 
         function limparNome(e) { return e.split('@')[0].replace(/[.#$[\]]/g, "_"); }
-        function alternarAuth(reg) { document.getElementById('login-area').classList.toggle('hidden', reg); document.getElementById('reg-area').classList.toggle('hidden', !reg); }
         function fazerLogin() { auth.signInWithEmailAndPassword(document.getElementById('login-email').value, document.getElementById('login-pass').value); }
-        function fazerCadastro() {
-            const nick = document.getElementById('reg-nick').value;
-            auth.createUserWithEmailAndPassword(document.getElementById('reg-email').value, document.getElementById('reg-pass').value).then(u => {
-                db.ref('rpg_data/'+limparNome(u.user.email)).set({ nick, xp: 0, coins: 0 });
-            });
-        }
 
         auth.onAuthStateChanged(u => {
             if(u) {
@@ -132,15 +110,16 @@
                     dadosGerais = s.val() || {}; 
                     const p = dadosGerais[jogadorAtual];
                     if(p){
-                        document.getElementById('player-name').innerText = p.nick;
-                        document.getElementById('xp').innerText = p.xp;
-                        document.getElementById('coins').innerText = p.coins;
-                        document.getElementById('lvl').innerText = Math.floor(p.xp/1000)+1;
-                        document.getElementById('progress').style.width = (p.xp%1000)/10 + "%";
+                        document.getElementById('player-name').innerText = p.nick || jogadorAtual;
+                        document.getElementById('xp').innerText = p.xp || 0;
+                        document.getElementById('coins').innerText = p.coins || 0;
+                        document.getElementById('lvl').innerText = Math.floor((p.xp||0)/1000)+1;
+                        document.getElementById('progress').style.width = ((p.xp||0)%1000)/10 + "%";
                     }
                     atualizarRanking();
                 });
 
+                // ESCUTA CONVITES
                 db.ref('velha_online').on('value', s => {
                     const salas = s.val();
                     for(let id in salas) {
@@ -151,9 +130,6 @@
                         }
                     }
                 });
-            } else {
-                document.getElementById('auth-screen').classList.remove('hidden');
-                document.getElementById('game-content').classList.add('hidden');
             }
         });
 
@@ -161,39 +137,33 @@
             const body = document.getElementById('ranking-body'); body.innerHTML = "";
             Object.keys(dadosGerais).forEach(id => {
                 const p = dadosGerais[id];
-                body.innerHTML += `<tr><td>${p.nick}</td><td>${Math.floor(p.xp/1000)+1}</td>
-                <td>${id !== jogadorAtual ? `<button onclick="desafiarVelha('${id}','${p.nick}')" style="background:var(--primary); font-size:11px">JOGAR VELHA</button>` : 'Você'}</td></tr>`;
+                body.innerHTML += `<tr><td>${p.nick || id}</td><td>${Math.floor((p.xp||0)/1000)+1}</td>
+                <td>${id !== jogadorAtual ? `<button onclick="desafiarVelha('${id}','${p.nick}')" style="background:var(--primary); font-size:10px">VELHA</button>` : 'Você'}</td></tr>`;
             });
         }
 
-        // LOGICA VELHA
+        // --- SISTEMA DA VELHA ---
         function desafiarVelha(idOponente, nickOponente) {
             salaAtiva = [jogadorAtual, idOponente].sort().join("_vs_");
             db.ref('velha_online/' + salaAtiva).set({
                 tabuleiro: ["","","","","","","","",""],
-                p1: jogadorAtual, p1_nick: dadosGerais[jogadorAtual].nick,
-                p2: idOponente, p2_nick: nickOponente,
-                turno: jogadorAtual, status: "convite", vencedor: ""
-            }).then(() => { abrirArenaVelha(); });
+                p1: jogadorAtual, p1_nick: dadosGerais[jogadorAtual].nick || jogadorAtual,
+                p2: idOponente, status: "convite", turno: jogadorAtual, vencedor: ""
+            }).then(() => { 
+                document.getElementById('arena-velha').style.display = 'flex';
+                ouvirJogo();
+            });
         }
 
-        function abrirArenaVelha() {
-            document.getElementById('arena-velha').style.display = 'flex';
+        function ouvirJogo() {
             db.ref('velha_online/' + salaAtiva).on('value', s => {
                 const d = s.val(); if(!d) return;
                 meuSimbolo = (d.p1 === jogadorAtual) ? "X" : "O";
                 const cells = document.querySelectorAll('.velha-cell');
-                d.tabuleiro.forEach((v, i) => { 
-                    cells[i].innerText = v;
-                    cells[i].style.color = (v === "X") ? "#3b82f6" : "#ef4444";
-                });
+                d.tabuleiro.forEach((v, i) => { cells[i].innerText = v; });
                 document.getElementById('velha-info').innerText = (d.turno === jogadorAtual) ? "SUA VEZ!" : "ESPERANDO...";
                 if(d.vencedor) {
-                    if(d.vencedor === "EMPATE") alert("Empatou!");
-                    else {
-                        alert(d.vencedor === jogadorAtual ? "VOCÊ VENCEU! +50 XP" : "VOCÊ PERDEU!");
-                        if(d.vencedor === jogadorAtual) db.ref('rpg_data/'+jogadorAtual).update({xp: (dadosGerais[jogadorAtual].xp+50)});
-                    }
+                    alert(d.vencedor === jogadorAtual ? "GANHOU!" : "PERDEU!");
                     sairVelha();
                 }
             });
@@ -202,34 +172,26 @@
         function cliqueVelha(i) {
             db.ref('velha_online/' + salaAtiva).get().then(s => {
                 const d = s.val();
-                if(!d || d.turno !== jogadorAtual || d.tabuleiro[i] !== "" || d.status !== "jogando") return;
+                if(!d || d.turno !== jogadorAtual || d.tabuleiro[i] !== "") return;
                 d.tabuleiro[i] = meuSimbolo;
-                const ganhou = checarWin(d.tabuleiro);
-                const empate = !ganhou && d.tabuleiro.every(c => c !== "");
                 db.ref('velha_online/' + salaAtiva).update({
                     tabuleiro: d.tabuleiro,
-                    turno: d.turno === d.p1 ? d.p2 : d.p1,
-                    vencedor: ganhou ? jogadorAtual : (empate ? "EMPATE" : "")
+                    turno: (jogadorAtual === d.p1) ? d.p2 : d.p1,
+                    status: "jogando"
                 });
             });
         }
 
-        function checarWin(b) {
-            const w = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-            return w.some(z => b[z[0]] && b[z[0]] === b[z[1]] && b[z[0]] === b[z[2]]);
-        }
-
-        function aceitarDesafio() { 
-            db.ref('velha_online/'+salaAtiva).update({status: "jogando"}).then(() => {
-                document.getElementById('convite-velha').style.display = 'none';
-                abrirArenaVelha();
+        function aceitarDesafio() {
+            document.getElementById('convite-velha').style.display = 'none';
+            db.ref('velha_online/' + salaAtiva).update({status: "jogando"}).then(() => {
+                document.getElementById('arena-velha').style.display = 'flex';
+                ouvirJogo();
             });
         }
+
         function recusarDesafio() { db.ref('velha_online/'+salaAtiva).remove(); document.getElementById('convite-velha').style.display = 'none'; }
-        function sairVelha() { 
-            document.getElementById('arena-velha').style.display = 'none'; 
-            if(salaAtiva) { db.ref('velha_online/'+salaAtiva).off(); db.ref('velha_online/'+salaAtiva).remove(); salaAtiva = null; }
-        }
+        function sairVelha() { document.getElementById('arena-velha').style.display='none'; if(salaAtiva) db.ref('velha_online/'+salaAtiva).remove(); }
     </script>
 </body>
 </html>
