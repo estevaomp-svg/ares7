@@ -50,103 +50,89 @@
         table { width: 100%; border-collapse: collapse; }
         th, td { border-bottom: 1px solid rgba(51, 65, 85, 0.5); padding: 12px 8px; text-align: left; }
         .hidden { display: none !important; }
+        .ad-banner { background: linear-gradient(45deg, #1e3a8a, #1e40af); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 10px; border: 1px solid #3b82f6; }
+        .ad-banner a { color: #ffffff; font-weight: bold; text-decoration: underline; display: block; margin-top: 5px; }
 
-        /* --- NOVO GRÁFICO DE DUELO (RPG STYLE) --- */
+        /* --- ESTILOS ARENA DE DUELO RPG --- */
         #arena-duelo { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: radial-gradient(circle, #1e293b 0%, #020617 100%); z-index: 2000; 
-            display: none; flex-direction: column; align-items: center; justify-content: center;
+            background: #0f172a; z-index: 2000; display: none; 
+            flex-direction: column; align-items: center; justify-content: space-around;
+            padding: 20px; box-sizing: border-box;
         }
-        .battle-stage { 
-            width: 95%; max-width: 500px; height: 400px; position: relative; 
-            background: url('https://i.ibb.co/3p0mXpC/battle-bg.png') center/cover; /* Exemplo de fundo de arena */
-            border: 4px solid #334155; border-radius: 20px; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.8);
+        .battle-stage { width: 100%; max-width: 400px; position: relative; height: 350px; background: rgba(255,255,255,0.05); border-radius: 20px; border: 1px solid #334155; }
+        .char-container { position: absolute; text-align: center; transition: 0.3s; width: 120px; }
+        #char-enemy { top: 30px; right: 20px; }
+        #char-player { bottom: 30px; left: 20px; }
+        .battle-img { width: 90px; height: 90px; border-radius: 50%; border: 4px solid white; object-fit: cover; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .hp-bg { width: 110px; height: 12px; background: #444; border-radius: 6px; margin-top: 8px; overflow: hidden; border: 1px solid #000; }
+        .hp-fill { height: 100%; background: var(--success); width: 100%; transition: 0.4s ease; }
+        .battle-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 400px; }
+        .btn-action { padding: 18px; border-radius: 12px; font-weight: bold; border: none; color: white; cursor: pointer; font-size: 16px; text-transform: uppercase; }
+        .btn-atk { background: var(--danger); box-shadow: 0 4px #991b1b; }
+        .btn-def { background: var(--primary); box-shadow: 0 4px #1e3a8a; }
+        #battle-log { 
+            background: rgba(0,0,0,0.7); width: 100%; max-width: 400px; height: 100px; 
+            padding: 15px; border-radius: 12px; font-size: 14px; overflow-y: auto; 
+            border: 1px solid var(--primary); color: #60a5fa; text-align: center;
         }
-        .char-container { position: absolute; text-align: center; width: 120px; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        #char-enemy { top: 15%; right: 10%; }
-        #char-player { bottom: 15%; left: 10%; }
-        .battle-img { width: 100px; height: 100px; border-radius: 50%; border: 4px solid #fff; box-shadow: 0 0 15px rgba(255,255,255,0.3); background: #111; }
-        
-        /* Orbes de Vida Estilo RPG */
-        .hud-orb { width: 70px; height: 70px; border-radius: 50%; border: 3px solid #334155; position: relative; overflow: hidden; background: #111; margin: 0 auto; }
-        .orb-fill { position: absolute; bottom: 0; width: 100%; transition: height 0.5s ease; }
-        .p-fill { background: linear-gradient(0deg, #ff0000, #ff4d4d); }
-        .e-fill { background: linear-gradient(0deg, #008000, #00ff00); }
-        .orb-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; text-shadow: 1px 1px #000; }
-
-        /* Números de Dano Popup */
-        .damage-pop {
-            position: absolute; color: #ffeb3b; font-size: 32px; font-weight: 900;
-            text-shadow: 3px 3px 0px #000; pointer-events: none; z-index: 100;
-            animation: floatDamage 0.8s ease-out forwards;
-        }
-        @keyframes floatDamage { 
-            0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-80px) scale(1.5); }
-        }
-
-        /* Efeito de Corte */
-        #slash-effect {
-            position: absolute; width: 200px; height: 10px; background: #fff;
-            box-shadow: 0 0 20px #fff; opacity: 0; pointer-events: none;
-            transform: rotate(-45deg); z-index: 99;
-        }
-        .slash-anim { animation: slashAct 0.3s linear; }
-        @keyframes slashAct { 0% { opacity: 0; width: 0; } 50% { opacity: 1; width: 300px; } 100% { opacity: 0; width: 400px; } }
-
-        .battle-log-rpg { 
-            width: 90%; max-width: 450px; background: rgba(0,0,0,0.8); border: 2px solid #3b82f6; 
-            margin-top: 15px; padding: 10px; border-radius: 10px; font-family: monospace; color: #60a5fa; text-align: center;
-        }
+        /* Animações */
+        .atacar-p { transform: translate(120px, -80px) scale(1.1); z-index: 10; }
+        .atacar-e { transform: translate(-120px, 80px) scale(1.1); z-index: 10; }
+        .dano-shake { animation: shake 0.3s; filter: brightness(2) red; }
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(5px);} 75% {transform: translateX(-5px);} }
     </style>
 </head>
 <body>
 
     <div id="arena-duelo">
-        <div id="slash-effect"></div>
+        <h1 style="color:var(--warning); margin:0; font-weight: 900;">ARENA DE DUELO</h1>
         <div class="battle-stage">
             <div id="char-enemy" class="char-container">
-                <div style="color: #4dff4d; font-weight: bold; margin-bottom: 5px;" id="name-e">Rival</div>
-                <div class="hud-orb">
-                    <div id="hp-e-fill" class="orb-fill e-fill"></div>
-                    <div id="hp-text-e" class="orb-text">0</div>
-                </div>
+                <div style="font-size: 13px; font-weight: bold; color:var(--danger)" id="name-e">Inimigo</div>
                 <img id="img-e" class="battle-img" src="">
+                <div class="hp-bg"><div id="hp-e-fill" class="hp-fill"></div></div>
+                <div id="hp-text-e" style="font-size:10px">0/0</div>
             </div>
-
             <div id="char-player" class="char-container">
+                <div id="hp-text-p" style="font-size:10px">0/0</div>
+                <div class="hp-bg"><div id="hp-p-fill" class="hp-fill"></div></div>
                 <img id="img-p" class="battle-img" src="">
-                <div class="hud-orb">
-                    <div id="hp-p-fill" class="orb-fill p-fill"></div>
-                    <div id="hp-text-p" class="orb-text">0</div>
-                </div>
-                <div style="color: #ff4d4d; font-weight: bold; margin-top: 5px;" id="name-p">Você</div>
+                <div style="font-size: 13px; font-weight: bold; color:var(--success)" id="name-p">Você</div>
             </div>
         </div>
-
-        <div id="battle-log" class="battle-log-rpg">Aguardando comando...</div>
-
-        <div class="battle-controls" style="margin-top:20px; display:flex; gap:10px;">
-            <button id="btn-atk" class="btn-action btn-atk" style="background:var(--danger); padding:20px 40px;" onclick="comandoBatalha('atacar')">ATACAR</button>
-            <button id="btn-fechar-duelo" class="btn-action hidden" style="background:var(--primary); padding:20px 40px;" onclick="fecharArena()">SAIR</button>
+        <div id="battle-log">Aguardando comando...</div>
+        <div class="battle-controls">
+            <button id="btn-atk" class="btn-action btn-atk" onclick="comandoBatalha('atacar')">Atacar</button>
+            <button id="btn-def" class="btn-action btn-def" onclick="comandoBatalha('defender')">Defender</button>
+            <button id="btn-fechar-duelo" class="btn-action hidden" style="background:#3b82f6; grid-column: span 2;" onclick="fecharArena()">Sair da Arena</button>
         </div>
+    </div>
+
+    <div class="ad-banner" style="background: linear-gradient(45deg, #ff0000, #cc0000);">
+        🎥 <b>CANAL ARES7</b>
+        <a href="https://www.youtube.com/aressama" target="_blank">Inscreva-se no Canal</a>
+    </div>
+    <div class="ad-banner">
+        📈 <b>INDICADOR ICARO SCALP</b>
+        <a href="https://linktr.ee/Ares7" target="_blank">Acesse o Indicador Aqui</a>
     </div>
 
     <div id="auth-screen" class="card" style="max-width:400px; margin: 20px auto;">
         <div id="login-area">
-            <h2 style="text-align:center">Ares RPG - Login</h2>
-            <input type="email" id="login-email" placeholder="E-mail">
-            <input type="password" id="login-pass" placeholder="Senha">
-            <button class="btn-auth" onclick="fazerLogin()">Entrar</button>
-            <p style="text-align:center">Novo? <a href="#" onclick="alternarTela(true)" style="color:#60a5fa">Criar Conta</a></p>
+            <h2 style="text-align:center">Entrar no RPG</h2>
+            <input type="email" id="login-email" placeholder="Seu E-mail">
+            <input type="password" id="login-pass" placeholder="Sua Senha">
+            <button class="btn-auth" onclick="fazerLogin()">Aceder</button>
+            <p style="text-align:center; font-size:14px">Novo? <a href="#" onclick="alternarTela(true)" style="color:#60a5fa">Criar Conta</a></p>
         </div>
         <div id="register-area" class="hidden">
-            <h2 style="text-align:center">Novo Player</h2>
+            <h2 style="text-align:center">Novo Player's</h2>
             <input type="text" id="reg-nick" placeholder="Nick do Personagem">
             <input type="email" id="reg-email" placeholder="E-mail">
             <input type="password" id="reg-pass" placeholder="Senha">
-            <button class="btn-auth" style="background:#22c55e" onclick="fazerCadastro()">Começar</button>
-            <p style="text-align:center">Já tem conta? <a href="#" onclick="alternarTela(false)" style="color:#60a5fa">Login</a></p>
+            <button class="btn-auth" style="background:#22c55e" onclick="fazerCadastro()">Começar Jornada</button>
+            <p style="text-align:center; font-size:14px">Já joga? <a href="#" onclick="alternarTela(false)" style="color:#60a5fa">Login</a></p>
         </div>
     </div>
 
@@ -155,7 +141,7 @@
             <div class="card header">
                 <div style="display:flex; justify-content:space-between; align-items:center">
                     <div style="display:flex; align-items:center; gap:10px">
-                        <img id="p-img" class="player-img" src="">
+                        <img id="p-img" class="player-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
                         <span>👤 <b><span id="player-name">---</span></b></span>
                     </div>
                     <button onclick="logout()" style="background:#ef4444; padding:5px 10px; font-size:12px">Sair</button>
@@ -171,6 +157,7 @@
             <div class="card">
                 <h3>🏆 Ranking de Honra</h3>
                 <table id="ranking-table">
+                    <thead><tr><th>#</th><th>Player's</th><th>Lvl</th><th>XP</th><th>Duelo</th></tr></thead>
                     <tbody id="ranking-body"></tbody>
                 </table>
             </div>
@@ -178,20 +165,44 @@
             <div class="card">
                 <h3>🔥 Evolução Física</h3>
                 <div id="grid-fisico" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
+                <div style="margin-top:20px; padding:15px; background:rgba(153, 27, 27, 0.3); border-radius:10px; border:1px solid #ef4444;">
+                    <h4 style="margin:0 0 5px 0; color:#fca5a5;">⚠️ Câmara de Penalidades</h4>
+                    <div style="display:flex; gap:10px;">
+                        <input type="number" id="input-penalidade" placeholder="Qtd">
+                        <button class="btn-penalty" onclick="aplicarPenalidade()">Corrigir</button>
+                    </div>
+                </div>
             </div>
-            
+
             <div class="card">
-                <h3>⚡ Missões Diárias</h3>
+                <h3>⚡ Missões Diárias (+10 XP)</h3>
                 <div id="lista-obrigatoria"></div>
+            </div>
+
+            <div class="card">
+                <h3>🛒 Arsenal (Loja)</h3>
+                <table id="tabela-loja"><tbody></tbody></table>
+            </div>
+
+            <div class="card">
+                <h3>📜 Missões Pessoais</h3>
+                <div id="lista-missoes-pessoais" style="margin-bottom:15px"></div>
+                <input type="text" id="missao-input" placeholder="Nova missão...">
+                <select id="cat-input">
+                    <option value="30">🚀 Épica (+30 XP)</option>
+                    <option value="15">⚙️ Comum (+15 XP)</option>
+                    <option value="-30">⚠️ Hábito Sombrio (-30 XP)</option>
+                </select>
+                <button onclick="addMissao()" style="background:#3b82f6; width:100%">Registar</button>
             </div>
         </div>
 
         <div id="tab-profile" class="hidden">
             <div class="card" style="text-align:center">
                 <h2>🎭 Editar Perfil</h2>
-                <img id="p-img-large" style="width:120px; height:120px; border-radius:50%; border:3px solid #3b82f6; object-fit:cover;" src="">
+                <img id="p-img-large" style="width:120px; height:120px; border-radius:50%; border:3px solid #3b82f6; margin-bottom:15px; object-fit:cover; background:#1e293b;" src="">
                 <input type="text" id="edit-nick" placeholder="Novo Nick">
-                <input type="text" id="edit-photo" placeholder="URL da Foto">
+                <input type="text" id="edit-photo" placeholder="Link da Foto">
                 <button onclick="salvarPerfil()" style="background:#22c55e; width:100%; margin-top:15px">Salvar</button>
             </div>
         </div>
@@ -203,7 +214,7 @@
     </div>
 
     <script>
-        // CONFIG FIREBASE (Suas chaves mantidas)
+        // CONFIG FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyBanevR51ejaTE0ccqlmlU6VRh7Qg4EETs",
             authDomain: "aresrpg-7daf4.firebaseapp.com",
@@ -217,172 +228,117 @@
         const db = firebase.database(), auth = firebase.auth();
         let jogadorAtual = "", dadosGerais = {};
 
-        // --- LÓGICA DE BATALHA COM ANIMAÇÃO RPG ---
+        // --- LÓGICA DE BATALHA RPG ---
         let batalhaAtiva = false;
-        let statsP = { hp: 0, maxHp: 0, atk: 0 };
-        let statsE = { hp: 0, maxHp: 0, atk: 0 };
+        let statsP = { hp: 0, maxHp: 0, atk: 0, def: false };
+        let statsE = { hp: 0, maxHp: 0, atk: 0, def: false };
         let idInimigoAtual = "";
 
-        function iniciarDuelo(id, nick) {
-            const p = dadosGerais[jogadorAtual], e = dadosGerais[id];
-            idInimigoAtual = id;
-            
-            // Vida e Ataque Baseados em XP (Estilo Arena)
-            statsP.maxHp = statsP.hp = 500 + (p.xp || 0);
-            statsE.maxHp = statsE.hp = 500 + (e.xp || 0);
-            statsP.atk = 50 + Math.floor((p.xp || 0) / 50);
-            statsE.atk = 50 + Math.floor((e.xp || 0) / 50);
+        function iniciarDuelo(idAdversario, nickAdversario) {
+            const p = dadosGerais[jogadorAtual];
+            const e = dadosGerais[idAdversario];
+            idInimigoAtual = idAdversario;
 
-            document.getElementById('name-p').innerText = p.nick;
-            document.getElementById('name-e').innerText = nick;
+            const lvlP = Math.floor((p.xp || 0) / 1000) + 1;
+            const lvlE = Math.floor((e.xp || 0) / 1000) + 1;
+
+            // STATUS BASEADOS EM LEVEL/XP (LUTA LONGA)
+            statsP.maxHp = statsP.hp = (lvlP * 1500) + (p.xp || 0);
+            statsE.maxHp = statsE.hp = (lvlE * 1500) + (e.xp || 0);
+            statsP.atk = Math.floor((lvlP * 50) + ((p.xp || 0) / 40));
+            statsE.atk = Math.floor((lvlE * 50) + ((e.xp || 0) / 40));
+
+            document.getElementById('name-p').innerText = `${p.nick || "Você"} Lv.${lvlP}`;
+            document.getElementById('name-e').innerText = `${nickAdversario} Lv.${lvlE}`;
             document.getElementById('img-p').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
             document.getElementById('img-e').src = e.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-
+            
             atualizarBarras();
+            document.getElementById('battle-log').innerHTML = "Batalha iniciada!<br>Sua vez de agir.";
             document.getElementById('arena-duelo').style.display = 'flex';
-            document.getElementById('btn-atk').classList.remove('hidden');
             document.getElementById('btn-fechar-duelo').classList.add('hidden');
-            document.getElementById('battle-log').innerText = "Duelo Iniciado! Sua vez.";
+            document.getElementById('btn-atk').disabled = false;
+            document.getElementById('btn-def').disabled = false;
             batalhaAtiva = true;
         }
 
         function atualizarBarras() {
-            document.getElementById('hp-p-fill').style.height = (statsP.hp / statsP.maxHp * 100) + "%";
-            document.getElementById('hp-e-fill').style.height = (statsE.hp / statsE.maxHp * 100) + "%";
-            document.getElementById('hp-text-p').innerText = Math.max(0, statsP.hp);
-            document.getElementById('hp-text-e').innerText = Math.max(0, statsE.hp);
+            document.getElementById('hp-p-fill').style.width = (statsP.hp / statsP.maxHp * 100) + "%";
+            document.getElementById('hp-e-fill').style.width = (statsE.hp / statsE.maxHp * 100) + "%";
+            document.getElementById('hp-text-p').innerText = `${Math.max(0, statsP.hp)} / ${statsP.maxHp}`;
+            document.getElementById('hp-text-e').innerText = `${Math.max(0, statsE.hp)} / ${statsE.maxHp}`;
         }
 
         function comandoBatalha(tipo) {
-            if(!batalhaAtiva) return;
+            if (!batalhaAtiva) return;
+            const log = document.getElementById('battle-log');
             document.getElementById('btn-atk').disabled = true;
+            document.getElementById('btn-def').disabled = true;
 
-            // Animação Ataque Player
-            const pChar = document.getElementById('char-player');
-            pChar.style.transform = "translate(50px, -50px) scale(1.2)";
-            
-            setTimeout(() => {
-                pChar.style.transform = "translate(0, 0) scale(1)";
-                exibirEfeitoCorte();
-                
-                let dano = statsP.atk + Math.floor(Math.random() * 30);
-                statsE.hp -= dano;
-                spawnDamage(dano, 'char-enemy');
-                atualizarBarras();
-
-                if(statsE.hp <= 0) return finalizar(true);
-
-                // Turno Inimigo
-                document.getElementById('battle-log').innerText = "Inimigo atacando...";
+            if (tipo === 'atacar') {
+                document.getElementById('char-player').classList.add('atacar-p');
                 setTimeout(() => {
-                    const eChar = document.getElementById('char-enemy');
-                    eChar.style.transform = "translate(-50px, 50px) scale(1.2)";
-                    
-                    setTimeout(() => {
-                        eChar.style.transform = "translate(0, 0) scale(1)";
-                        let danoE = statsE.atk + Math.floor(Math.random() * 30);
-                        statsP.hp -= danoE;
-                        spawnDamage(danoE, 'char-player');
-                        atualizarBarras();
-                        
-                        if(statsP.hp <= 0) return finalizar(false);
-                        
-                        document.getElementById('btn-atk').disabled = false;
-                        document.getElementById('battle-log').innerText = "Sua vez!";
-                    }, 300);
-                }, 800);
-            }, 300);
-        }
-
-        function spawnDamage(val, targetId) {
-            const target = document.getElementById(targetId);
-            const pop = document.createElement('div');
-            pop.className = 'damage-pop';
-            pop.innerText = `-${val}`;
-            pop.style.left = "50%"; pop.style.top = "0";
-            target.appendChild(pop);
-            setTimeout(() => pop.remove(), 800);
-        }
-
-        function exibirEfeitoCorte() {
-            const slash = document.getElementById('slash-effect');
-            slash.style.left = "40%"; slash.style.top = "30%";
-            slash.classList.add('slash-anim');
-            setTimeout(() => slash.classList.remove('slash-anim'), 300);
-        }
-
-        function finalizar(venceu) {
-            batalhaAtiva = false;
-            document.getElementById('battle-log').innerHTML = venceu ? "<b style='color:gold'>VITÓRIA! +10 XP</b>" : "<b style='color:red'>DERROTA...</b>";
-            if(venceu) {
-                const p = dadosGerais[jogadorAtual];
-                db.ref('rpg_data/'+jogadorAtual).update({ xp: (p.xp||0)+10, coins: (p.coins||0)+10 });
+                    document.getElementById('char-player').classList.remove('atacar-p');
+                    let dano = statsP.atk + Math.floor(Math.random() * 20);
+                    statsE.hp -= dano;
+                    log.innerHTML = `Você causou <b>${dano}</b> de dano!`;
+                    document.getElementById('char-enemy').classList.add('dano-shake');
+                    setTimeout(() => document.getElementById('char-enemy').classList.remove('dano-shake'), 300);
+                    atualizarBarras();
+                    if (!verificarFim()) setTimeout(turnoInimigo, 1200);
+                }, 400);
+            } else {
+                statsP.def = true;
+                log.innerHTML = "Você se defendeu! Dano inimigo será reduzido.";
+                setTimeout(turnoInimigo, 1200);
             }
-            document.getElementById('btn-fechar-duelo').classList.remove('hidden');
-            document.getElementById('btn-atk').classList.add('hidden');
+        }
+
+        function turnoInimigo() {
+            if (!batalhaAtiva) return;
+            const log = document.getElementById('battle-log');
+            document.getElementById('char-enemy').classList.add('atacar-e');
+
+            setTimeout(() => {
+                document.getElementById('char-enemy').classList.remove('atacar-e');
+                let dano = statsE.atk + Math.floor(Math.random() * 20);
+                if (statsP.def) { dano = Math.floor(dano * 0.4); statsP.def = false; }
+                
+                statsP.hp -= dano;
+                log.innerHTML += `<br>Inimigo causou <b>${dano}</b> de dano!`;
+                document.getElementById('char-player').classList.add('dano-shake');
+                setTimeout(() => document.getElementById('char-player').classList.remove('dano-shake'), 300);
+                atualizarBarras();
+                
+                if (!verificarFim()) {
+                    document.getElementById('btn-atk').disabled = false;
+                    document.getElementById('btn-def').disabled = false;
+                }
+            }, 400);
+        }
+
+        function verificarFim() {
+            if (statsE.hp <= 0) {
+                document.getElementById('battle-log').innerHTML = "🏆 <b>VITÓRIA!</b><br>Você ganhou +5 XP!";
+                batalhaAtiva = false;
+                const p = dadosGerais[jogadorAtual];
+                db.ref('rpg_data/' + jogadorAtual).update({ xp: (p.xp || 0) + 5, coins: (p.coins || 0) + 5 });
+                db.ref('notificacoes/' + idInimigoAtual).set({ de: p.nick || jogadorAtual, resultado: "perdeu" });
+                document.getElementById('btn-fechar-duelo').classList.remove('hidden');
+                return true;
+            } else if (statsP.hp <= 0) {
+                document.getElementById('battle-log').innerHTML = "💀 <b>DERROTA!</b><br>O oponente venceu.";
+                batalhaAtiva = false;
+                db.ref('notificacoes/' + idInimigoAtual).set({ de: dadosGerais[jogadorAtual].nick || jogadorAtual, resultado: "ganhou" });
+                document.getElementById('btn-fechar-duelo').classList.remove('hidden');
+                return true;
+            }
+            return false;
         }
 
         function fecharArena() { document.getElementById('arena-duelo').style.display = 'none'; }
 
-        // --- SISTEMA DE AUTH E SYNC (Igual ao seu) ---
-        function limparNome(e) { return e.split('@')[0].replace(/[.#$[\]]/g, "_"); }
-        function alternarTela(c) { document.getElementById('login-area').className = c?'hidden':''; document.getElementById('register-area').className = c?'':'hidden'; }
-        
-        function fazerLogin() {
-            const e = document.getElementById('login-email').value, p = document.getElementById('login-pass').value;
-            auth.signInWithEmailAndPassword(e, p).catch(err => alert("Erro!"));
-        }
-
-        function fazerCadastro() {
-            const nick = document.getElementById('reg-nick').value;
-            const e = document.getElementById('reg-email').value, p = document.getElementById('reg-pass').value;
-            if(!nick) return alert("Nick!");
-            auth.createUserWithEmailAndPassword(e,p).then(() => {
-                db.ref('rpg_data/'+limparNome(e)).set({ nick: nick, xp: 0, coins: 0, photo: "" });
-            });
-        }
-
-        auth.onAuthStateChanged(u => {
-            if(u) {
-                jogadorAtual = limparNome(u.email);
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('game-content').classList.remove('hidden');
-                db.ref('rpg_data').on('value', s => { 
-                    dadosGerais = s.val() || {}; 
-                    atualizarTela(); 
-                    atualizarRanking(); 
-                });
-            } else {
-                document.getElementById('auth-screen').classList.remove('hidden');
-                document.getElementById('game-content').classList.add('hidden');
-            }
-        });
-
-        function atualizarRanking() {
-            const tb = document.getElementById('ranking-body'); tb.innerHTML = "";
-            Object.keys(dadosGerais).sort((a,b) => (dadosGerais[b].xp||0) - (dadosGerais[a].xp||0)).forEach((k, i) => {
-                const p = dadosGerais[k];
-                tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.nick}</td><td>Lv.${Math.floor((p.xp||0)/1000)+1}</td>
-                <td>${k !== jogadorAtual ? `<button onclick="iniciarDuelo('${k}','${p.nick}')" style="background:red; padding:4px 8px;">Lutar</button>` : 'Você'}</td></tr>`;
-            });
-        }
-
-        function atualizarTela() {
-            const p = dadosGerais[jogadorAtual] || {xp:0, coins:0};
-            document.getElementById('player-name').innerText = p.nick || "---";
-            document.getElementById('xp').innerText = p.xp || 0;
-            document.getElementById('coins').innerText = p.coins || 0;
-            document.getElementById('lvl').innerText = Math.floor((p.xp||0)/1000)+1;
-            document.getElementById('progress').style.width = ((p.xp||0)%1000)/10 + "%";
-            document.getElementById('p-img').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-            
-            // Render de Treinos Diários (Simplificado para o exemplo)
-            const dO = document.getElementById('lista-obrigatoria'); dO.innerHTML = "";
-            ["Treino", "Estudo"].forEach(n => {
-                dO.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:5px"><span>${n}</span><button class="btn-check" onclick="alert('Funcionalidade de Missão Ativa!')">✔</button></div>`;
-            });
-        }
-
+        // --- FUNÇÕES DE NAVEGAÇÃO E AUTH ---
         function mudarAba(aba) {
             document.getElementById('tab-home').classList.toggle('hidden', aba !== 'home');
             document.getElementById('tab-profile').classList.toggle('hidden', aba !== 'profile');
@@ -390,11 +346,154 @@
             document.getElementById('nav-profile').classList.toggle('active', aba === 'profile');
         }
 
-        function salvarPerfil() {
-            const n = document.getElementById('edit-nick').value, f = document.getElementById('edit-photo').value;
-            db.ref('rpg_data/'+jogadorAtual).update({ nick: n, photo: f }).then(() => alert("Salvo!"));
+        function limparNome(e) { return e.split('@')[0].replace(/[.#$[\]]/g, "_"); }
+        function alternarTela(c) { document.getElementById('login-area').className = c?'hidden':''; document.getElementById('register-area').className = c?'':'hidden'; }
+
+        function fazerLogin() {
+            const e = document.getElementById('login-email').value, p = document.getElementById('login-pass').value;
+            auth.signInWithEmailAndPassword(e, p).catch(err => alert("Erro ao entrar!"));
         }
 
+        function fazerCadastro() {
+            const nick = document.getElementById('reg-nick').value;
+            const e = document.getElementById('reg-email').value, p = document.getElementById('reg-pass').value;
+            if(!nick) return alert("Escolha um Nick!");
+            auth.createUserWithEmailAndPassword(e,p).then(() => {
+                db.ref('rpg_data/'+limparNome(e)).set({
+                    nick: nick, photo: "", xp: 0, coins: 0,
+                    records: { supino: 20, puxada: 20, remada: 20, elevacao_halters: 4, leg_press: 30, hack: 40, extensora: 20, panturrilha: 40, flexao: 10, barra: 10, agachamentoLivre: 10, stamina: 10 }
+                });
+            }).catch(err => alert("Erro no cadastro!"));
+        }
+
+        auth.onAuthStateChanged(u => {
+            if(u) {
+                jogadorAtual = limparNome(u.email);
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('game-content').classList.remove('hidden');
+                db.ref('rpg_data').on('value', s => { dadosGerais = s.val() || {}; atualizarTela(); atualizarRanking(); });
+                db.ref('notificacoes/' + jogadorAtual).on('value', s => {
+                    const n = s.val();
+                    if(n) {
+                        alert(`⚔️ Resultado do Duelo: Você ${n.resultado} de ${n.de}!`);
+                        db.ref('notificacoes/' + jogadorAtual).remove();
+                    }
+                });
+            } else {
+                document.getElementById('auth-screen').classList.remove('hidden');
+                document.getElementById('game-content').classList.add('hidden');
+            }
+        });
+
+        // --- ATUALIZAÇÃO DA TELA (RESTAURADO) ---
+        function atualizarRanking() {
+            const tb = document.getElementById('ranking-body'); tb.innerHTML = "";
+            Object.keys(dadosGerais).map(k => ({id: k, n: dadosGerais[k].nick || k, xp: dadosGerais[k].xp || 0}))
+            .sort((a,b) => b.xp - a.xp).forEach((p, i) => {
+                tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.n}</td><td>${Math.floor(p.xp/1000)+1}</td><td>${p.xp}</td>
+                <td>${p.id !== jogadorAtual ? `<button onclick="iniciarDuelo('${p.id}','${p.n}')" style="background:#ef4444; padding:5px;">Lutar</button>` : '-'}</td></tr>`;
+            });
+        }
+
+        function atualizarTela() {
+            const p = dadosGerais[jogadorAtual] || {xp:0, coins:0, missoes:[], records:{}};
+            const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
+            document.getElementById('player-name').innerText = p.nick || jogadorAtual;
+            document.getElementById('xp').innerText = p.xp || 0;
+            document.getElementById('coins').innerText = p.coins || 0;
+            document.getElementById('lvl').innerText = Math.floor((p.xp || 0)/1000)+1;
+            document.getElementById('progress').style.width = ((p.xp || 0)%1000)/10 + "%";
+            document.getElementById('p-img').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            document.getElementById('p-img-large').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+
+            const dO = document.getElementById('lista-obrigatoria'); dO.innerHTML = "";
+            ["Treino Fisico", "Trabalho", "Estudo"].forEach(n => {
+                const id = `d-${n}-${hoje}`, feito = (p.missoes||[]).some(m => m.id === id && m.concluida);
+                dO.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:8px"><span>${n}</span><button class="${feito?'btn-done':'btn-check'}" onclick="concluirMissao('${id}', 10, true)" ${feito?'disabled':''}>${feito?'OK':'✔'}</button></div>`;
+            });
+
+            const g = document.getElementById('grid-fisico'); g.innerHTML = "";
+            const exArr = [
+                {id:'supino', n:'💪 Supino Reto/Máq', m:'kg', c:'#3b82f6', d:20}, {id:'puxada', n:'👐 Puxada Aberta', m:'kg', c:'#3b82f6', d:20}, {id:'remada', n:'🚣 Remada', m:'kg', c:'#3b82f6', d:20}, {id:'elevacao_halters', n:'🦋 Elevação Halters', m:'kg', c:'#3b82f6', d:4},
+                {id:'leg_press', n:'🦵 Leg Press 45', m:'kg', c:'#f59e0b', d:30}, {id:'hack', n:'🍑 Hack Machine', m:'kg', c:'#f59e0b', d:40}, {id:'extensora', n:'🦵 Extensora', m:'kg', c:'#f59e0b', d:20}, {id:'panturrilha', n:'🦶 Panturrilha', m:'kg', c:'#f59e0b', d:40},
+                {id:'flexao', n:'🧘 Flexão Braço', m:'reps', c:'#10b981', d:10}, {id:'barra', n:'🧗 Barra Fixa', m:'reps', c:'#10b981', d:10}, {id:'agachamentoLivre', n:'🤸 Agach. Livre', m:'reps', c:'#10b981', d:10}, {id:'stamina', n:'🏃‍♀️ Cardio/Dança', m:'min', c:'#ec4899', d:10}
+            ];
+            exArr.forEach(ex => {
+                const r = (p.records && p.records[ex.id]) !== undefined ? p.records[ex.id] : ex.d;
+                g.innerHTML += `<div class="stat-box" style="border-top: 3px solid ${ex.c}; background: rgba(255,255,255,0.03);">
+                    <b style="color:${ex.c}; font-size:11px;">${ex.n}</b><br><span style="font-size: 10px; color:#94a3b8;">Recorde: ${r}${ex.m}</span>
+                    <div style="display:flex; gap:3px; margin-top:5px;"><input type="number" id="in-${ex.id}" placeholder="+" style="width:55%; height:25px; font-size:12px;"><button class="btn-physic" style="background:${ex.c}; height:25px; width:45%; margin:0; font-size:10px;" onclick="upFisico('${ex.id}','${ex.m}',${r})">UP</button></div></div>`;
+            });
+
+            const dP = document.getElementById('lista-missoes-pessoais'); dP.innerHTML = "";
+            (p.missoes || []).filter(m => m.id.startsWith('m-')).forEach(m => {
+                dP.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;">
+                <span>${m.nome}</span><div><button class="${m.concluida?'btn-done':'btn-check'}" onclick="concluirMissao('${m.id}', ${m.valor})" ${m.concluida?'disabled':''}>✔</button><button class="btn-del" onclick="removerMissao('${m.id}')">🗑️</button></div></div>`;
+            });
+
+            const tL = document.querySelector('#tabela-loja tbody'); tL.innerHTML = "";
+            [{n:'Passear',p:900},{n:'Presente',p:5000},{n:'Lanche',p:400}].forEach(i => {
+                tL.innerHTML += `<tr><td>${i.n}</td><td>💰${i.p}</td><td><button class="btn-buy" onclick="comprar(${i.p},'${i.n}')">Resgatar</button></td></tr>`;
+            });
+        }
+
+        // TRAVAS ANTI-TRAPAÇA (RESTAURADO)
+        function upFisico(id, m, r) {
+            const inputField = document.getElementById('in-'+id);
+            const v = parseInt(inputField.value);
+            const p = dadosGerais[jogadorAtual];
+            if(!v || v <= r) return alert("Supera o recorde!");
+            const agora = Date.now();
+            const ultimoTreino = (p.last_train && p.last_train[id]) ? p.last_train[id] : 0;
+            if ((agora - ultimoTreino) / (1000 * 60 * 60) < 20) return alert("Descanso muscular! Tente em 20h.");
+            if((v - r) > 50) return alert("Aumento suspeito!");
+
+            let mult = (id === 'elevacao_halters') ? 500 : 100;
+            let g = (m==='kg') ? (v-r)*mult : (v-r)*45;
+            const rec = {...(p.records || {})}; rec[id] = v;
+            const treinos = {...(p.last_train || {})}; treinos[id] = agora;
+
+            db.ref('rpg_data/'+jogadorAtual).update({ xp: (p.xp || 0) + g, coins: (p.coins || 0) + g, records: rec, last_train: treinos })
+            .then(() => { alert(`UP de ${g} XP!`); inputField.value = ""; });
+        }
+
+        function concluirMissao(id, v, d=false) {
+            const p = dadosGerais[jogadorAtual], ms = p.missoes || [];
+            let m = ms.find(x => x.id === id);
+            if(!m && d) { ms.push({id, nome:id.split('-')[1], valor:10, concluida:true}); db.ref('rpg_data/'+jogadorAtual).update({xp:(p.xp||0)+10, coins:(p.coins||0)+10, missoes:ms}); }
+            else if(m && !m.concluida) { m.concluida = true; db.ref('rpg_data/'+jogadorAtual).update({xp:(p.xp||0)+v, coins:(p.coins||0)+(v>0?v:0), missoes:ms}); }
+        }
+
+        function removerMissao(id) {
+            const ms = (dadosGerais[jogadorAtual].missoes || []).filter(m => m.id !== id);
+            db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms);
+        }
+
+        function aplicarPenalidade() {
+            const qtd = parseInt(document.getElementById('input-penalidade').value);
+            if(!qtd) return;
+            const p = dadosGerais[jogadorAtual];
+            db.ref('rpg_data/'+jogadorAtual).update({ xp: Math.max(0, (p.xp||0) - (qtd*300)), coins: Math.max(0, (p.coins||0) - (qtd*300)) });
+        }
+
+        function addMissao() {
+            const n = document.getElementById('missao-input').value, v = parseInt(document.getElementById('cat-input').value);
+            if(!n) return;
+            const ms = dadosGerais[jogadorAtual].missoes || [];
+            ms.push({ id:'m-'+Date.now(), nome:n, valor:v, concluida:false });
+            db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms);
+        }
+
+        function comprar(pr, n) {
+            const p = dadosGerais[jogadorAtual];
+            if(p.coins >= pr) { db.ref('rpg_data/'+jogadorAtual).update({coins:p.coins-pr}); alert("Resgatado!"); }
+            else alert("Moedas insuficientes!");
+        }
+
+        function salvarPerfil() {
+            const n = document.getElementById('edit-nick').value, f = document.getElementById('edit-photo').value.trim();
+            db.ref('rpg_data/'+jogadorAtual).update({ nick: n, photo: f }).then(() => { alert("Perfil Atualizado!"); mudarAba('home'); });
+        }
         function logout() { auth.signOut(); }
     </script>
 </body>
