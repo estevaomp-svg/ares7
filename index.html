@@ -76,14 +76,43 @@
             padding: 15px; border-radius: 12px; font-size: 14px; overflow-y: auto; 
             border: 1px solid var(--primary); color: #60a5fa; text-align: center;
         }
-        /* Animações */
         .atacar-p { transform: translate(120px, -80px) scale(1.1); z-index: 10; }
         .atacar-e { transform: translate(-120px, 80px) scale(1.1); z-index: 10; }
         .dano-shake { animation: shake 0.3s; filter: brightness(2) red; }
         @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(5px);} 75% {transform: translateX(-5px);} }
+
+        /* --- ESTILOS JOGO DA VELHA ONLINE --- */
+        #arena-velha { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.98); z-index:3000; display:none; flex-direction:column; align-items:center; justify-content:center; }
+        .velha-grid { display: grid; grid-template-columns: repeat(3, 100px); grid-template-rows: repeat(3, 100px); gap: 10px; margin: 20px; }
+        .velha-cell { background: #1e293b; border: 2px solid #3b82f6; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; cursor: pointer; }
+        .velha-cell:hover { background: #334155; }
+        #convite-velha { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #fbbf24; color: #000; padding: 15px; border-radius: 12px; z-index: 4000; display: none; box-shadow: 0 0 20px rgba(0,0,0,0.5); font-weight: bold; text-align: center; }
     </style>
 </head>
 <body>
+
+    <div id="convite-velha">
+        <span id="msg-convite">Alguém te desafiou!</span><br><br>
+        <button onclick="aceitarDesafio()" style="background:green">ACEITAR</button>
+        <button onclick="recusarDesafio()" style="background:red">RECUSAR</button>
+    </div>
+
+    <div id="arena-velha">
+        <h2 style="color:var(--warning)">VELHA ONLINE</h2>
+        <p id="velha-info">Aguardando...</p>
+        <div class="velha-grid" id="velha-tabuleiro">
+            <div class="velha-cell" onclick="cliqueVelha(0)"></div>
+            <div class="velha-cell" onclick="cliqueVelha(1)"></div>
+            <div class="velha-cell" onclick="cliqueVelha(2)"></div>
+            <div class="velha-cell" onclick="cliqueVelha(3)"></div>
+            <div class="velha-cell" onclick="cliqueVelha(4)"></div>
+            <div class="velha-cell" onclick="cliqueVelha(5)"></div>
+            <div class="velha-cell" onclick="cliqueVelha(6)"></div>
+            <div class="velha-cell" onclick="cliqueVelha(7)"></div>
+            <div class="velha-cell" onclick="cliqueVelha(8)"></div>
+        </div>
+        <button onclick="sairVelha()" style="background:var(--danger)">Sair do Jogo</button>
+    </div>
 
     <div id="arena-duelo">
         <h1 style="color:var(--warning); margin:0; font-weight: 900;">ARENA DE DUELO</h1>
@@ -157,7 +186,7 @@
             <div class="card">
                 <h3>🏆 Ranking de Honra</h3>
                 <table id="ranking-table">
-                    <thead><tr><th>#</th><th>Player's</th><th>Lvl</th><th>XP</th><th>Duelo</th></tr></thead>
+                    <thead><tr><th>#</th><th>Player's</th><th>Lvl</th><th>XP</th><th>Duelos</th></tr></thead>
                     <tbody id="ranking-body"></tbody>
                 </table>
             </div>
@@ -228,7 +257,91 @@
         const db = firebase.database(), auth = firebase.auth();
         let jogadorAtual = "", dadosGerais = {};
 
-        // --- LÓGICA DE BATALHA RPG ---
+        // --- LÓGICA JOGO DA VELHA ONLINE ---
+        let salaAtiva = null;
+        let meuSimbolo = "";
+        let turnoOponente = "";
+
+        function desafiarVelha(idOponente) {
+            const idSala = [jogadorAtual, idOponente].sort().join("_vs_");
+            db.ref('velha_online/' + idSala).set({
+                tabuleiro: ["","","","","","","","",""],
+                p1: jogadorAtual,
+                p2: idOponente,
+                turno: jogadorAtual,
+                status: "convite",
+                vencedor: ""
+            });
+            salaAtiva = idSala;
+            meuSimbolo = "X";
+            abrirArenaVelha();
+        }
+
+        function abrirArenaVelha() {
+            document.getElementById('arena-velha').style.display = 'flex';
+            db.ref('velha_online/' + salaAtiva).on('value', s => {
+                const d = s.val();
+                if(!d) return;
+                
+                // Atualiza visual
+                const cells = document.querySelectorAll('.velha-cell');
+                d.tabuleiro.forEach((v, i) => {
+                    cells[i].innerText = v;
+                    cells[i].style.color = (v === "X") ? "#3b82f6" : "#ef4444";
+                });
+
+                document.getElementById('velha-info').innerText = (d.turno === jogadorAtual) ? "SUA VEZ!" : "Vez do Oponente...";
+                
+                if(d.vencedor) {
+                    alert(d.vencedor === jogadorAtual ? "Você Ganhou +10 XP!" : "Você Perdeu!");
+                    if(d.vencedor === jogadorAtual) db.ref('rpg_data/'+jogadorAtual).update({xp: (dadosGerais[jogadorAtual].xp||0)+10});
+                    sairVelha();
+                }
+            });
+        }
+
+        function cliqueVelha(i) {
+            db.ref('velha_online/' + salaAtiva).get().then(s => {
+                const d = s.val();
+                if(d.turno !== jogadorAtual || d.tabuleiro[i] !== "" || d.vencedor) return;
+                
+                let novoTab = d.tabuleiro;
+                novoTab[i] = (d.p1 === jogadorAtual) ? "X" : "O";
+                let proxTurno = (jogadorAtual === d.p1) ? d.p2 : d.p1;
+                
+                // Checar vitória
+                let win = checarWin(novoTab);
+                db.ref('velha_online/' + salaAtiva).update({
+                    tabuleiro: novoTab,
+                    turno: proxTurno,
+                    vencedor: win ? jogadorAtual : ""
+                });
+            });
+        }
+
+        function checarWin(b) {
+            const combos = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            return combos.some(c => b[c[0]] && b[c[0]] === b[c[1]] && b[c[0]] === b[c[2]]);
+        }
+
+        function aceitarDesafio() {
+            db.ref('velha_online/' + salaAtiva).update({status: "jogando"});
+            document.getElementById('convite-velha').style.display = 'none';
+            abrirArenaVelha();
+        }
+
+        function recusarDesafio() {
+            db.ref('velha_online/' + salaAtiva).remove();
+            document.getElementById('convite-velha').style.display = 'none';
+        }
+
+        function sairVelha() {
+            if(salaAtiva) db.ref('velha_online/' + salaAtiva).off();
+            document.getElementById('arena-velha').style.display = 'none';
+            salaAtiva = null;
+        }
+
+        // --- LÓGICA DE BATALHA RPG (MANTIDA) ---
         let batalhaAtiva = false;
         let statsP = { hp: 0, maxHp: 0, atk: 0, def: false };
         let statsE = { hp: 0, maxHp: 0, atk: 0, def: false };
@@ -238,21 +351,16 @@
             const p = dadosGerais[jogadorAtual];
             const e = dadosGerais[idAdversario];
             idInimigoAtual = idAdversario;
-
             const lvlP = Math.floor((p.xp || 0) / 1000) + 1;
             const lvlE = Math.floor((e.xp || 0) / 1000) + 1;
-
-            // STATUS BASEADOS EM LEVEL/XP (LUTA LONGA)
             statsP.maxHp = statsP.hp = (lvlP * 1500) + (p.xp || 0);
             statsE.maxHp = statsE.hp = (lvlE * 1500) + (e.xp || 0);
             statsP.atk = Math.floor((lvlP * 50) + ((p.xp || 0) / 40));
             statsE.atk = Math.floor((lvlE * 50) + ((e.xp || 0) / 40));
-
             document.getElementById('name-p').innerText = `${p.nick || "Você"} Lv.${lvlP}`;
             document.getElementById('name-e').innerText = `${nickAdversario} Lv.${lvlE}`;
             document.getElementById('img-p').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
             document.getElementById('img-e').src = e.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-            
             atualizarBarras();
             document.getElementById('battle-log').innerHTML = "Batalha iniciada!<br>Sua vez de agir.";
             document.getElementById('arena-duelo').style.display = 'flex';
@@ -274,7 +382,6 @@
             const log = document.getElementById('battle-log');
             document.getElementById('btn-atk').disabled = true;
             document.getElementById('btn-def').disabled = true;
-
             if (tipo === 'atacar') {
                 document.getElementById('char-player').classList.add('atacar-p');
                 setTimeout(() => {
@@ -298,18 +405,15 @@
             if (!batalhaAtiva) return;
             const log = document.getElementById('battle-log');
             document.getElementById('char-enemy').classList.add('atacar-e');
-
             setTimeout(() => {
                 document.getElementById('char-enemy').classList.remove('atacar-e');
                 let dano = statsE.atk + Math.floor(Math.random() * 20);
                 if (statsP.def) { dano = Math.floor(dano * 0.4); statsP.def = false; }
-                
                 statsP.hp -= dano;
                 log.innerHTML += `<br>Inimigo causou <b>${dano}</b> de dano!`;
                 document.getElementById('char-player').classList.add('dano-shake');
                 setTimeout(() => document.getElementById('char-player').classList.remove('dano-shake'), 300);
                 atualizarBarras();
-                
                 if (!verificarFim()) {
                     document.getElementById('btn-atk').disabled = false;
                     document.getElementById('btn-def').disabled = false;
@@ -338,7 +442,7 @@
 
         function fecharArena() { document.getElementById('arena-duelo').style.display = 'none'; }
 
-        // --- FUNÇÕES DE NAVEGAÇÃO E AUTH ---
+        // --- SISTEMA DE LOGIN E RANKING (MANTIDO E ADAPTADO) ---
         function mudarAba(aba) {
             document.getElementById('tab-home').classList.toggle('hidden', aba !== 'home');
             document.getElementById('tab-profile').classList.toggle('hidden', aba !== 'profile');
@@ -371,7 +475,24 @@
                 jogadorAtual = limparNome(u.email);
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('game-content').classList.remove('hidden');
+                
+                // Monitoramento Global
                 db.ref('rpg_data').on('value', s => { dadosGerais = s.val() || {}; atualizarTela(); atualizarRanking(); });
+                
+                // Monitorar Convites de Jogo da Velha
+                db.ref('velha_online').on('value', s => {
+                    const salas = s.val();
+                    for(let id in salas) {
+                        if(salas[id].p2 === jogadorAtual && salas[id].status === "convite") {
+                            salaAtiva = id;
+                            meuSimbolo = "O";
+                            document.getElementById('msg-convite').innerText = `${salas[id].p1} te desafiou na Velha!`;
+                            document.getElementById('convite-velha').style.display = 'block';
+                        }
+                    }
+                });
+
+                // Notificações de Duelo RPG
                 db.ref('notificacoes/' + jogadorAtual).on('value', s => {
                     const n = s.val();
                     if(n) {
@@ -385,16 +506,21 @@
             }
         });
 
-        // --- ATUALIZAÇÃO DA TELA (RESTAURADO) ---
         function atualizarRanking() {
             const tb = document.getElementById('ranking-body'); tb.innerHTML = "";
             Object.keys(dadosGerais).map(k => ({id: k, n: dadosGerais[k].nick || k, xp: dadosGerais[k].xp || 0}))
             .sort((a,b) => b.xp - a.xp).forEach((p, i) => {
                 tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.n}</td><td>${Math.floor(p.xp/1000)+1}</td><td>${p.xp}</td>
-                <td>${p.id !== jogadorAtual ? `<button onclick="iniciarDuelo('${p.id}','${p.n}')" style="background:#ef4444; padding:5px;">Lutar</button>` : '-'}</td></tr>`;
+                <td>
+                    ${p.id !== jogadorAtual ? `
+                        <button onclick="iniciarDuelo('${p.id}','${p.n}')" style="background:#ef4444; padding:5px; font-size:10px">Lutar</button>
+                        <button onclick="desafiarVelha('${p.id}')" style="background:#3b82f6; padding:5px; font-size:10px">Velha</button>
+                    ` : '-'}
+                </td></tr>`;
             });
         }
 
+        // Funções Auxiliares (MANTIDAS)
         function atualizarTela() {
             const p = dadosGerais[jogadorAtual] || {xp:0, coins:0, missoes:[], records:{}};
             const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
@@ -437,7 +563,6 @@
             });
         }
 
-        // TRAVAS ANTI-TRAPAÇA (RESTAURADO)
         function upFisico(id, m, r) {
             const inputField = document.getElementById('in-'+id);
             const v = parseInt(inputField.value);
@@ -447,12 +572,10 @@
             const ultimoTreino = (p.last_train && p.last_train[id]) ? p.last_train[id] : 0;
             if ((agora - ultimoTreino) / (1000 * 60 * 60) < 20) return alert("Descanso muscular! Tente em 20h.");
             if((v - r) > 50) return alert("Aumento suspeito!");
-
             let mult = (id === 'elevacao_halters') ? 500 : 100;
             let g = (m==='kg') ? (v-r)*mult : (v-r)*45;
             const rec = {...(p.records || {})}; rec[id] = v;
             const treinos = {...(p.last_train || {})}; treinos[id] = agora;
-
             db.ref('rpg_data/'+jogadorAtual).update({ xp: (p.xp || 0) + g, coins: (p.coins || 0) + g, records: rec, last_train: treinos })
             .then(() => { alert(`UP de ${g} XP!`); inputField.value = ""; });
         }
