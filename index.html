@@ -35,10 +35,8 @@
         .stat-box { background: rgba(51, 65, 85, 0.6); padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #475569; }
         .progress-bar { background: #475569; border-radius: 10px; height: 12px; width: 100%; overflow: hidden; margin: 10px 0; }
         .progress-fill { background: linear-gradient(90deg, #3b82f6, #60a5fa); height: 100%; width: 0%; transition: width 0.5s ease; }
-        
         input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: none; font-size: 16px; box-sizing: border-box; background: white !important; color: black !important; }
         button { cursor: pointer; padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; transition: 0.3s; }
-        
         .btn-auth { background: #3b82f6; width: 100%; margin-bottom: 10px; }
         .btn-check { background: #22c55e; padding: 8px 15px; }
         .btn-del { background: #ef4444; padding: 8px 12px; margin-left: 5px; }
@@ -46,36 +44,20 @@
         .btn-physic { background: #ef4444; margin-top: 5px; width: 100%; }
         .btn-penalty { background: #991b1b; border: 1px solid #ef4444; width: 100%; }
         .btn-buy { background: #f59e0b; padding: 8px 15px; }
-
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #1e293b; display: flex; justify-content: space-around; padding: 10px 0; border-top: 2px solid #3b82f6; z-index: 1000; }
         .nav-item { color: #94a3b8; text-decoration: none; font-size: 12px; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
         .nav-item.active { color: #3b82f6; }
-        
         table { width: 100%; border-collapse: collapse; }
-        th, td { border-bottom: 1px solid rgba(51, 65, 85, 0.5); padding: 12px 8px; text-align: left; font-size: 14px; }
+        th, td { border-bottom: 1px solid rgba(51, 65, 85, 0.5); padding: 12px 8px; text-align: left; }
         .hidden { display: none !important; }
 
-        /* --- ESTILOS ARENA DE DUELO E VELHA --- */
-        #arena-duelo, #arena-velha { 
+        /* --- ESTILOS ARENA DE DUELO RPG --- */
+        #arena-duelo { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: #0f172a; z-index: 2000; display: none; 
-            flex-direction: column; align-items: center; justify-content: center;
+            flex-direction: column; align-items: center; justify-content: space-around;
             padding: 20px; box-sizing: border-box;
         }
-
-        /* JOGO DA VELHA BOARD */
-        .velha-board {
-            display: grid; grid-template-columns: repeat(3, 90px); grid-template-rows: repeat(3, 90px);
-            gap: 10px; background: #334155; padding: 10px; border-radius: 10px; margin: 20px 0;
-        }
-        .v-cell {
-            width: 90px; height: 90px; background: #1e293b; display: flex;
-            align-items: center; justify-content: center; font-size: 40px;
-            font-weight: bold; cursor: pointer; border-radius: 8px;
-        }
-        .v-cell.X { color: var(--danger); }
-        .v-cell.O { color: var(--primary); }
-
         .battle-stage { width: 100%; max-width: 400px; position: relative; height: 350px; background: rgba(255,255,255,0.05); border-radius: 20px; border: 1px solid #334155; }
         .char-container { position: absolute; text-align: center; transition: 0.3s; width: 120px; }
         #char-enemy { top: 30px; right: 20px; }
@@ -92,29 +74,31 @@
             padding: 15px; border-radius: 12px; font-size: 14px; overflow-y: auto; 
             border: 1px solid var(--primary); color: #60a5fa; text-align: center;
         }
+
+        /* ESTILOS JOGO DA VELHA */
+        #arena-velha {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.98); z-index: 3000; display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+        .velha-grid {
+            display: grid; grid-template-columns: repeat(3, 100px); grid-template-rows: repeat(3, 100px);
+            gap: 10px; margin: 20px 0;
+        }
+        .velha-cell {
+            background: #1e293b; border: 2px solid #3b82f6; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 40px; font-weight: bold; color: white; cursor: pointer;
+        }
+        .velha-cell.taken { cursor: not-allowed; }
+
+        .atacar-p { transform: translate(120px, -80px) scale(1.1); z-index: 10; }
+        .atacar-e { transform: translate(-120px, 80px) scale(1.1); z-index: 10; }
+        .dano-shake { animation: shake 0.3s; filter: brightness(2) red; }
         @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(5px);} 75% {transform: translateX(-5px);} }
     </style>
 </head>
 <body>
-
-    <div id="arena-velha">
-        <h1 style="color:var(--warning); margin:0; font-weight: 900;">JOGO DA VELHA</h1>
-        <div id="velha-status" style="margin: 15px 0; color: #94a3b8;">Conectando...</div>
-        
-        <div class="velha-board">
-            <div class="v-cell" onclick="marcarVelha(0)"></div>
-            <div class="v-cell" onclick="marcarVelha(1)"></div>
-            <div class="v-cell" onclick="marcarVelha(2)"></div>
-            <div class="v-cell" onclick="marcarVelha(3)"></div>
-            <div class="v-cell" onclick="marcarVelha(4)"></div>
-            <div class="v-cell" onclick="marcarVelha(5)"></div>
-            <div class="v-cell" onclick="marcarVelha(6)"></div>
-            <div class="v-cell" onclick="marcarVelha(7)"></div>
-            <div class="v-cell" onclick="marcarVelha(8)"></div>
-        </div>
-
-        <button onclick="sairDaVelha()" style="background:var(--danger); padding:10px 30px;">ABANDONAR</button>
-    </div>
 
     <div id="arena-duelo">
         <h1 style="color:var(--warning); margin:0; font-weight: 900;">ARENA DE DUELO</h1>
@@ -140,6 +124,28 @@
         </div>
     </div>
 
+    <div id="arena-velha">
+        <h2 style="color:var(--primary)">JOGO DA VELHA ONLINE</h2>
+        <div id="velha-status" style="margin-bottom:15px; font-weight:bold;">Aguardando...</div>
+        <div class="velha-grid" id="velha-grid">
+            <div class="velha-cell" data-index="0" onclick="marcarVelha(0)"></div>
+            <div class="velha-cell" data-index="1" onclick="marcarVelha(1)"></div>
+            <div class="velha-cell" data-index="2" onclick="marcarVelha(2)"></div>
+            <div class="velha-cell" data-index="3" onclick="marcarVelha(3)"></div>
+            <div class="velha-cell" data-index="4" onclick="marcarVelha(4)"></div>
+            <div class="velha-cell" data-index="5" onclick="marcarVelha(5)"></div>
+            <div class="velha-cell" data-index="6" onclick="marcarVelha(6)"></div>
+            <div class="velha-cell" data-index="7" onclick="marcarVelha(7)"></div>
+            <div class="velha-cell" data-index="8" onclick="marcarVelha(8)"></div>
+        </div>
+        <button onclick="fecharVelha()" style="background:var(--danger); width:200px">Desistir/Sair</button>
+    </div>
+
+    <div class="ad-banner" style="background: linear-gradient(45deg, #ff0000, #cc0000); text-align: center; padding: 10px; border-radius: 10px; margin-bottom: 10px;">
+        🎥 <b>CANAL ARES7</b>
+        <a href="https://www.youtube.com/aressama" target="_blank" style="color:white; display:block">Inscreva-se no Canal</a>
+    </div>
+
     <div id="auth-screen" class="card" style="max-width:400px; margin: 20px auto;">
         <div id="login-area">
             <h2 style="text-align:center">Entrar no RPG</h2>
@@ -149,7 +155,7 @@
             <p style="text-align:center; font-size:14px">Novo? <a href="#" onclick="alternarTela(true)" style="color:#60a5fa">Criar Conta</a></p>
         </div>
         <div id="register-area" class="hidden">
-            <h2 style="text-align:center">Novo Player</h2>
+            <h2 style="text-align:center">Novo Player's</h2>
             <input type="text" id="reg-nick" placeholder="Nick do Personagem">
             <input type="email" id="reg-email" placeholder="E-mail">
             <input type="password" id="reg-pass" placeholder="Senha">
@@ -163,7 +169,7 @@
             <div class="card header">
                 <div style="display:flex; justify-content:space-between; align-items:center">
                     <div style="display:flex; align-items:center; gap:10px">
-                        <img id="p-img" class="player-img" src="" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                        <img id="p-img" class="player-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
                         <span>👤 <b><span id="player-name">---</span></b></span>
                     </div>
                     <button onclick="logout()" style="background:#ef4444; padding:5px 10px; font-size:12px">Sair</button>
@@ -178,20 +184,10 @@
 
             <div class="card">
                 <h3>🏆 Ranking de Honra</h3>
-                <div style="overflow-x:auto;">
-                    <table id="ranking-table">
-                        <thead><tr><th>#</th><th>Player</th><th>Lvl</th><th>XP</th><th>Duelo</th></tr></thead>
-                        <tbody id="ranking-body"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="card" style="border: 2px solid var(--warning); background: rgba(251, 191, 36, 0.05);">
-                <h3 style="color: var(--warning); margin-top: 0;">🕹️ Jogo da Velha Online</h3>
-                <p style="font-size: 12px; color: #94a3b8;">Desafie qualquer pessoa que clicar no botão agora!</p>
-                <button id="btn-fila-velha" onclick="entrarNaFilaVelha()" style="width: 100%; background: var(--warning); color: #000; font-size: 16px;">
-                    BUSCAR OPONENTE ONLINE
-                </button>
+                <table id="ranking-table">
+                    <thead><tr><th>#</th><th>Player's</th><th>Lvl</th><th>Ações</th></tr></thead>
+                    <tbody id="ranking-body"></tbody>
+                </table>
             </div>
 
             <div class="card">
@@ -199,7 +195,6 @@
                 <div id="grid-fisico" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
                 <div style="margin-top:20px; padding:15px; background:rgba(153, 27, 27, 0.3); border-radius:10px; border:1px solid #ef4444;">
                     <h4 style="margin:0 0 5px 0; color:#fca5a5;">⚠️ Câmara de Penalidades</h4>
-                    <p style="font-size:11px; margin-bottom:10px;">Falhou? Pague 300 XP por deslize.</p>
                     <div style="display:flex; gap:10px;">
                         <input type="number" id="input-penalidade" placeholder="Qtd">
                         <button class="btn-penalty" onclick="aplicarPenalidade()">Corrigir</button>
@@ -211,16 +206,29 @@
                 <h3>⚡ Missões Diárias (+10 XP)</h3>
                 <div id="lista-obrigatoria"></div>
             </div>
+
             <div class="card">
                 <h3>🛒 Arsenal (Loja)</h3>
                 <table id="tabela-loja"><tbody></tbody></table>
+            </div>
+
+            <div class="card">
+                <h3>📜 Missões Pessoais</h3>
+                <div id="lista-missoes-pessoais" style="margin-bottom:15px"></div>
+                <input type="text" id="missao-input" placeholder="Nova missão...">
+                <select id="cat-input">
+                    <option value="30">🚀 Épica (+30 XP)</option>
+                    <option value="15">⚙️ Comum (+15 XP)</option>
+                    <option value="-30">⚠️ Hábito Sombrio (-30 XP)</option>
+                </select>
+                <button onclick="addMissao()" style="background:#3b82f6; width:100%">Registar</button>
             </div>
         </div>
 
         <div id="tab-profile" class="hidden">
             <div class="card" style="text-align:center">
                 <h2>🎭 Editar Perfil</h2>
-                <img id="p-img-large" style="width:120px; height:120px; border-radius:50%; border:3px solid #3b82f6; margin-bottom:15px; object-fit:cover; background:#1e293b;" src="">
+                <img id="p-img-large" style="width:120px; height:120px; border-radius:50%; border:3px solid #3b82f6; margin-bottom:15px; object-fit:cover;">
                 <input type="text" id="edit-nick" placeholder="Novo Nick">
                 <input type="text" id="edit-photo" placeholder="Link da Foto">
                 <button onclick="salvarPerfil()" style="background:#22c55e; width:100%; margin-top:15px">Salvar</button>
@@ -234,7 +242,6 @@
     </div>
 
     <script>
-        // CONFIG FIREBASE (Sincronizado com seu código)
         const firebaseConfig = {
             apiKey: "AIzaSyBanevR51ejaTE0ccqlmlU6VRh7Qg4EETs",
             authDomain: "aresrpg-7daf4.firebaseapp.com",
@@ -246,115 +253,176 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database(), auth = firebase.auth();
-        let jogadorAtual = "", dadosGerais = {}, jogoVelhaId = "", meuSimbolo = "";
+        let jogadorAtual = "", dadosGerais = {};
 
-        // --- LÓGICA MATCHMAKING JOGO DA VELHA ---
-        function entrarNaFilaVelha() {
-            const btn = document.getElementById('btn-fila-velha');
-            btn.disabled = true;
-            btn.innerText = "PROCURANDO...";
+        // --- LÓGICA DO JOGO DA VELHA ONLINE ---
+        let gameId = null;
+        let meuSimbolo = "";
+        let turnoDe = "";
 
-            db.ref('fila_velha').get().then(s => {
-                const fila = s.val();
-                if(!fila) {
-                    db.ref('fila_velha').set({ id: jogadorAtual, nick: dadosGerais[jogadorAtual].nick || jogadorAtual });
-                } else if(fila.id !== jogadorAtual) {
-                    const idJogo = fila.id + "_vs_" + jogadorAtual;
-                    db.ref('jogos_velha/' + idJogo).set({
-                        p1: fila.id, p2: jogadorAtual,
-                        board: ["","","","","","","","",""],
-                        turno: fila.id, status: "ativo"
-                    });
-                    db.ref('fila_velha').remove();
-                }
+        function convidarVelha(idOponente) {
+            const idSala = [jogadorAtual, idOponente].sort().join("_vs_");
+            db.ref('velha/' + idSala).set({
+                players: { [jogadorAtual]: "X", [idOponente]: "O" },
+                board: ["", "", "", "", "", "", "", "", ""],
+                turno: jogadorAtual,
+                status: "jogando"
             });
+            // Envia notificação de convite
+            db.ref('notificacoes/' + idOponente).set({ tipo: "velha", de: jogadorAtual, sala: idSala });
         }
 
-        function monitorarJogosVelha() {
-            db.ref('jogos_velha').on('value', s => {
-                const jogos = s.val();
-                if(!jogos) return;
-                Object.keys(jogos).forEach(id => {
-                    if((jogos[id].p1 === jogadorAtual || jogos[id].p2 === jogadorAtual) && jogos[id].status === "ativo") {
-                        jogoVelhaId = id;
-                        meuSimbolo = (jogos[id].p1 === jogadorAtual) ? "X" : "O";
-                        abrirArenaVelha();
-                    }
-                });
-            });
-        }
-
-        function abrirArenaVelha() {
+        function abrirVelha(idSala, simbolo) {
+            gameId = idSala;
+            meuSimbolo = simbolo;
             document.getElementById('arena-velha').style.display = 'flex';
-            db.ref('jogos_velha/' + jogoVelhaId).on('value', s => {
-                const jogo = s.val();
-                if(!jogo) return;
-
-                const cells = document.querySelectorAll('.v-cell');
-                jogo.board.forEach((v, i) => {
-                    cells[i].innerText = v;
-                    cells[i].className = "v-cell " + v;
+            
+            db.ref('velha/' + gameId).on('value', s => {
+                const data = s.val();
+                if(!data) return fecharVelha();
+                
+                turnoDe = data.turno;
+                document.getElementById('velha-status').innerText = (turnoDe === jogadorAtual) ? "SUA VEZ!" : "Vez do oponente...";
+                
+                const cells = document.querySelectorAll('.velha-cell');
+                data.board.forEach((val, i) => {
+                    cells[i].innerText = val;
+                    cells[i].className = val === "" ? "velha-cell" : "velha-cell taken";
                 });
 
-                if(jogo.vencedor) {
-                    document.getElementById('velha-status').innerText = (jogo.vencedor === "Empate") ? "EMPATE!" : "VENCEDOR: " + jogo.vencedor;
-                    if(jogo.vencedor === meuSimbolo) {
-                        alert("VITÓRIA! +50 XP e +50 Moedas");
-                        db.ref('rpg_data/' + jogadorAtual).update({ 
-                            xp: (dadosGerais[jogadorAtual].xp || 0) + 50,
-                            coins: (dadosGerais[jogadorAtual].coins || 0) + 50
-                        });
-                        sairDaVelha();
-                    }
-                } else {
-                    document.getElementById('velha-status').innerText = (jogo.turno === jogadorAtual) ? "SUA VEZ ("+meuSimbolo+")" : "VEZ DO OPONENTE...";
-                }
+                verificarVitoriaVelha(data.board);
             });
         }
 
         function marcarVelha(idx) {
-            db.ref('jogos_velha/' + jogoVelhaId).get().then(s => {
-                const jogo = s.val();
-                if(jogo.turno === jogadorAtual && jogo.board[idx] === "" && !jogo.vencedor) {
-                    let b = jogo.board; b[idx] = meuSimbolo;
-                    const venceu = checarVencedorVelha(b);
-                    db.ref('jogos_velha/' + jogoVelhaId).update({
-                        board: b,
-                        turno: (jogadorAtual === jogo.p1) ? jogo.p2 : jogo.p1,
-                        vencedor: venceu || (b.includes("") ? null : "Empate")
-                    });
-                }
+            if(turnoDe !== jogadorAtual) return alert("Não é sua vez!");
+            
+            db.ref('velha/' + gameId).once('value', s => {
+                const data = s.val();
+                if(data.board[idx] !== "") return;
+
+                const novoBoard = [...data.board];
+                novoBoard[idx] = meuSimbolo;
+                const oponente = Object.keys(data.players).find(p => p !== jogadorAtual);
+
+                db.ref('velha/' + gameId).update({
+                    board: novoBoard,
+                    turno: oponente
+                });
             });
         }
 
-        function checarVencedorVelha(b) {
+        function verificarVitoriaVelha(b) {
             const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-            for(let w of wins) if(b[w[0]] && b[w[0]]==b[w[1]] && b[w[0]]==b[w[2]]) return b[w[0]];
-            return null;
+            for(let w of wins) {
+                if(b[w[0]] && b[w[0]] === b[w[1]] && b[w[0]] === b[w[2]]) {
+                    const vencedor = b[w[0]];
+                    if(vencedor === meuSimbolo) {
+                        alert("VOCÊ VENCEU O JOGO DA VELHA! +20 XP");
+                        db.ref('rpg_data/'+jogadorAtual).update({ xp: (dadosGerais[jogadorAtual].xp || 0) + 20 });
+                    } else {
+                        alert("Você perdeu...");
+                    }
+                    db.ref('velha/' + gameId).remove();
+                    fecharVelha();
+                    return;
+                }
+            }
+            if(!b.includes("")) { alert("Empate!"); db.ref('velha/' + gameId).remove(); fecharVelha(); }
         }
 
-        function sairDaVelha() {
+        function fecharVelha() {
+            if(gameId) db.ref('velha/' + gameId).off();
             document.getElementById('arena-velha').style.display = 'none';
-            if(jogoVelhaId) db.ref('jogos_velha/' + jogoVelhaId).remove();
-            location.reload();
         }
 
-        // --- MANTER TODAS AS OUTRAS FUNÇÕES ORIGINAIS DO SEU CÓDIGO ---
-        // (Abaixo eu mantive a estrutura do seu login e ranking)
+        // --- LÓGICA DE DUELO RPG ---
+        let batalhaAtiva = false;
+        let statsP = { hp: 0, maxHp: 0, atk: 0, def: false };
+        let statsE = { hp: 0, maxHp: 0, atk: 0, def: false };
+        let idInimigoAtual = "";
+
+        function iniciarDuelo(idAdversario, nickAdversario) {
+            const p = dadosGerais[jogadorAtual], e = dadosGerais[idAdversario];
+            idInimigoAtual = idAdversario;
+            const lvlP = Math.floor((p.xp || 0) / 1000) + 1, lvlE = Math.floor((e.xp || 0) / 1000) + 1;
+            statsP.maxHp = statsP.hp = (lvlP * 1500) + (p.xp || 0);
+            statsE.maxHp = statsE.hp = (lvlE * 1500) + (e.xp || 0);
+            statsP.atk = Math.floor((lvlP * 50) + ((p.xp || 0) / 40));
+            statsE.atk = Math.floor((lvlE * 50) + ((e.xp || 0) / 40));
+            document.getElementById('name-p').innerText = `${p.nick || "Você"} Lv.${lvlP}`;
+            document.getElementById('name-e').innerText = `${nickAdversario} Lv.${lvlE}`;
+            document.getElementById('img-p').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            document.getElementById('img-e').src = e.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            atualizarBarras();
+            document.getElementById('arena-duelo').style.display = 'flex';
+            batalhaAtiva = true;
+        }
+
+        function atualizarBarras() {
+            document.getElementById('hp-p-fill').style.width = (statsP.hp / statsP.maxHp * 100) + "%";
+            document.getElementById('hp-e-fill').style.width = (statsE.hp / statsE.maxHp * 100) + "%";
+            document.getElementById('hp-text-p').innerText = `${Math.max(0, statsP.hp)} / ${statsP.maxHp}`;
+            document.getElementById('hp-text-e').innerText = `${Math.max(0, statsE.hp)} / ${statsE.maxHp}`;
+        }
+
+        function comandoBatalha(tipo) {
+            if (!batalhaAtiva) return;
+            const log = document.getElementById('battle-log');
+            if (tipo === 'atacar') {
+                let dano = statsP.atk + Math.floor(Math.random() * 20);
+                statsE.hp -= dano;
+                log.innerHTML = `Você causou <b>${dano}</b> de dano!`;
+                atualizarBarras();
+                if (!verificarFim()) setTimeout(turnoInimigo, 1000);
+            } else {
+                statsP.def = true;
+                log.innerHTML = "Defesa ativada!";
+                setTimeout(turnoInimigo, 1000);
+            }
+        }
+
+        function turnoInimigo() {
+            if (!batalhaAtiva) return;
+            let dano = statsE.atk + Math.floor(Math.random() * 20);
+            if (statsP.def) { dano = Math.floor(dano * 0.4); statsP.def = false; }
+            statsP.hp -= dano;
+            document.getElementById('battle-log').innerHTML += `<br>Inimigo causou ${dano} de dano!`;
+            atualizarBarras();
+            verificarFim();
+        }
+
+        function verificarFim() {
+            if (statsE.hp <= 0) {
+                alert("Vitória!"); 
+                db.ref('rpg_data/'+jogadorAtual).update({xp:(dadosGerais[jogadorAtual].xp||0)+5});
+                fecharArena(); return true;
+            } else if (statsP.hp <= 0) {
+                alert("Derrota!"); fecharArena(); return true;
+            }
+            return false;
+        }
+
+        function fecharArena() { document.getElementById('arena-duelo').style.display = 'none'; batalhaAtiva = false; }
+
+        // --- SISTEMA BASE ---
+        function mudarAba(aba) {
+            document.getElementById('tab-home').classList.toggle('hidden', aba !== 'home');
+            document.getElementById('tab-profile').classList.toggle('hidden', aba !== 'profile');
+        }
 
         function limparNome(e) { return e.split('@')[0].replace(/[.#$[\]]/g, "_"); }
         function alternarTela(c) { document.getElementById('login-area').className = c?'hidden':''; document.getElementById('register-area').className = c?'':'hidden'; }
-        
+
         function fazerLogin() {
             const e = document.getElementById('login-email').value, p = document.getElementById('login-pass').value;
             auth.signInWithEmailAndPassword(e, p).catch(err => alert("Erro!"));
         }
 
         function fazerCadastro() {
-            const nick = document.getElementById('reg-nick').value;
-            const e = document.getElementById('reg-email').value, p = document.getElementById('reg-pass').value;
+            const nick = document.getElementById('reg-nick').value, e = document.getElementById('reg-email').value, p = document.getElementById('reg-pass').value;
             auth.createUserWithEmailAndPassword(e,p).then(() => {
-                db.ref('rpg_data/'+limparNome(e)).set({ nick: nick, xp: 0, coins: 0 });
+                db.ref('rpg_data/'+limparNome(e)).set({ nick: nick, xp: 0, coins: 0, records: { supino: 20, flexao: 10 } });
             });
         }
 
@@ -363,44 +431,67 @@
                 jogadorAtual = limparNome(u.email);
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('game-content').classList.remove('hidden');
-                db.ref('rpg_data').on('value', s => { 
-                    dadosGerais = s.val() || {}; 
-                    atualizarTela(); 
-                    atualizarRanking(); 
+                db.ref('rpg_data').on('value', s => { dadosGerais = s.val() || {}; atualizarTela(); atualizarRanking(); });
+                
+                // Escuta notificações (Convites de Jogo da Velha)
+                db.ref('notificacoes/' + jogadorAtual).on('value', s => {
+                    const n = s.val();
+                    if(n && n.tipo === "velha") {
+                        if(confirm(`⚔️ ${n.de} te desafiou para Jogo da Velha!`)) {
+                            abrirVelha(n.sala, "O");
+                        }
+                        db.ref('notificacoes/' + jogadorAtual).remove();
+                    }
                 });
-                monitorarJogosVelha();
             }
         });
 
-        // Reaproveitando sua função de Ranking e Tela...
         function atualizarRanking() {
             const tb = document.getElementById('ranking-body'); tb.innerHTML = "";
             Object.keys(dadosGerais).map(k => ({id: k, n: dadosGerais[k].nick || k, xp: dadosGerais[k].xp || 0}))
             .sort((a,b) => b.xp - a.xp).forEach((p, i) => {
-                tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.n}</td><td>${Math.floor(p.xp/1000)+1}</td><td>${p.xp}</td>
-                <td>${p.id !== jogadorAtual ? `<button onclick="iniciarDuelo('${p.id}','${p.n}')" style="background:#ef4444; padding:5px; font-size:10px;">Lutar</button>` : '-'}</td></tr>`;
+                tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.n}</td><td>${Math.floor(p.xp/1000)+1}</td>
+                <td>
+                    ${p.id !== jogadorAtual ? `
+                    <button onclick="iniciarDuelo('${p.id}','${p.n}')" style="background:red; padding:4px; font-size:10px">Lutar</button>
+                    <button onclick="convidarVelha('${p.id}')" style="background:blue; padding:4px; font-size:10px">🎮 Velha</button>
+                    ` : '-'}
+                </td></tr>`;
             });
         }
 
         function atualizarTela() {
-            const p = dadosGerais[jogadorAtual] || {xp:0, coins:0};
+            const p = dadosGerais[jogadorAtual] || {xp:0, coins:0, missoes:[], records:{}};
             document.getElementById('player-name').innerText = p.nick || jogadorAtual;
             document.getElementById('xp').innerText = p.xp || 0;
             document.getElementById('coins').innerText = p.coins || 0;
             document.getElementById('lvl').innerText = Math.floor((p.xp || 0)/1000)+1;
             document.getElementById('progress').style.width = ((p.xp || 0)%1000)/10 + "%";
-            const photoUrl = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-            document.getElementById('p-img').src = photoUrl;
-            
-            // Re-renderizar as Missões Diárias e o resto do seu código aqui...
-            // (Para economizar espaço, o restante da lógica de UI do seu código original deve ser mantido aqui)
+            document.getElementById('p-img').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+
+            // Renderiza Treinos
+            const g = document.getElementById('grid-fisico'); g.innerHTML = "";
+            const exArr = [{id:'supino', n:'💪 Supino', m:'kg', c:'#3b82f6', d:20}, {id:'flexao', n:'🧘 Flexão', m:'reps', c:'#10b981', d:10}];
+            exArr.forEach(ex => {
+                const r = p.records?.[ex.id] || ex.d;
+                g.innerHTML += `<div class="stat-box"><b>${ex.n}</b><br><small>Rec: ${r}</small>
+                <input type="number" id="in-${ex.id}" style="width:50px"><button onclick="upFisico('${ex.id}',${r})">UP</button></div>`;
+            });
         }
 
-        function mudarAba(aba) {
-            document.getElementById('tab-home').classList.toggle('hidden', aba !== 'home');
-            document.getElementById('tab-profile').classList.toggle('hidden', aba !== 'profile');
-            document.getElementById('nav-home').classList.toggle('active', aba === 'home');
-            document.getElementById('nav-profile').classList.toggle('active', aba === 'profile');
+        function upFisico(id, r) {
+            const v = parseInt(document.getElementById('in-'+id).value);
+            if(v > r) {
+                const p = dadosGerais[jogadorAtual];
+                let recs = p.records || {}; recs[id] = v;
+                db.ref('rpg_data/'+jogadorAtual).update({ xp: (p.xp||0)+100, records: recs });
+                alert("Boa!");
+            }
+        }
+
+        function salvarPerfil() {
+            const n = document.getElementById('edit-nick').value, f = document.getElementById('edit-photo').value;
+            db.ref('rpg_data/'+jogadorAtual).update({ nick: n, photo: f }).then(() => alert("Ok!"));
         }
 
         function logout() { auth.signOut(); }
