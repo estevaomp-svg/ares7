@@ -30,7 +30,6 @@
         h1 { font-size: 32px; margin: 25px 0 10px; line-height: 1.2; }
         .subtitle { color: #94a3b8; font-size: 18px; margin-bottom: 30px; }
 
-        /* Especificações Técnicas */
         .specs-box {
             background: rgba(15, 23, 42, 0.6);
             border-radius: 15px;
@@ -51,8 +50,6 @@
             margin: 5px;
         }
 
-        /* Grade de Vídeos */
-        h2 { color: var(--gold); margin-top: 40px; font-size: 24px; }
         .video-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -71,7 +68,6 @@
         }
         iframe { width: 100%; height: 100%; border: none; }
 
-        /* Área de Preço */
         .price-area { margin: 40px 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 30px; }
         .current-price { font-size: 58px; font-weight: 900; color: var(--success); display: block; text-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
 
@@ -93,6 +89,27 @@
             0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
             70% { box-shadow: 0 0 0 20px rgba(34, 197, 94, 0); }
             100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+
+        /* RODAPÉ LIMPO COMO NA IMAGEM */
+        .footer-clean {
+            margin-top: 30px;
+            padding-top: 20px;
+        }
+        .warning-text {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 15px;
+            display: block;
+        }
+        .secure-links {
+            font-size: 13px;
+            color: #f8fafc;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
     </style>
 </head>
@@ -119,7 +136,7 @@
             <span class="tag">📊 Renko 24R</span>
         </div>
 
-        <h2>🚀 Resultados de Alunos e Operações</h2>
+        <h2 style="color: var(--gold); margin-top: 40px;">🚀 Resultados e Operações</h2>
         <div class="video-grid">
             <div class="video-card"><iframe src="https://www.youtube.com/embed/FtUv_RrhR8o"></iframe></div>
             <div class="video-card"><iframe src="https://www.youtube.com/embed/dKHCG3QRZdE"></iframe></div>
@@ -130,16 +147,18 @@
         <div class="price-area">
             <span style="text-decoration: line-through; color: #64748b; font-size: 20px;">De R$ 197,00 por apenas</span>
             <span class="current-price">R$ 50,00</span>
-            <p style="color: var(--gold); font-weight: bold;">Liberação imediata no seu e-mail!</p>
+            <p style="color: var(--gold); font-weight: bold; margin-bottom: 25px;">Liberação imediata no seu e-mail!</p>
+            
+            <a href="https://hotmart.com/pt-br/marketplace/produtos/indicador-robo-icaro-scalp-para-mini-indice-6rwhb/S73906018U?sck=HOTMART_PRODUCT_PAGE" class="btn-buy">
+                QUERO O ACESSO AGORA!
+            </a>
         </div>
 
-        <a href="https://hotmart.com/pt-br/marketplace/produtos/indicador-robo-icaro-scalp-para-mini-indice-6rwhb/S73906018U?sck=HOTMART_PRODUCT_PAGE" class="btn-buy">
-            QUERO O ACESSO AGORA!
-        </a>
-
-        <div style="margin-top: 30px;">
-            <img src="https://p2.trrsf.com/image/fget/cf/1200/675/middle/images.terra.com/2023/04/14/selo-hotmart-1m6unw078w6id.png" alt="Selo Hotmart" style="width: 150px; opacity: 0.7;">
-            <p style="font-size: 11px; color: #64748b;">Aviso: Mercado financeiro envolve riscos. Resultados passados não garantem lucros futuros.</p>
+        <div class="footer-clean">
+            <span class="warning-text">Aviso: Mercado financeiro envolve riscos. Resultados passados não garantem lucros futuros.</span>
+            <a href="#" class="secure-links">
+                🔒 <u>Compra 100% Segura</u> | <u>Liberação Imediata via Hotmart</u>
+            </a>
         </div>
     </div>
 
