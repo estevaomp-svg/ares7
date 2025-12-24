@@ -58,8 +58,8 @@
             flex-direction: column; align-items: center; justify-content: space-around;
             padding: 20px; box-sizing: border-box;
         }
-        .battle-stage { width: 100%; max-width: 400px; position: relative; height: 350px; background: rgba(255,255,255,0.05); border-radius: 20px; border: 1px solid #334155; }
-        .char-container { position: absolute; text-align: center; transition: 0.3s; width: 120px; }
+        .battle-stage { width: 100%; max-width: 400px; position: relative; height: 350px; background: rgba(255,255,255,0.05); border-radius: 20px; border: 1px solid #334155; overflow: hidden;}
+        .char-container { position: absolute; text-align: center; transition: 0.3s; width: 120px; z-index: 5; }
         #char-enemy { top: 30px; right: 20px; }
         #char-player { bottom: 30px; left: 20px; }
         .battle-img { width: 90px; height: 90px; border-radius: 50%; border: 4px solid white; object-fit: cover; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
@@ -74,6 +74,35 @@
             padding: 15px; border-radius: 12px; font-size: 14px; overflow-y: auto; 
             border: 1px solid var(--primary); color: #60a5fa; text-align: center;
         }
+
+        /* --- ANIMAÇÕES DE COMBATE --- */
+        @keyframes attack-player {
+            0% { transform: translate(0, 0); }
+            50% { transform: translate(100px, -100px) scale(1.1); }
+            100% { transform: translate(0, 0); }
+        }
+        @keyframes attack-enemy {
+            0% { transform: translate(0, 0); }
+            50% { transform: translate(-100px, 100px) scale(1.1); }
+            100% { transform: translate(0, 0); }
+        }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px); }
+            20% { transform: translate(-3px, 0px); }
+            40% { transform: translate(3px, 2px); }
+            60% { transform: translate(-3px, 1px); }
+            80% { transform: translate(3px, -1px); }
+            100% { transform: translate(0, 0); }
+        }
+        @keyframes take-damage {
+            0% { filter: brightness(1) sepia(0); }
+            50% { filter: brightness(2) sepia(1) saturate(10) hue-rotate(-50deg); transform: scale(0.9); }
+            100% { filter: brightness(1) sepia(0); }
+        }
+        .anim-attack-p { animation: attack-player 0.5s ease-in-out; }
+        .anim-attack-e { animation: attack-enemy 0.5s ease-in-out; }
+        .anim-damage { animation: take-damage 0.4s ease-in-out; }
+        .screen-shake { animation: shake 0.3s; }
 
         /* --- ESTILOS JOGO DA VELHA ONLINE --- */
         #arena-velha { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.98); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; }
@@ -325,7 +354,7 @@
         function recusarVelha() { db.ref('velha_online/'+salaV).remove(); document.getElementById('convite-velha').style.display='none'; }
         function sairVelha() { document.getElementById('arena-velha').style.display='none'; if(salaV){db.ref('velha_online/'+salaV).off(); db.ref('velha_online/'+salaV).remove(); salaV=null;}}
 
-        // --- SISTEMA DUELO RPG ---
+        // --- SISTEMA DUELO RPG COM ANIMAÇÕES ---
         let batalhaAtiva = false, statsP = {}, statsE = {}, idInimigoAtual = "";
         function iniciarDuelo(idAdversario, nickAdversario) {
             const p = dadosGerais[jogadorAtual], e = dadosGerais[idAdversario];
@@ -340,6 +369,7 @@
             atualizarBarras();
             document.getElementById('arena-duelo').style.display = 'flex';
             document.getElementById('btn-fechar-duelo').classList.add('hidden');
+            document.getElementById('battle-log').innerText = "O combate começou!";
             batalhaAtiva = true;
         }
         function atualizarBarras() {
@@ -351,20 +381,55 @@
         function comandoBatalha(t) {
             if(!batalhaAtiva) return;
             const log = document.getElementById('battle-log');
+            const charP = document.getElementById('char-player');
+            const charE = document.getElementById('char-enemy');
+            const stage = document.querySelector('.battle-stage');
+
             if(t==='atacar') {
-                let d = statsP.atk + Math.floor(Math.random()*20);
-                statsE.hp -= d; log.innerText = `Você atacou: -${d}`;
-                atualizarBarras();
-                if(statsE.hp<=0) { finalizar(true); return; }
-                setTimeout(turnoInimigo, 1000);
-            } else { statsP.def = true; log.innerText = "Defesa ativada!"; setTimeout(turnoInimigo, 1000); }
+                charP.classList.add('anim-attack-p');
+                setTimeout(() => {
+                    let d = statsP.atk + Math.floor(Math.random()*20);
+                    statsE.hp -= d;
+                    charE.classList.add('anim-damage');
+                    stage.classList.add('screen-shake');
+                    log.innerText = `💥 Você atacou: -${d}`;
+                    atualizarBarras();
+
+                    setTimeout(() => {
+                        charP.classList.remove('anim-attack-p');
+                        charE.classList.remove('anim-damage');
+                        stage.classList.remove('screen-shake');
+                        if(statsE.hp <= 0) { finalizar(true); } else { setTimeout(turnoInimigo, 800); }
+                    }, 400);
+                }, 300);
+            } else { 
+                statsP.def = true; log.innerText = "🛡️ Defesa ativada!"; setTimeout(turnoInimigo, 1000); 
+            }
         }
         function turnoInimigo() {
-            let d = statsE.atk + Math.floor(Math.random()*20);
-            if(statsP.def) { d = Math.floor(d*0.4); statsP.def = false; }
-            statsP.hp -= d; document.getElementById('battle-log').innerText += `\nInimigo atacou: -${d}`;
-            atualizarBarras();
-            if(statsP.hp<=0) finalizar(false);
+            if(!batalhaAtiva) return;
+            const charP = document.getElementById('char-player');
+            const charE = document.getElementById('char-enemy');
+            const stage = document.querySelector('.battle-stage');
+            const log = document.getElementById('battle-log');
+
+            charE.classList.add('anim-attack-e');
+            setTimeout(() => {
+                let d = statsE.atk + Math.floor(Math.random()*20);
+                if(statsP.def) { d = Math.floor(d*0.4); statsP.def = false; log.innerText += " (Bloqueado!)"; }
+                statsP.hp -= d;
+                charP.classList.add('anim-damage');
+                stage.classList.add('screen-shake');
+                log.innerText += `\n🔥 Inimigo atacou: -${d}`;
+                atualizarBarras();
+
+                setTimeout(() => {
+                    charE.classList.remove('anim-attack-e');
+                    charP.classList.remove('anim-damage');
+                    stage.classList.remove('screen-shake');
+                    if(statsP.hp <= 0) finalizar(false);
+                }, 400);
+            }, 300);
         }
         function finalizar(v) {
             batalhaAtiva = false;
@@ -456,7 +521,6 @@
             });
 
             const g = document.getElementById('grid-fisico'); g.innerHTML = "";
-            // ADICIONADOS: biceps_rosca, triceps_pulley, elevacao_pelvica
             const exArr = [
                 {id:'supino', n:'💪 Supino Reto/Máq', m:'kg', c:'#3b82f6', d:20}, 
                 {id:'biceps_rosca', n:'💪 Bíceps Rosca', m:'kg', c:'#3b82f6', d:15},
@@ -500,31 +564,20 @@
             const v = parseInt(inputField.value);
             const p = dadosGerais[jogadorAtual];
             if (!v || v <= r) return alert("Supera o recorde!");
-
             const agora = Date.now();
             const limiteDiario = 10;
             const historico = p.evolucao_diaria || {};
             const dadosEx = historico[id] || { totalSubido: 0, ultimaData: 0 };
-
             const horasPassadas = (agora - dadosEx.ultimaData) / (1000 * 60 * 60);
             let jaSubiuHoje = (horasPassadas < 20) ? dadosEx.totalSubido : 0;
             const aumento = v - r;
-
-            if ((jaSubiuHoje + aumento) > limiteDiario) {
-                alert(`Limite de +10/dia! Já subiu ${jaSubiuHoje}. Restam ${limiteDiario - jaSubiuHoje}.`);
-                return;
-            }
-
+            if ((jaSubiuHoje + aumento) > limiteDiario) { alert(`Limite de +10/dia! Já subiu ${jaSubiuHoje}. Restam ${limiteDiario - jaSubiuHoje}.`); return; }
             let mult = (id === 'elevacao_halters') ? 500 : 100;
             let g = (m === 'kg') ? aumento * mult : aumento * 45;
-
             const novosRecords = { ... (p.records || {}) }; novosRecords[id] = v;
             const novoHist = { ...historico };
             novoHist[id] = { totalSubido: jaSubiuHoje + aumento, ultimaData: agora };
-
-            db.ref('rpg_data/' + jogadorAtual).update({
-                xp: (p.xp || 0) + g, coins: (p.coins || 0) + g, records: novosRecords, evolucao_diaria: novoHist
-            }).then(() => { alert(`UP! +${g} XP`); inputField.value = ""; });
+            db.ref('rpg_data/' + jogadorAtual).update({ xp: (p.xp || 0) + g, coins: (p.coins || 0) + g, records: novosRecords, evolucao_diaria: novoHist }).then(() => { alert(`UP! +${g} XP`); inputField.value = ""; });
         }
 
         function concluirMissao(id, v, d=false) {
