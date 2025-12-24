@@ -341,7 +341,12 @@
             });
         }
         function checarWinV(b) {
-            const w = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,4,8],[0,4,8],[2,4,6]];
+            // COMBINAÇÕES VENCEDORAS CORRIGIDAS:
+            const w = [
+                [0,1,2],[3,4,5],[6,7,8], // Horizontais
+                [0,3,6],[1,4,7],[2,5,8], // Verticais (CORRIGIDO: [2,5,8] em vez de [2,4,8])
+                [0,4,8],[2,4,6]           // Diagonais
+            ];
             return w.some(z => b[z[0]] && b[z[0]] === b[z[1]] && b[z[0]] === b[z[2]]);
         }
         function aceitarVelha() { 
@@ -595,4 +600,3 @@
     </script>
 </body>
 </html>
-
