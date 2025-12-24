@@ -273,19 +273,38 @@
         const db = firebase.database(), auth = firebase.auth();
         let jogadorAtual = "", dadosGerais = {}, vitoriasVelha = {};
 
-        // --- LÓGICA JOGO DA VELHA ONLINE ---
-        let salaV = null, meuS = "";
-        function desafiarVelha(idOponente) {
-            salaV = [jogadorAtual, idOponente].sort().join("_vs_");
-            db.ref('velha_online/' + salaV).set({
-                tabuleiro: ["","","","","","","","",""],
-                p1: jogadorAtual, p1_nick: dadosGerais[jogadorAtual].nick || jogadorAtual,
-                p2: idOponente, status: "convite", turno: jogadorAtual, vencedor: ""
-            }).then(() => { 
-                document.getElementById('arena-velha').style.display = 'flex';
-                ouvirVelha();
-            });
+        // --- LÓGICA JOGO DA VELHA ONLINE (COM RECOMPENSA) ---
+function ouvirVelha() {
+    db.ref('velha_online/' + salaV).on('value', s => {
+        const d = s.val(); if(!d) return;
+        meuS = (d.p1 === jogadorAtual) ? "X" : "O";
+        const cells = document.querySelectorAll('.velha-cell');
+        d.tabuleiro.forEach((v, i) => { cells[i].innerText = v; });
+        document.getElementById('velha-info').innerText = (d.turno === jogadorAtual) ? "SUA VEZ!" : "ESPERANDO...";
+        
+        if(d.vencedor) {
+            const resMsg = document.getElementById('res-velha-msg');
+            if(d.vencedor === "EMPATE") { 
+                resMsg.innerText = "EMPATE!"; resMsg.className = "show msg-win"; 
+            }
+            else if(d.vencedor === jogadorAtual) { 
+                resMsg.innerText = "GANHOU! +20 XP"; resMsg.className = "show msg-win";
+                
+                // --- AQUI ESTÁ A RECOMPENSA ---
+                db.ref('vitorias_velha/'+jogadorAtual).transaction(c => (c||0)+1);
+                db.ref('rpg_data/'+jogadorAtual).update({
+                    xp: (dadosGerais[jogadorAtual].xp || 0) + 20,
+                    coins: (dadosGerais[jogadorAtual].coins || 0) + 20
+                });
+                // ------------------------------
+                
+            } else { 
+                resMsg.innerText = "PERDEU!"; resMsg.className = "show msg-lose"; 
+            }
+            setTimeout(() => { resMsg.className = ""; sairVelha(); }, 3000);
         }
+    });
+}
         function ouvirVelha() {
             db.ref('velha_online/' + salaV).on('value', s => {
                 const d = s.val(); if(!d) return;
@@ -534,3 +553,4 @@
     </script>
 </body>
 </html>
+
