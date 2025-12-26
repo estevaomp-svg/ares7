@@ -10,9 +10,7 @@
     <meta property="og:image" content="https://i.ibb.co/X3vDgg/image.png">
     <meta property="og:type" content="website">
 
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    
 
     <style>
         :root { --primary: #3b82f6; --danger: #ef4444; --success: #22c55e; --warning: #fbbf24; --bg: #0f172a; }
@@ -594,8 +592,12 @@
         function salvarPerfil() { db.ref('rpg_data/'+jogadorAtual).update({ nick: document.getElementById('edit-nick').value, photo: document.getElementById('edit-photo').value.trim() }).then(() => mudarAba('home')); }
         function logout() { auth.signOut(); }
     </script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 </body>
 </html>
+
 
 
 
