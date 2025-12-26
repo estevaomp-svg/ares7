@@ -248,17 +248,32 @@
                 </table>
             </div>
 
-            <div class="card">
-                <h3>🔥 Evolução Física (Limite +10/dia)</h3>
-                <div id="grid-fisico" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
-                <div style="margin-top:20px; padding:15px; background:rgba(153, 27, 27, 0.3); border-radius:10px; border:1px solid #ef4444;">
-                    <h4 style="margin:0 0 5px 0; color:#fca5a5;">⚠️ Câmara de Penalidades</h4>
-                    <div style="display:flex; gap:10px;">
-                        <input type="number" id="input-penalidade" placeholder="Qtd">
-                        <button class="btn-penalty" onclick="aplicarPenalidade()">Corrigir</button>
-                    </div>
-                </div>
-            </div>
+            <div class="card" style="text-align: center;">
+    <h3>💪 Evolução Física</h3>
+    <p style="font-size: 14px; color: #94a3b8; margin-bottom: 15px;">Acesse a sala de treinamento para evoluir seus atributos.</p>
+    
+    <a href="evoluçaofisica.html" style="
+        display: block; 
+        background: var(--danger); 
+        color: white; 
+        text-decoration: none; 
+        padding: 15px; 
+        border-radius: 10px; 
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        transition: 0.3s;
+    ">
+        🏋️ IR PARA TREINAMENTO
+    </a>
+
+    <div style="margin-top:20px; padding:10px; background:rgba(153, 27, 27, 0.2); border-radius:10px; border:1px solid rgba(239, 68, 68, 0.3);">
+        <h4 style="margin:0 0 5px 0; color:#fca5a5; font-size: 12px;">⚠️ Penalidade Rápida</h4>
+        <div style="display:flex; gap:5px;">
+            <input type="number" id="input-penalidade" placeholder="Qtd" style="height: 30px; font-size: 12px;">
+            <button class="btn-penalty" onclick="aplicarPenalidade()" style="height: 30px; padding: 0 10px; font-size: 12px;">Ok</button>
+        </div>
+    </div>
+</div>
 
             <div class="card">
                 <h3>⚡ Missões Diárias (+10 XP)</h3>
@@ -594,3 +609,4 @@
     </script>
 </body>
 </html>
+
