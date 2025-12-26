@@ -29,30 +29,33 @@
             margin-bottom: 15px; border: 1px solid rgba(51, 65, 85, 0.5); 
         }
 
-        /* ESTILOS DO BAÚ DA SORTE */
+        /* --- ESTILOS DO NOVO BAÚ DA SORTE --- */
         .lucky-chest-box {
             text-align: center;
-            background: linear-gradient(145deg, #451a03, #92400e);
+            background: radial-gradient(circle, #7e22ce 0%, #0f172a 100%);
             border: 2px solid #fbbf24;
             padding: 20px;
             border-radius: 15px;
             margin-top: 10px;
             cursor: pointer;
+            position: relative;
+            overflow: hidden;
             transition: 0.3s;
         }
-        .chest-emoji {
-            font-size: 50px;
-            display: inline-block;
+        #chest-img {
+            width: 120px; 
+            height: auto; 
+            border-radius: 10px; 
+            box-shadow: 0 0 20px #fbbf24; 
+            filter: brightness(1.1);
             transition: 0.5s;
-            filter: drop-shadow(0 0 10px #fbbf24);
         }
-        .chest-emoji.open { transform: scale(1.2) rotate(10deg); filter: drop-shadow(0 0 20px #fff); }
-        .chest-shake { animation: shake 0.5s infinite; }
+        .chest-shake { animation: shake 0.8s infinite; }
         @keyframes shake {
             0% { transform: rotate(0); }
-            25% { transform: rotate(5deg); }
+            25% { transform: rotate(3deg); }
             50% { transform: rotate(0); }
-            75% { transform: rotate(-5deg); }
+            75% { transform: rotate(-3deg); }
             100% { transform: rotate(0); }
         }
         .lucky-mission-text {
@@ -65,11 +68,11 @@
             border-left: 5px solid #fbbf24;
         }
 
+        /* Estilos Base mantidos do original */
         .online-counter-box { background-color: var(--success); color: #000; padding: 5px 12px; border-radius: 5px; font-weight: bold; display: flex; align-items: center; margin-left: 15px; font-size: 14px; }
         .status-dot { height: 10px; width: 10px; background-color: #444; border-radius: 50%; display: inline-block; margin-right: 8px; }
         .status-dot.online { background-color: var(--success); box-shadow: 0 0 8px var(--success); }
         .online-border { border: 2px solid var(--success) !important; box-shadow: 0 0 15px rgba(34, 197, 94, 0.3); }
-
         .header { position: sticky; top: 0; z-index: 100; border-bottom: 3px solid #3b82f6; }
         .player-img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #3b82f6; object-fit: cover; background: #1e293b; display: inline-block; vertical-align: middle; }
         .lvl-badge { background: #fbbf24; color: #1e293b; padding: 5px 15px; border-radius: 20px; font-weight: bold; display: inline-block; margin: 10px 0; }
@@ -79,15 +82,7 @@
         .progress-fill { background: linear-gradient(90deg, #3b82f6, #60a5fa); height: 100%; width: 0%; transition: width 0.5s ease; }
         input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: none; font-size: 16px; box-sizing: border-box; background: white !important; color: black !important; }
         button { cursor: pointer; padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; transition: 0.3s; }
-        
-        .btn-goto-physic { 
-            background: linear-gradient(45deg, #ef4444, #991b1b); 
-            display: block; text-decoration: none; text-align: center; 
-            padding: 18px; border-radius: 12px; color: white; 
-            font-weight: 900; font-size: 16px; border: 2px solid #fca5a5;
-            margin-bottom: 15px; transition: 0.3s;
-        }
-
+        .btn-goto-physic { background: linear-gradient(45deg, #ef4444, #991b1b); display: block; text-decoration: none; text-align: center; padding: 18px; border-radius: 12px; color: white; font-weight: 900; font-size: 16px; border: 2px solid #fca5a5; margin-bottom: 15px; transition: 0.3s; }
         .btn-auth { background: #3b82f6; width: 100%; margin-bottom: 10px; }
         .btn-check { background: #22c55e; padding: 8px 15px; }
         .btn-del { background: #ef4444; padding: 8px 12px; margin-left: 5px; }
@@ -101,6 +96,7 @@
         th, td { border-bottom: 1px solid rgba(51, 65, 85, 0.5); padding: 12px 8px; text-align: left; }
         .hidden { display: none !important; }
 
+        /* Estilos Arena e Jogo da Velha mantidos */
         #arena-duelo { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: space-around; padding: 20px; box-sizing: border-box; }
         .battle-stage { width: 100%; max-width: 400px; position: relative; height: 350px; background: rgba(255,255,255,0.05); border-radius: 20px; border: 1px solid #334155; overflow: hidden;}
         .char-container { position: absolute; text-align: center; transition: 0.3s; width: 120px; z-index: 5; }
@@ -270,14 +266,21 @@
             </div>
 
             <div class="card">
-                <h3 style="margin-bottom:5px">🎁 Abra o Baú da Sorte</h3>
+                <h3 style="margin-bottom:5px">🎁 Baú da Sorte Diário</h3>
                 <div class="lucky-chest-box" onclick="abrirBau()">
-                    <span id="chest-icon" class="chest-emoji chest-shake">💰</span>
+                    <div id="chest-wrapper" class="chest-shake">
+                        <img id="chest-img" src="https://img.freepik.com/vetores-premium/bau-do-tesouro-de-ouro-aberto-com-moedas-de-ouro-ilustracao-em-vetor-dos-desenhos-animados_223337-1421.jpg">
+                    </div>
+
                     <div id="lucky-mission-container" class="hidden">
                         <div id="lucky-mission-text" class="lucky-mission-text"></div>
                         <button id="btn-concluir-bau" class="btn-check" style="margin-top:10px; width:100%"></button>
                     </div>
-                    <p id="lucky-msg" style="margin-top:10px; font-weight:bold; color:#fbbf24">Clique para ganhar uma missão especial!</p>
+
+                    <p id="lucky-msg" style="margin-top:10px; font-weight:bold; color:#fbbf24; text-shadow: 1px 1px 2px black;">
+                        Clique para sortear! <br>
+                        <span id="giros-restantes" style="font-size: 0.8em; color: #fff;">Tentativas hoje: 10</span>
+                    </p>
                 </div>
             </div>
 
@@ -337,22 +340,38 @@
             "Arrume a cama", "Escove os dentes", "Tome banho", "Faça uma doação de qualquer coisa"
         ];
 
+        // LOGICA DE ABRIR BAÚ COM 10 GIROS
         function abrirBau() {
             const p = dadosGerais[jogadorAtual];
             const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
-            if (p.missaoBau && p.missaoBau.data === hoje) return;
+            
+            if (p.missaoBau && p.missaoBau.data === hoje && p.missaoBau.concluida) {
+                alert("Você já cumpriu sua missão de hoje! Volte amanhã.");
+                return;
+            }
 
-            const icon = document.getElementById('chest-icon');
-            icon.classList.remove('chest-shake');
-            icon.classList.add('open');
-            icon.innerText = "🔓";
+            let giros = (p.missaoBau && p.missaoBau.data === hoje) ? (p.missaoBau.giros || 0) : 0;
+            if (giros >= 10) {
+                alert("Você já usou seus 10 giros de hoje!");
+                return;
+            }
 
+            const wrapper = document.getElementById('chest-wrapper');
+            wrapper.style.transform = "scale(1.2) rotate(10deg)";
+            
             setTimeout(() => {
+                wrapper.style.transform = "scale(1) rotate(0deg)";
                 const sorteada = missoesSorte[Math.floor(Math.random() * missoesSorte.length)];
+                
                 db.ref('rpg_data/' + jogadorAtual).update({
-                    missaoBau: { nome: sorteada, concluida: false, data: hoje }
+                    missaoBau: { 
+                        nome: sorteada, 
+                        concluida: false, 
+                        data: hoje, 
+                        giros: giros + 1 
+                    }
                 });
-            }, 600);
+            }, 400);
         }
 
         function gerenciarPresenca(uid) {
@@ -366,6 +385,7 @@
             });
         }
 
+        // Funções Jogo da Velha mantidas
         let salaV = null, meuS = "";
         function desafiarVelha(idOponente) {
             salaV = [jogadorAtual, idOponente].sort().join("_vs_");
@@ -403,6 +423,7 @@
         function recusarVelha() { sairVelha(); }
         function sairVelha() { document.getElementById('arena-velha').style.display='none'; if(salaV){db.ref('velha_online/'+salaV).remove(); salaV=null;}}
 
+        // Funções de Batalha mantidas
         let batalhaAtiva = false, statsP = {}, statsE = {};
         function iniciarDuelo(idAdversario, nickAdversario) {
             const p = dadosGerais[jogadorAtual], e = dadosGerais[idAdversario];
@@ -453,6 +474,7 @@
         function finalizar(v) { batalhaAtiva = false; document.getElementById('battle-log').innerText = v ? "VITÓRIA!" : "DERROTA!"; document.getElementById('btn-fechar-duelo').classList.remove('hidden'); if(v) db.ref('rpg_data/'+jogadorAtual).update({xp:(dadosGerais[jogadorAtual].xp||0)+5}); }
         function fecharArena() { document.getElementById('arena-duelo').style.display = 'none'; }
 
+        // Navegação e Auth
         function mudarAba(aba) { document.getElementById('tab-home').classList.toggle('hidden', aba !== 'home'); document.getElementById('tab-profile').classList.toggle('hidden', aba !== 'profile'); }
         function limparNome(e) { return e.split('@')[0].replace(/[.#$[\]]/g, "_"); }
         function alternarTela(c) { document.getElementById('login-area').className = c?'hidden':''; document.getElementById('register-area').className = c?'':'hidden'; }
@@ -504,6 +526,7 @@
             sortedV.forEach((p, i) => { tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.n}</td><td>${p.v}</td></tr>`; });
         }
 
+        // ATUALIZAÇÃO DA TELA COM LÓGICA DO BAÚ REFORMULADA
         function atualizarTela() {
             const p = dadosGerais[jogadorAtual] || {xp:0, coins:0, missoes:[]};
             document.getElementById('player-name').innerText = p.nick || jogadorAtual;
@@ -517,35 +540,44 @@
             const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
             const chestCont = document.getElementById('lucky-mission-container');
             const chestMsg = document.getElementById('lucky-msg');
-            const chestIcon = document.getElementById('chest-icon');
+            const wrapper = document.getElementById('chest-wrapper');
+            const girosTxt = document.getElementById('giros-restantes');
 
             if (p.missaoBau && p.missaoBau.data === hoje) {
                 chestCont.classList.remove('hidden');
-                chestMsg.classList.add('hidden');
-                chestIcon.classList.remove('chest-shake');
-                chestIcon.innerText = "🔓";
                 document.getElementById('lucky-mission-text').innerText = p.missaoBau.nome;
+                girosTxt.innerText = `Tentativas restantes: ${10 - p.missaoBau.giros}`;
                 
                 const btn = document.getElementById('btn-concluir-bau');
-                btn.innerText = p.missaoBau.concluida ? "CONCLUÍDO ✔" : "MARCAR COMO FEITO ✔";
-                btn.className = p.missaoBau.concluida ? "btn-done" : "btn-check";
-                btn.onclick = (e) => {
-                    e.stopPropagation();
-                    if(!p.missaoBau.concluida) {
+                if (p.missaoBau.concluida) {
+                    btn.innerText = "MISSÃO CUMPRIDA! +20 XP";
+                    btn.className = "btn-done";
+                    btn.onclick = null;
+                    chestMsg.innerHTML = "Meta atingida! 🏆";
+                    wrapper.classList.remove('chest-shake');
+                } else {
+                    btn.innerText = "MARCAR COMO FEITO ✔";
+                    btn.className = "btn-check";
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
                         db.ref('rpg_data/'+jogadorAtual).update({
                             xp: (p.xp||0) + 20,
                             coins: (p.coins||0) + 20,
                             'missaoBau/concluida': true
                         });
-                    }
-                };
+                    };
+                    if(p.missaoBau.giros < 10) chestMsg.innerHTML = "Não gostou? Clique no baú para girar de novo!";
+                    else chestMsg.innerHTML = "Última tentativa de hoje!";
+                    wrapper.classList.add('chest-shake');
+                }
             } else {
                 chestCont.classList.add('hidden');
-                chestMsg.classList.remove('hidden');
-                chestIcon.innerText = "💰";
-                chestIcon.classList.add('chest-shake');
+                girosTxt.innerText = "Tentativas hoje: 10";
+                chestMsg.innerHTML = "Clique para sortear!";
+                wrapper.classList.add('chest-shake');
             }
 
+            // Missões e Loja mantidos
             const dO = document.getElementById('lista-obrigatoria'); dO.innerHTML = "";
             ["Treino Fisico", "Trabalho", "Estudo"].forEach(n => {
                 const id = `d-${n}-${hoje}`, feito = (p.missoes||[]).some(m => m.id === id && m.concluida);
@@ -558,6 +590,7 @@
             const tL = document.querySelector('#tabela-loja tbody'); if(tL) { tL.innerHTML = ""; [{n:'Passear',p:900},{n:'Presente',p:5000},{n:'Lanche',p:400}].forEach(i => { tL.innerHTML += `<tr><td>${i.n}</td><td>💰${i.p}</td><td><button class="btn-buy" onclick="comprar(${i.p},'${i.n}')">Resgatar</button></td></tr>`; }); }
         }
 
+        // Funções de suporte
         function concluirMissao(id, v, d=false) {
             const p = dadosGerais[jogadorAtual], ms = p.missoes || [];
             let m = ms.find(x => x.id === id);
