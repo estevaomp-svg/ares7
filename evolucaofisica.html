@@ -56,8 +56,9 @@
             if(u) {
                 jogador = u.email.split('@')[0].replace(/[.#$[\]]/g, "_");
                 db.ref('rpg_data/' + jogador).on('value', s => { 
-                    document.getElementById('p-status').innerText = "Atleta: " + (s.val().nick || jogador);
-                    render(s.val() || {}); 
+                    const d = s.val() || {};
+                    document.getElementById('p-status').innerText = "Atleta: " + (d.nick || jogador);
+                    render(d); 
                 });
             } else { document.getElementById('p-status').innerText = "Faça login no site principal."; }
         });
@@ -75,30 +76,53 @@
 
         async function up(id, m, r) {
             const v = parseInt(document.getElementById('in-' + id).value);
-            if (!v || v <= r) return alert("Supera o recorde!");
+            if (!v || v === r) return alert("Digite um valor diferente do atual!");
             
             const snap = await db.ref('rpg_data/' + jogador).get();
             const p = snap.val();
-            const agora = Date.now(), hist = p.evolucao_diaria || {}, dEx = hist[id] || { totalSubido: 0, ultimaData: 0 };
+            const agora = Date.now();
+            const hist = p.evolucao_diaria || {};
+            const dEx = hist[id] || { totalSubido: 0, ultimaData: 0 };
             const horas = (agora - dEx.ultimaData) / (1000 * 60 * 60);
+            
             let jaSubiu = (horas < 20) ? dEx.totalSubido : 0;
-            const aumento = v - r;
+            const diferenca = v - r; 
 
-            // TRAVA DE +10 KG OU +10 REPS
-            if ((jaSubiu + aumento) > 10) { 
-                alert(`Limite diário de +10 excedido! Você já subiu ${jaSubiu} hoje.`); 
-                return; 
+            // Se for AUMENTO, aplica a trava de +10
+            if (diferenca > 0) {
+                if ((jaSubiu + diferenca) > 10) { 
+                    alert(`Limite diário de +10 excedido! Você já subiu ${jaSubiu} hoje.`); 
+                    return; 
+                }
             }
 
-            let mult = (id === 'elevacao_halters') ? 500 : 100, ganho = (m === 'kg') ? aumento * mult : aumento * 45;
-            const novosRecs = { ... (p.records || {}) }; novosRecs[id] = v;
-            const novoHist = { ...hist }; novoHist[id] = { totalSubido: jaSubiu + aumento, ultimaData: agora };
+            let mult = (id === 'elevacao_halters') ? 500 : 100;
+            let variacaoXP = (m === 'kg') ? diferenca * mult : diferenca * 45;
 
-            await db.ref('rpg_data/' + jogador).update({
-                xp: (p.xp || 0) + ganho, coins: (p.coins || 0) + ganho,
-                records: novosRecs, evolucao_diaria: novoHist
-            });
-            alert(`UP! +${ganho} XP`);
+            const novosRecs = { ... (p.records || {}) }; 
+            novosRecs[id] = v;
+            
+            const novoHist = { ...hist };
+            // Só conta para o limite diário se for ganho real
+            if (diferenca > 0) {
+                novoHist[id] = { totalSubido: jaSubiu + diferenca, ultimaData: agora };
+            }
+
+            // Se for regressão, pede confirmação
+            const confirmacao = diferenca < 0 
+                ? confirm(`Você está reduzindo seu recorde. Isso custará ${Math.abs(variacaoXP)} de XP. Confirmar correção?`)
+                : true;
+
+            if (confirmacao) {
+                await db.ref('rpg_data/' + jogador).update({
+                    xp: Math.max(0, (p.xp || 0) + variacaoXP), 
+                    coins: Math.max(0, (p.coins || 0) + variacaoXP),
+                    records: novosRecs, 
+                    evolucao_diaria: novoHist
+                });
+                
+                alert(diferenca > 0 ? `UP! +${variacaoXP} XP` : `Correção aplicada. ${variacaoXP} XP`);
+            }
         }
     </script>
 </body>
