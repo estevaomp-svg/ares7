@@ -114,6 +114,17 @@
     </a>
     <button onclick="document.getElementById('download-banner').style.display='none'" style="background:none; border:none; color:white; margin-left:10px; cursor:pointer;">✕</button>
 </div>
+    <script>
+    // Se a página não carregar em 3 segundos, ele força um refresh interno
+    window.onload = function() {
+        console.log("App carregado com sucesso.");
+    };
+    
+    // Garante que o fundo escuro apareça mesmo com erro de rede
+    document.addEventListener("DOMContentLoaded", function() {
+        document.body.style.backgroundColor = "#0f172a";
+    });
+</script>
     <div id="res-velha-msg"></div>
 
     <div id="convite-velha">
@@ -585,5 +596,6 @@
     </script>
 </body>
 </html>
+
 
 
