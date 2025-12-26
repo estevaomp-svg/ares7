@@ -29,7 +29,7 @@
             margin-bottom: 15px; border: 1px solid rgba(51, 65, 85, 0.5); 
         }
 
-        /* ESTILOS DO PRESENTE MISTERIOSO */
+        /* ESTILO PRESENTE MISTERIOSO */
         .lucky-gift-box {
             text-align: center;
             background: radial-gradient(circle, #7e22ce 0%, #0f172a 100%);
@@ -41,37 +41,25 @@
             transition: 0.3s;
             box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
         }
-        .gift-emoji {
-            font-size: 65px;
-            display: inline-block;
-            transition: 0.5s;
-            filter: drop-shadow(0 0 15px #fbbf24);
-        }
-        .gift-emoji.open { transform: scale(1.2) translateY(-10px); filter: drop-shadow(0 0 25px #fff); }
+        .gift-emoji { font-size: 65px; display: inline-block; transition: 0.5s; filter: drop-shadow(0 0 15px #fbbf24); }
+        .gift-emoji.open { transform: scale(1.1); filter: drop-shadow(0 0 25px #fff); }
         .gift-shake { animation: shake 0.8s infinite; }
         @keyframes shake {
-            0% { transform: rotate(0); }
-            25% { transform: rotate(5deg); }
-            50% { transform: rotate(0); }
-            75% { transform: rotate(-5deg); }
-            100% { transform: rotate(0); }
+            0% { transform: rotate(0); } 25% { transform: rotate(5deg); }
+            50% { transform: rotate(0); } 75% { transform: rotate(-5deg); } 100% { transform: rotate(0); }
         }
         .lucky-mission-text {
-            background: #fef3c7;
-            color: #92400e;
-            padding: 12px;
-            border-radius: 10px;
-            font-weight: bold;
-            margin-top: 15px;
-            border-left: 5px solid #fbbf24;
-            font-size: 1.1em;
+            background: #fef3c7; color: #92400e; padding: 12px;
+            border-radius: 10px; font-weight: bold; margin-top: 15px;
+            border-left: 5px solid #fbbf24; font-size: 1.1em;
         }
 
-        /* Estilos Base */
+        /* Estilos Originais */
         .online-counter-box { background-color: var(--success); color: #000; padding: 5px 12px; border-radius: 5px; font-weight: bold; display: flex; align-items: center; margin-left: 15px; font-size: 14px; }
         .status-dot { height: 10px; width: 10px; background-color: #444; border-radius: 50%; display: inline-block; margin-right: 8px; }
         .status-dot.online { background-color: var(--success); box-shadow: 0 0 8px var(--success); }
         .online-border { border: 2px solid var(--success) !important; box-shadow: 0 0 15px rgba(34, 197, 94, 0.3); }
+        .player-img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #3b82f6; object-fit: cover; background: #1e293b; }
         .lvl-badge { background: #fbbf24; color: #1e293b; padding: 5px 15px; border-radius: 20px; font-weight: bold; display: inline-block; margin: 10px 0; }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .stat-box { background: rgba(51, 65, 85, 0.6); padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #475569; }
@@ -80,6 +68,7 @@
         input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: none; font-size: 16px; background: white !important; color: black !important; }
         button { cursor: pointer; padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; transition: 0.3s; }
         .btn-check { background: #22c55e; padding: 8px 15px; }
+        .btn-del { background: #ef4444; padding: 8px 12px; margin-left: 5px; }
         .btn-done { background: #64748b !important; padding: 8px 15px; color: #cbd5e1; }
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #1e293b; display: flex; justify-content: space-around; padding: 10px 0; border-top: 2px solid #3b82f6; z-index: 1000; }
         .nav-item { color: #94a3b8; text-decoration: none; font-size: 12px; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
@@ -92,8 +81,6 @@
         .velha-cell { width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px; color: white; cursor: pointer; }
         #res-velha-msg { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); z-index: 5000; padding: 30px; border-radius: 20px; text-align: center; font-size: 32px; font-weight: 900; transition: 0.5s; pointer-events: none; width: 80%; border: 4px solid white; }
         #res-velha-msg.show { transform: translate(-50%, -50%) scale(1); }
-        .msg-win { background: var(--success); color: white; }
-        .msg-lose { background: var(--danger); color: white; }
     </style>
 </head>
 <body>
@@ -147,7 +134,7 @@
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center">
                     <div style="display:flex; align-items:center; gap:10px">
-                        <img id="p-img" style="width:50px; height:50px; border-radius:50%;" src="">
+                        <img id="p-img" class="player-img" src="">
                         <span>👤 <b><span id="player-name">---</span></b></span>
                     </div>
                     <button onclick="logout()" style="background:#ef4444; padding:5px 10px; font-size:12px">Sair</button>
@@ -161,23 +148,38 @@
             </div>
 
             <div class="card">
-                <h3 style="margin-bottom:5px">🎁 Presente Misterioso</h3>
+                <div style="display:flex; justify-content:space-between; align-items:center">
+                    <h3 style="margin:0">🎁 Presente Misterioso</h3>
+                    <span id="gift-counter" style="background:#fbbf24; color:#000; padding:2px 8px; border-radius:10px; font-weight:bold; font-size:12px">Giros: 0/10</span>
+                </div>
                 <div class="lucky-gift-box" onclick="abrirBau()">
                     <span id="gift-icon" class="gift-emoji gift-shake">🎁</span>
                     <div id="lucky-mission-container" class="hidden">
                         <div id="lucky-mission-text" class="lucky-mission-text"></div>
                         <button id="btn-concluir-bau" class="btn-check" style="margin-top:10px; width:100%"></button>
                     </div>
-                    <p id="lucky-msg" style="margin-top:10px; font-weight:bold; color:#fbbf24">Clique para descobrir seu prêmio diário!</p>
+                    <p id="lucky-msg" style="margin-top:10px; font-weight:bold; color:#fbbf24">Clique para descobrir seu prêmio!</p>
                 </div>
             </div>
 
             <div class="card">
                 <h3>🏆 Ranking</h3>
-                <table id="ranking-table">
-                    <thead><tr><th>#</th><th>Player</th><th>Lvl</th><th>XP</th><th>Duelo</th></tr></thead>
+                <table id="ranking-table" style="width:100%">
+                    <thead><tr><th>#</th><th>Player</th><th>Lvl</th><th>XP</th><th>Ação</th></tr></thead>
                     <tbody id="ranking-body"></tbody>
                 </table>
+            </div>
+
+            <div class="card">
+                <h3>📜 Missões Pessoais</h3>
+                <div id="lista-missoes-pessoais" style="margin-bottom:15px"></div>
+                <input type="text" id="missao-input" placeholder="Nova missão...">
+                <select id="cat-input">
+                    <option value="30">🚀 Épica (+30 XP)</option>
+                    <option value="15">⚙️ Comum (+15 XP)</option>
+                    <option value="-30">⚠️ Hábito Sombrio (-30 XP)</option>
+                </select>
+                <button onclick="addMissao()" style="background:#3b82f6; width:100%">Registrar</button>
             </div>
         </div>
 
@@ -201,12 +203,25 @@
         const db = firebase.database(), auth = firebase.auth();
         let jogadorAtual = "", dadosGerais = {};
 
-        const missoesSorte = ["Lavar a louça", "Arrumar a cama", "Beijar a mãe", "Fazer 10 flexões", "Estudar 15min"];
+        const missoesSorte = ["Lavar a louça", "Arrumar a cama", "Beijar a mãe", "Fazer 10 flexões", "Estudar 15min", "Beber 500ml de água", "Limpar o teclado", "Organizar a mesa"];
 
+        // LÓGICA DE ABRIR PRESENTE (ATÉ 10 VEZES)
         function abrirBau() {
             const p = dadosGerais[jogadorAtual];
             const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
-            if (p.missaoBau && p.missaoBau.data === hoje) return;
+            
+            // Verifica se já tem uma missão ativa hoje
+            if (p.missaoBau && p.missaoBau.data === hoje && !p.missaoBau.concluida) {
+                alert("Conclua a missão atual antes de abrir o próximo!");
+                return;
+            }
+
+            // Verifica o limite de 10 giros
+            const girosHoje = (p.missaoBau && p.missaoBau.data === hoje) ? (p.missaoBau.contagem || 0) : 0;
+            if (girosHoje >= 10) {
+                alert("Você já usou seus 10 presentes de hoje!");
+                return;
+            }
 
             const icon = document.getElementById('gift-icon');
             icon.classList.remove('gift-shake');
@@ -214,14 +229,17 @@
 
             setTimeout(() => {
                 const sorteada = missoesSorte[Math.floor(Math.random() * missoesSorte.length)];
-                db.ref('rpg_data/' + jogadorAtual).update({
-                    missaoBau: { nome: sorteada, concluida: false, data: hoje }
+                db.ref('rpg_data/' + jogadorAtual + '/missaoBau').update({
+                    nome: sorteada,
+                    concluida: false,
+                    data: hoje,
+                    contagem: girosHoje + 1
                 });
             }, 600);
         }
 
-        // Lógica do Jogo da Velha (CORRIGIDA)
-        let salaV = null, meuS = "";
+        // JOGO DA VELHA
+        let salaV = null;
         function desafiarVelha(idOponente) {
             salaV = [jogadorAtual, idOponente].sort().join("_vs_");
             db.ref('velha_online/' + salaV).set({
@@ -235,15 +253,12 @@
             db.ref('velha_online/'+salaV).get().then(s => {
                 const d = s.val();
                 if(!d || d.status !== "jogando" || d.turno !== jogadorAtual || d.tabuleiro[i] !== "") return;
-                
                 d.tabuleiro[i] = (d.p1 === jogadorAtual) ? "X" : "O";
                 const v = checarWinV(d.tabuleiro);
-                const empate = !v && d.tabuleiro.every(c => c !== "");
-                
                 db.ref('velha_online/'+salaV).update({
                     tabuleiro: d.tabuleiro,
                     turno: (jogadorAtual === d.p1 ? d.p2 : d.p1),
-                    vencedor: v ? jogadorAtual : (empate ? "EMPATE" : "")
+                    vencedor: v ? jogadorAtual : (d.tabuleiro.every(c => c !== "") ? "EMPATE" : "")
                 });
             });
         }
@@ -259,7 +274,6 @@
                 const cells = document.querySelectorAll('.velha-cell');
                 d.tabuleiro.forEach((v, i) => { cells[i].innerText = v; });
                 document.getElementById('velha-info').innerText = (d.turno === jogadorAtual) ? "Sua vez!" : "Vez do oponente...";
-                
                 if(d.vencedor) {
                     const resMsg = document.getElementById('res-velha-msg');
                     resMsg.innerText = d.vencedor === "EMPATE" ? "EMPATE!" : (d.vencedor === jogadorAtual ? "GANHOU!" : "PERDEU!");
@@ -273,7 +287,7 @@
         function recusarVelha() { document.getElementById('convite-velha').style.display='none'; if(salaV) db.ref('velha_online/'+salaV).remove(); }
         function sairVelha() { document.getElementById('arena-velha').style.display='none'; if(salaV){db.ref('velha_online/'+salaV).off(); db.ref('velha_online/'+salaV).remove(); salaV=null;}}
 
-        // Autenticação e Atualização
+        // ATUALIZAÇÃO DE INTERFACE
         auth.onAuthStateChanged(u => {
             if(u) {
                 jogadorAtual = u.email.split('@')[0].replace(/[.#$[\]]/g, "_");
@@ -294,46 +308,73 @@
         });
 
         function atualizarTela() {
-            const p = dadosGerais[jogadorAtual] || {xp:0, coins:0};
+            const p = dadosGerais[jogadorAtual] || {xp:0, coins:0, missoes:[]};
             document.getElementById('player-name').innerText = p.nick || jogadorAtual;
-            document.getElementById('xp').innerText = p.xp;
-            document.getElementById('coins').innerText = p.coins;
-            document.getElementById('lvl').innerText = Math.floor(p.xp/1000)+1;
-            document.getElementById('progress').style.width = (p.xp%1000)/10 + "%";
+            document.getElementById('xp').innerText = p.xp || 0;
+            document.getElementById('coins').innerText = p.coins || 0;
+            document.getElementById('lvl').innerText = Math.floor((p.xp || 0)/1000)+1;
+            document.getElementById('progress').style.width = ((p.xp || 0)%1000)/10 + "%";
             document.getElementById('p-img').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
+            // Logica do Presente Misterioso
             const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
             const giftIcon = document.getElementById('gift-icon');
-            if (p.missaoBau && p.missaoBau.data === hoje) {
+            const contagem = (p.missaoBau && p.missaoBau.data === hoje) ? (p.missaoBau.contagem || 0) : 0;
+            document.getElementById('gift-counter').innerText = `Giros: ${contagem}/10`;
+
+            if (p.missaoBau && p.missaoBau.data === hoje && !p.missaoBau.concluida) {
                 document.getElementById('lucky-mission-container').classList.remove('hidden');
                 document.getElementById('lucky-msg').classList.add('hidden');
-                giftIcon.classList.remove('gift-shake');
                 giftIcon.innerText = "✨";
+                giftIcon.classList.remove('gift-shake');
                 document.getElementById('lucky-mission-text').innerText = p.missaoBau.nome;
                 const btn = document.getElementById('btn-concluir-bau');
-                btn.innerText = p.missaoBau.concluida ? "RESGATADO ✔" : "CONCLUIR +20 XP";
-                btn.className = p.missaoBau.concluida ? "btn-done" : "btn-check";
-                btn.onclick = () => { if(!p.missaoBau.concluida) db.ref('rpg_data/'+jogadorAtual).update({xp:p.xp+20, coins:p.coins+20, 'missaoBau/concluida':true}); };
+                btn.innerText = "CONCLUIR +20 XP";
+                btn.onclick = () => { db.ref('rpg_data/'+jogadorAtual).update({xp:(p.xp||0)+20, coins:(p.coins||0)+20, 'missaoBau/concluida':true}); };
             } else {
                 document.getElementById('lucky-mission-container').classList.add('hidden');
                 document.getElementById('lucky-msg').classList.remove('hidden');
                 giftIcon.innerText = "🎁";
-                giftIcon.classList.add('gift-shake');
+                if(contagem < 10) giftIcon.classList.add('gift-shake');
+                else document.getElementById('lucky-msg').innerText = "Limite diário atingido!";
             }
-        }
 
-        function atualizarRanking() {
-            const tb = document.getElementById('ranking-body'); tb.innerHTML = "";
-            const sorted = Object.keys(dadosGerais).map(k => ({id:k, ...dadosGerais[k]})).sort((a,b) => b.xp - a.xp);
-            sorted.forEach((p, i) => {
-                tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.nick||p.id}</td><td>${Math.floor(p.xp/1000)+1}</td><td>${p.xp}</td><td>${p.id !== jogadorAtual ? `<button onclick="desafiarVelha('${p.id}')" style="background:#3b82f6; padding:5px 10px;">Desafiar</button>` : '-'}</td></tr>`;
+            // Missões Pessoais
+            const dP = document.getElementById('lista-missoes-pessoais'); dP.innerHTML = "";
+            (p.missoes || []).forEach(m => {
+                dP.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;">
+                    <span>${m.nome}</span>
+                    <div>
+                        <button class="${m.concluida?'btn-done':'btn-check'}" onclick="concluirMissao('${m.id}', ${m.valor})" ${m.concluida?'disabled':''}>✔</button>
+                        <button class="btn-del" onclick="removerMissao('${m.id}')">🗑️</button>
+                    </div>
+                </div>`;
             });
         }
 
-        function mudarAba(aba) { /* Lógica de abas */ }
+        function concluirMissao(id, v) {
+            const p = dadosGerais[jogadorAtual], ms = p.missoes || [];
+            let m = ms.find(x => x.id === id);
+            if(m && !m.concluida) {
+                m.concluida = true;
+                db.ref('rpg_data/'+jogadorAtual).update({xp:(p.xp||0)+v, coins:(p.coins||0)+(v>0?v:0), missoes:ms});
+            }
+        }
+        function removerMissao(id) { const ms = (dadosGerais[jogadorAtual].missoes || []).filter(m => m.id !== id); db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms); }
+        function addMissao() { const n = document.getElementById('missao-input').value, v = parseInt(document.getElementById('cat-input').value); if(!n) return; const ms = dadosGerais[jogadorAtual].missoes || []; ms.push({ id:'m-'+Date.now(), nome:n, valor:v, concluida:false }); db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms); document.getElementById('missao-input').value = ""; }
+
+        function atualizarRanking() {
+            const tb = document.getElementById('ranking-body'); tb.innerHTML = "";
+            const sorted = Object.keys(dadosGerais).map(k => ({id:k, ...dadosGerais[k]})).sort((a,b) => (b.xp||0) - (a.xp||0));
+            sorted.forEach((p, i) => {
+                tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.nick||p.id}</td><td>${Math.floor((p.xp||0)/1000)+1}</td><td>${p.xp||0}</td><td>${p.id !== jogadorAtual ? `<button onclick="desafiarVelha('${p.id}')" style="background:#3b82f6; padding:4px 8px;">⭕ Velha</button>` : '-'}</td></tr>`;
+            });
+        }
+
+        function mudarAba(aba) { /* Simples esconder/mostrar */ }
         function fazerLogin() { auth.signInWithEmailAndPassword(document.getElementById('login-email').value, document.getElementById('login-pass').value); }
-        function fazerCadastro() { auth.createUserWithEmailAndPassword(document.getElementById('reg-email').value, document.getElementById('reg-pass').value).then(u => db.ref('rpg_data/'+u.user.email.split('@')[0]).set({nick:document.getElementById('reg-nick').value, xp:0, coins:0})); }
-        function logout() { auth.signOut(); }
+        function fazerCadastro() { auth.createUserWithEmailAndPassword(document.getElementById('reg-email').value, document.getElementById('reg-pass').value).then(u => db.ref('rpg_data/'+u.user.email.split('@')[0].replace(/[.#$[\]]/g, "_")).set({nick:document.getElementById('reg-nick').value, xp:0, coins:0})); }
+        function logout() { auth.signOut(); location.reload(); }
         function alternarTela(c) { document.getElementById('login-area').className = c?'hidden':''; document.getElementById('register-area').className = c?'':'hidden'; }
     </script>
 </body>
