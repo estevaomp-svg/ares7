@@ -339,54 +339,99 @@
             });
         }
 
-        // VELHA ONLINE
-        let salaV = null, meuS = "";
-        function desafiarVelha(idOponente) {
-            salaV = [jogadorAtual, idOponente].sort().join("_vs_");
-            db.ref('velha_online/' + salaV).set({
-                tabuleiro: ["","","","","","","","",""],
-                p1: jogadorAtual, p1_nick: dadosGerais[jogadorAtual].nick || jogadorAtual,
-                p2: idOponente, status: "convite", turno: jogadorAtual, vencedor: ""
-            }).then(() => { 
-                document.getElementById('arena-velha').style.display = 'flex'; 
-                document.getElementById('velha-info').innerText = "Aguardando aceite...";
-                ouvirVelha(); 
-            });
-        }
-        function ouvirVelha() {
-            db.ref('velha_online/' + salaV).on('value', s => {
-                const d = s.val(); if(!d) return;
-                meuS = (d.p1 === jogadorAtual) ? "X" : "O";
-                const cells = document.querySelectorAll('.velha-cell');
-                d.tabuleiro.forEach((v, i) => { cells[i].innerText = v; });
-                
-                if(d.status === "jogando") { document.getElementById('velha-info').innerText = (d.turno === jogadorAtual) ? "Sua vez!" : "Vez do oponente..."; }
+        /// --- LÓGICA DO JOGO DA VELHA ATUALIZADA ---
+let salaV = null, meuS = "";
 
-                if(d.vencedor) {
-                    const resMsg = document.getElementById('res-velha-msg');
-                    if(d.vencedor === jogadorAtual) { resMsg.innerText = "GANHOU!"; resMsg.className = "show msg-win"; db.ref('vitorias_velha/'+jogadorAtual).transaction(c => (c||0)+1); }
-                    else if(d.vencedor === "EMPATE") { resMsg.innerText = "EMPATE!"; resMsg.className = "show msg-win"; }
-                    else { resMsg.innerText = "PERDEU!"; resMsg.className = "show msg-lose"; }
-                    setTimeout(() => { resMsg.className = ""; sairVelha(); }, 3000);
-                }
-            });
+function desafiarVelha(idOponente) {
+    salaV = [jogadorAtual, idOponente].sort().join("_vs_");
+    const refSala = db.ref('velha_online/' + salaV);
+    
+    refSala.set({
+        tabuleiro: ["","","","","","","","",""],
+        p1: jogadorAtual, 
+        p1_nick: dadosGerais[jogadorAtual].nick || jogadorAtual,
+        p2: idOponente, 
+        status: "convite", 
+        turno: jogadorAtual, 
+        vencedor: ""
+    }).then(() => { 
+        document.getElementById('arena-velha').style.display = 'flex'; 
+        document.getElementById('velha-info').innerText = "Aguardando aceite...";
+        // Se eu desconectar enquanto espero ou jogo, a sala é apagada
+        refSala.onDisconnect().remove();
+        ouvirVelha(); 
+    });
+}
+
+function ouvirVelha() {
+    if(!salaV) return;
+    db.ref('velha_online/' + salaV).on('value', s => {
+        const d = s.val(); 
+        
+        // Se a sala sumiu do banco (alguém recusou ou abandonou)
+        if(!d) {
+            if(document.getElementById('arena-velha').style.display === 'flex') {
+                alert("A partida foi encerrada ou o oponente saiu.");
+                sairVelha();
+            }
+            document.getElementById('convite-velha').style.display = 'none';
+            return;
         }
-        function cliqueVelha(i) {
-            db.ref('velha_online/'+salaV).get().then(s => {
-                const d = s.val(); if(!d || d.turno !== jogadorAtual || d.tabuleiro[i] !== "" || d.status !== "jogando") return;
-                d.tabuleiro[i] = meuS;
-                const win = checarWinV(d.tabuleiro);
-                db.ref('velha_online/'+salaV).update({ 
-                    tabuleiro: d.tabuleiro, 
-                    turno: (d.turno === d.p1 ? d.p2 : d.p1), 
-                    vencedor: win ? jogadorAtual : (d.tabuleiro.every(c => c!=="") ? "EMPATE" : "") 
-                });
-            });
+
+        meuS = (d.p1 === jogadorAtual) ? "X" : "O";
+        const cells = document.querySelectorAll('.velha-cell');
+        d.tabuleiro.forEach((v, i) => { cells[i].innerText = v; });
+        
+        if(d.status === "jogando") {
+            document.getElementById('velha-info').innerText = (d.turno === jogadorAtual) ? "Sua vez!" : "Vez do oponente...";
         }
-        function checarWinV(b) { const w = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; return w.some(z => b[z[0]] && b[z[0]] === b[z[1]] && b[z[0]] === b[z[2]]); }
-        function aceitarVelha() { db.ref('velha_online/'+salaV).update({status:"jogando"}).then(() => { document.getElementById('convite-velha').style.display='none'; document.getElementById('arena-velha').style.display='flex'; ouvirVelha(); }); }
-        function recusarVelha() { sairVelha(); }
-        function sairVelha() { document.getElementById('arena-velha').style.display='none'; if(salaV){db.ref('velha_online/'+salaV).remove(); salaV=null;}}
+
+        if(d.vencedor) {
+            const resMsg = document.getElementById('res-velha-msg');
+            if(d.vencedor === jogadorAtual) {
+                resMsg.innerText = "GANHOU!";
+                resMsg.className = "show msg-win";
+                db.ref('vitorias_velha/'+jogadorAtual).transaction(c => (c||0)+1);
+            } else if(d.vencedor === "EMPATE") {
+                resMsg.innerText = "EMPATE!";
+                resMsg.className = "show msg-win";
+            } else {
+                resMsg.innerText = "PERDEU!";
+                resMsg.className = "show msg-lose";
+            }
+            setTimeout(() => { resMsg.className = ""; sairVelha(); }, 3000);
+        }
+    });
+}
+
+function aceitarVelha() {
+    if(!salaV) return;
+    db.ref('velha_online/'+salaV).update({status:"jogando"}).then(() => {
+        document.getElementById('convite-velha').style.display='none';
+        document.getElementById('arena-velha').style.display='flex';
+        // Garante que se o P2 deslogar, a sala fecha
+        db.ref('velha_online/'+salaV).onDisconnect().remove();
+        ouvirVelha();
+    });
+}
+
+function recusarVelha() {
+    if(salaV) {
+        db.ref('velha_online/'+salaV).remove(); // Apaga a sala para ambos
+        salaV = null;
+    }
+    document.getElementById('convite-velha').style.display='none';
+}
+
+function sairVelha() {
+    document.getElementById('arena-velha').style.display='none';
+    document.getElementById('convite-velha').style.display='none';
+    if(salaV){
+        db.ref('velha_online/'+salaV).off(); // Para de ouvir atualizações
+        db.ref('velha_online/'+salaV).remove(); // Remove a sala do banco
+        salaV = null;
+    }
+}
 
         // DUELO ARENA
         let batalhaAtiva = false, statsP = {}, statsE = {};
@@ -542,3 +587,4 @@
     </script>
 </body>
 </html>
+
