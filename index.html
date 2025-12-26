@@ -45,11 +45,6 @@
         input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: none; font-size: 16px; box-sizing: border-box; background: white !important; color: black !important; }
         button { cursor: pointer; padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; transition: 0.3s; }
         
-        .btn-auth { background: #3b82f6; width: 100%; margin-bottom: 10px; }
-        .btn-check { background: #22c55e; padding: 8px 15px; }
-        .btn-del { background: #ef4444; padding: 8px 12px; margin-left: 5px; }
-        .btn-done { background: #64748b !important; padding: 8px 15px; color: #cbd5e1; }
-        
         /* BOTÃO EVOLUÇÃO FÍSICA */
         .btn-goto-physic { 
             background: linear-gradient(45deg, #ef4444, #991b1b); 
@@ -59,6 +54,10 @@
             margin-bottom: 15px; transition: 0.3s;
         }
 
+        .btn-auth { background: #3b82f6; width: 100%; margin-bottom: 10px; }
+        .btn-check { background: #22c55e; padding: 8px 15px; }
+        .btn-del { background: #ef4444; padding: 8px 12px; margin-left: 5px; }
+        .btn-done { background: #64748b !important; padding: 8px 15px; color: #cbd5e1; }
         .btn-penalty { background: #991b1b; border: 1px solid #ef4444; width: 100%; }
         .btn-buy { background: #f59e0b; padding: 8px 15px; }
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #1e293b; display: flex; justify-content: space-around; padding: 10px 0; border-top: 2px solid #3b82f6; z-index: 1000; }
@@ -68,7 +67,7 @@
         th, td { border-bottom: 1px solid rgba(51, 65, 85, 0.5); padding: 12px 8px; text-align: left; }
         .hidden { display: none !important; }
 
-        /* --- ARENAS --- */
+        /* ARENA DE DUELO */
         #arena-duelo { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: space-around; padding: 20px; box-sizing: border-box; }
         .battle-stage { width: 100%; max-width: 400px; position: relative; height: 350px; background: rgba(255,255,255,0.05); border-radius: 20px; border: 1px solid #334155; overflow: hidden;}
         .char-container { position: absolute; text-align: center; transition: 0.3s; width: 120px; z-index: 5; }
@@ -90,6 +89,7 @@
         .anim-attack-e { animation: attack-enemy 0.5s ease-in-out; }
         .anim-damage { animation: take-damage 0.4s ease-in-out; }
 
+        /* JOGO DA VELHA */
         #arena-velha { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.98); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; }
         .velha-grid { display: grid; grid-template-columns: repeat(3, 90px); gap: 10px; background: #334155; padding: 10px; border-radius: 10px; }
         .velha-cell { width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px; color: white; cursor: pointer; }
@@ -155,6 +155,9 @@
     <div class="card header" style="margin-bottom: 10px; background: #991b1b; text-align: center;">
         <a href="https://www.youtube.com/aressama" target="_blank" style="color:white; font-weight:bold; text-decoration:none;">🎥 CANAL ARES7 - Inscreva-se</a>
     </div>
+    <div class="card header" style="margin-bottom: 10px; background: #1e3a8a; text-align: center;">
+        <a href="https://ares7.com.br/scalp" target="_blank" style="color:white; font-weight:bold; text-decoration:none;">📈 INDICADOR ICARO SCALP - Acesse Aqui</a>
+    </div>
 
     <div id="auth-screen" class="card" style="max-width:400px; margin: 20px auto;">
         <div id="login-area">
@@ -218,9 +221,9 @@
 
             <div class="card">
                 <h3>🔥 Evolução Física</h3>
-                <a href="evolucaofisica.html" class="btn-goto-physic">🏋️ ACESSAR SALA DE TREINAMENTO</a>
+                <a href="evolucaofisica" class="btn-goto-physic">🏋️ ACESSAR SALA DE TREINAMENTO</a>
                 
-                <div style="padding:15px; background:rgba(153, 27, 27, 0.3); border-radius:10px; border:1px solid #ef4444;">
+                <div style="margin-top:20px; padding:15px; background:rgba(153, 27, 27, 0.3); border-radius:10px; border:1px solid #ef4444;">
                     <h4 style="margin:0 0 5px 0; color:#fca5a5;">⚠️ Câmara de Penalidades</h4>
                     <div style="display:flex; gap:10px;">
                         <input type="number" id="input-penalidade" placeholder="Qtd">
@@ -293,7 +296,6 @@
             });
         }
 
-        // --- SISTEMAS DE JOGO ---
         let salaV = null, meuS = "";
         function desafiarVelha(idOponente) {
             salaV = [jogadorAtual, idOponente].sort().join("_vs_");
@@ -380,7 +382,6 @@
         function finalizar(v) { batalhaAtiva = false; document.getElementById('battle-log').innerText = v ? "VITÓRIA!" : "DERROTA!"; document.getElementById('btn-fechar-duelo').classList.remove('hidden'); if(v) db.ref('rpg_data/'+jogadorAtual).update({xp:(dadosGerais[jogadorAtual].xp||0)+5}); }
         function fecharArena() { document.getElementById('arena-duelo').style.display = 'none'; }
 
-        // --- AUTH E UI ---
         function mudarAba(aba) { document.getElementById('tab-home').classList.toggle('hidden', aba !== 'home'); document.getElementById('tab-profile').classList.toggle('hidden', aba !== 'profile'); }
         function limparNome(e) { return e.split('@')[0].replace(/[.#$[\]]/g, "_"); }
         function alternarTela(c) { document.getElementById('login-area').className = c?'hidden':''; document.getElementById('register-area').className = c?'':'hidden'; }
@@ -397,7 +398,6 @@
                 document.getElementById('game-content').classList.remove('hidden');
                 db.ref('rpg_data').on('value', s => { dadosGerais = s.val() || {}; atualizarTela(); atualizarRanking(); });
                 db.ref('vitorias_velha').on('value', s => { vitoriasVelha = s.val() || {}; atualizarRankingVelha(); });
-                db.ref('velha_online').on('value', s => { const salas = s.val(); for(let id in salas) { if(salas[id].p2 === jogadorAtual && salas[id].status === "convite") { salaV = id; document.getElementById('convite-velha').style.display = 'block'; } } });
             } else { document.getElementById('auth-screen').classList.remove('hidden'); document.getElementById('game-content').classList.add('hidden'); }
         });
 
@@ -429,7 +429,7 @@
             
             const dO = document.getElementById('lista-obrigatoria'); dO.innerHTML = "";
             const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
-            ["Trabalho", "Estudo"].forEach(n => {
+            ["Treino Fisico", "Trabalho", "Estudo"].forEach(n => {
                 const id = `d-${n}-${hoje}`, feito = (p.missoes||[]).some(m => m.id === id && m.concluida);
                 dO.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:8px"><span>${n}</span><button class="${feito?'btn-done':'btn-check'}" onclick="concluirMissao('${id}', 10, true)" ${feito?'disabled':''}>${feito?'OK':'✔'}</button></div>`;
             });
