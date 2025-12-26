@@ -55,7 +55,7 @@
         th, td { border-bottom: 1px solid rgba(51, 65, 85, 0.5); padding: 12px 8px; text-align: left; }
         .hidden { display: none !important; }
 
-        /* Estilos Duelo Arena */
+        /* Arena de Duelo Estilos */
         #arena-duelo { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: space-around; padding: 20px; box-sizing: border-box; }
         .battle-stage { width: 100%; max-width: 400px; position: relative; height: 350px; background: rgba(255,255,255,0.05); border-radius: 20px; border: 1px solid #334155; overflow: hidden;}
         .char-container { position: absolute; text-align: center; transition: 0.3s; width: 120px; z-index: 5; }
@@ -64,57 +64,56 @@
         .battle-img { width: 90px; height: 90px; border-radius: 50%; border: 4px solid white; object-fit: cover; }
         .hp-bg { width: 110px; height: 12px; background: #444; border-radius: 6px; margin-top: 8px; overflow: hidden; }
         .hp-fill { height: 100%; background: var(--success); width: 100%; transition: 0.4s; }
-        .btn-action { padding: 18px; border-radius: 12px; font-weight: bold; border: none; color: white; cursor: pointer; font-size: 16px; }
-        .btn-atk { background: var(--danger); }
-        .btn-def { background: var(--primary); }
-        #battle-log { background: rgba(0,0,0,0.7); width: 100%; max-width: 400px; height: 100px; padding: 15px; border-radius: 12px; font-size: 14px; overflow-y: auto; color: #60a5fa; }
+        #battle-log { background: rgba(0,0,0,0.7); width: 100%; max-width: 400px; height: 100px; padding: 15px; border-radius: 12px; font-size: 14px; overflow-y: auto; color: #60a5fa; text-align: center; }
     </style>
 </head>
 <body>
 
+    <div id="res-velha-msg"></div>
+
     <div id="convite-velha" style="position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#1e293b; padding:15px; border-radius:10px; border:2px solid #fbbf24; z-index:4000; display:none; text-align:center;">
         <b id="msg-convite">Desafio!</b>
         <div style="display:flex; gap:10px; margin-top:10px">
-            <button onclick="aceitarVelha()" style="background:#22c55e;">Aceitar</button>
-            <button onclick="recusarVelha()" style="background:#ef4444;">Recusar</button>
+            <button onclick="aceitarVelha()" style="background:#22c55e; flex:1">Aceitar</button>
+            <button onclick="recusarVelha()" style="background:#ef4444; flex:1">Recusar</button>
         </div>
     </div>
 
     <div id="arena-velha" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.98); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center;">
         <h2 id="velha-info" style="color: var(--warning);">Sua vez!</h2>
         <div class="velha-grid" style="display: grid; grid-template-columns: repeat(3, 90px); gap: 10px; background: #334155; padding: 10px; border-radius: 10px;">
-            <div class="velha-cell" style="width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px;" onclick="cliqueVelha(0)"></div>
-            <div class="velha-cell" style="width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px;" onclick="cliqueVelha(1)"></div>
-            <div class="velha-cell" style="width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px;" onclick="cliqueVelha(2)"></div>
-            <div class="velha-cell" style="width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px;" onclick="cliqueVelha(3)"></div>
-            <div class="velha-cell" style="width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px;" onclick="cliqueVelha(4)"></div>
-            <div class="velha-cell" style="width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px;" onclick="cliqueVelha(5)"></div>
-            <div class="velha-cell" style="width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px;" onclick="cliqueVelha(6)"></div>
-            <div class="velha-cell" style="width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px;" onclick="cliqueVelha(7)"></div>
-            <div class="velha-cell" style="width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px;" onclick="cliqueVelha(8)"></div>
+            <div class="velha-cell" style="width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px; cursor: pointer;" onclick="cliqueVelha(0)"></div>
+            <div class="velha-cell" style="width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px; cursor: pointer;" onclick="cliqueVelha(1)"></div>
+            <div class="velha-cell" style="width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px; cursor: pointer;" onclick="cliqueVelha(2)"></div>
+            <div class="velha-cell" style="width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px; cursor: pointer;" onclick="cliqueVelha(3)"></div>
+            <div class="velha-cell" style="width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px; cursor: pointer;" onclick="cliqueVelha(4)"></div>
+            <div class="velha-cell" style="width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px; cursor: pointer;" onclick="cliqueVelha(5)"></div>
+            <div class="velha-cell" style="width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px; cursor: pointer;" onclick="cliqueVelha(6)"></div>
+            <div class="velha-cell" style="width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px; cursor: pointer;" onclick="cliqueVelha(7)"></div>
+            <div class="velha-cell" style="width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px; cursor: pointer;" onclick="cliqueVelha(8)"></div>
         </div>
-        <button onclick="sairVelha()" style="margin-top:20px; background:var(--danger)">Sair</button>
+        <button onclick="sairVelha()" style="margin-top:20px; background:var(--danger); width: 200px;">Sair</button>
     </div>
 
     <div id="arena-duelo">
-        <h1 style="color:var(--warning);">ARENA DE DUELO</h1>
+        <h1 style="color:var(--warning); font-weight: 900;">ARENA DE DUELO</h1>
         <div class="battle-stage">
             <div id="char-enemy" class="char-container">
-                <div id="name-e">Inimigo</div>
+                <div style="font-size: 13px; font-weight: bold; color:var(--danger)" id="name-e">Inimigo</div>
                 <img id="img-e" class="battle-img" src="">
                 <div class="hp-bg"><div id="hp-e-fill" class="hp-fill"></div></div>
             </div>
             <div id="char-player" class="char-container">
                 <div class="hp-bg"><div id="hp-p-fill" class="hp-fill"></div></div>
                 <img id="img-p" class="battle-img" src="">
-                <div id="name-p">Você</div>
+                <div style="font-size: 13px; font-weight: bold; color:var(--success)" id="name-p">Você</div>
             </div>
         </div>
-        <div id="battle-log">Aguardando...</div>
+        <div id="battle-log">Iniciando combate...</div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; max-width:400px;">
-            <button class="btn-action btn-atk" onclick="comandoBatalha('atacar')">ATACAR</button>
-            <button class="btn-action btn-def" onclick="comandoBatalha('defender')">DEFENDER</button>
-            <button id="btn-fechar-duelo" class="btn-action hidden" style="background:#3b82f6; grid-column: span 2;" onclick="fecharArena()">SAIR</button>
+            <button class="btn-auth" style="background:var(--danger); height:60px;" onclick="comandoBatalha('atacar')">ATACAR</button>
+            <button class="btn-auth" style="background:var(--primary); height:60px;" onclick="comandoBatalha('defender')">DEFENDER</button>
+            <button id="btn-fechar-duelo" class="btn-auth hidden" style="background:#3b82f6; grid-column: span 2;" onclick="fecharArena()">SAIR DA ARENA</button>
         </div>
     </div>
 
@@ -124,15 +123,15 @@
             <input type="email" id="login-email" placeholder="E-mail">
             <input type="password" id="login-pass" placeholder="Senha">
             <button class="btn-auth" onclick="fazerLogin()">Acessar</button>
-            <p style="text-align:center">Novo? <a href="#" onclick="alternarTela(true)" style="color:#60a5fa">Criar Conta</a></p>
+            <p style="text-align:center; font-size:14px">Novo? <a href="#" onclick="alternarTela(true)" style="color:#60a5fa">Criar Conta</a></p>
         </div>
         <div id="register-area" class="hidden">
             <h2 style="text-align:center">Novo Player</h2>
-            <input type="text" id="reg-nick" placeholder="Nick">
+            <input type="text" id="reg-nick" placeholder="Nick do Personagem">
             <input type="email" id="reg-email" placeholder="E-mail">
             <input type="password" id="reg-pass" placeholder="Senha">
-            <button class="btn-auth" style="background:#22c55e" onclick="fazerCadastro()">Começar</button>
-            <p style="text-align:center">Já joga? <a href="#" onclick="alternarTela(false)" style="color:#60a5fa">Login</a></p>
+            <button class="btn-auth" style="background:#22c55e" onclick="fazerCadastro()">Começar Jornada</button>
+            <p style="text-align:center; font-size:14px">Já joga? <a href="#" onclick="alternarTela(false)" style="color:#60a5fa">Login</a></p>
         </div>
     </div>
 
@@ -142,18 +141,18 @@
                 <div style="display:flex; justify-content:space-between; align-items:center">
                     <div style="display:flex; align-items:center; gap:10px">
                         <img id="p-img" class="player-img" src="">
-                        <b><span id="player-name">---</span></b>
+                        <span>👤 <b><span id="player-name">---</span></b></span>
                     </div>
-                    <button onclick="logout()" style="background:#ef4444; padding:5px 10px;">Sair</button>
+                    <button onclick="logout()" style="background:#ef4444; padding:5px 10px; font-size:12px">Sair</button>
                 </div>
-                <div style="display:flex; align-items:center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
                     <div class="lvl-badge">LEVEL <span id="lvl">1</span></div>
                     <div class="online-counter-box"><span id="global-online-count">5</span> online</div>
                 </div>
                 <div class="progress-bar"><div id="progress" class="progress-fill"></div></div>
                 <div class="stats-grid">
-                    <div class="stat-box">🎯 XP: <span id="xp">0</span></div>
-                    <div class="stat-box">💰 Moedas: <span id="coins">0</span></div>
+                    <div class="stat-box">🎯 XP<br><span id="xp">0</span></div>
+                    <div class="stat-box">💰 Moedas<br><span id="coins">0</span></div>
                 </div>
             </div>
 
@@ -165,14 +164,23 @@
                 </table>
             </div>
 
-            <div class="card" style="text-align: center;">
-                <h3>💪 Treinamento Físico</h3>
-                <p style="font-size: 14px; color: #94a3b8; margin-bottom: 15px;">Registre seus treinos em uma nova sala de treinamento.</p>
-                <a href="evolucaofisica.html" style="display: block; background: var(--danger); color: white; text-decoration: none; padding: 15px; border-radius: 10px; font-weight: bold; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">
+            <div class="card">
+                <h3>⭕ Ranking Old Game (Velha)</h3>
+                <table id="ranking-velha-table">
+                    <thead><tr><th>#</th><th>Player</th><th>Vitórias</th></tr></thead>
+                    <tbody id="ranking-velha-body"></tbody>
+                </table>
+            </div>
+
+            <div class="card" style="text-align: center; border: 2px solid var(--danger);">
+                <h3 style="color: var(--danger);">🔥 Sala de Treinamento</h3>
+                <p style="font-size: 14px; color: #94a3b8; margin-bottom: 15px;">Acesse para registrar exercícios e ganhar XP/Moedas.</p>
+                <a href="evolucaofisica.html" style="display: block; background: var(--danger); color: white; text-decoration: none; padding: 18px; border-radius: 12px; font-weight: bold; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">
                     🏋️ IR PARA EVOLUÇÃO FÍSICA
                 </a>
                 
                 <div id="grid-fisico" style="display:none;"></div>
+
                 <div style="margin-top:20px; padding:15px; background:rgba(153, 27, 27, 0.3); border-radius:10px; border:1px solid #ef4444;">
                     <h4 style="margin:0 0 5px 0; color:#fca5a5;">⚠️ Câmara de Penalidades</h4>
                     <div style="display:flex; gap:10px;">
@@ -183,7 +191,7 @@
             </div>
 
             <div class="card">
-                <h3>⚡ Missões Diárias</h3>
+                <h3>⚡ Missões Diárias (+10 XP)</h3>
                 <div id="lista-obrigatoria"></div>
             </div>
 
@@ -201,7 +209,7 @@
                     <option value="15">⚙️ Comum (+15 XP)</option>
                     <option value="-30">⚠️ Hábito Sombrio (-30 XP)</option>
                 </select>
-                <button onclick="addMissao()" style="background:#3b82f6; width:100%">Registrar</button>
+                <button onclick="addMissao()" style="background:#3b82f6; width:100%">Registar</button>
             </div>
         </div>
 
@@ -222,7 +230,6 @@
     </div>
 
     <script>
-        // --- CONFIGURAÇÃO FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyBanevR51ejaTE0ccqlmlU6VRh7Qg4EETs",
             authDomain: "aresrpg-7daf4.firebaseapp.com",
@@ -234,43 +241,45 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database(), auth = firebase.auth();
-        let jogadorAtual = "", dadosGerais = {};
+        let jogadorAtual = "", dadosGerais = {}, vitoriasVelha = {};
 
-        // --- SISTEMAS DE DUELO E RANKING (CONSERVADOS) ---
         auth.onAuthStateChanged(u => {
             if(u) {
                 jogadorAtual = u.email.split('@')[0].replace(/[.#$[\]]/g, "_");
+                db.ref('status/'+jogadorAtual).set({online:true});
+                db.ref('status/'+jogadorAtual).onDisconnect().set({online:false});
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('game-content').classList.remove('hidden');
                 db.ref('rpg_data').on('value', s => { dadosGerais = s.val() || {}; atualizarTela(); atualizarRanking(); });
-                // Presença
-                db.ref('status/'+jogadorAtual).set({online:true});
-                db.ref('status/'+jogadorAtual).onDisconnect().set({online:false});
+                db.ref('vitorias_velha').on('value', s => { vitoriasVelha = s.val() || {}; atualizarRankingVelha(); });
             } else {
                 document.getElementById('auth-screen').classList.remove('hidden');
                 document.getElementById('game-content').classList.add('hidden');
             }
         });
 
+        // --- SISTEMAS DE JOGO (ORIGINAIS) ---
         function atualizarRanking() {
             const tb = document.getElementById('ranking-body'); if(!tb) return; tb.innerHTML = "";
             const sorted = Object.keys(dadosGerais).map(k => ({ id: k, n: dadosGerais[k].nick || k, xp: dadosGerais[k].xp || 0 })).sort((a,b) => b.xp - a.xp);
             sorted.forEach((p, i) => {
                 db.ref('status/' + p.id).on('value', snap => {
                     const isOnline = snap.val() && snap.val().online;
-                    const rowId = 'row-' + p.id;
-                    let existingRow = document.getElementById(rowId);
-                    const rowHtml = `
-                        <tr id="${rowId}" class="${isOnline ? 'online-border' : ''}">
-                            <td>${i+1}º</td>
-                            <td style="display:flex; align-items:center"><span class="status-dot ${isOnline ? 'online' : ''}"></span>${p.n}</td>
-                            <td>${Math.floor(p.xp/1000)+1}</td>
-                            <td>${p.xp}</td>
-                            <td>${p.id !== jogadorAtual ? `<button onclick="iniciarDuelo('${p.id}','${p.n}')" style="background:#ef4444; padding:5px;">Lutar</button>` : '-'}</td>
-                        </tr>`;
-                    if(existingRow) existingRow.outerHTML = rowHtml; else tb.innerHTML += rowHtml;
+                    tb.innerHTML += `<tr class="${isOnline ? 'online-border' : ''}">
+                        <td>${i+1}º</td>
+                        <td><span class="status-dot ${isOnline ? 'online' : ''}"></span>${p.n}</td>
+                        <td>${Math.floor(p.xp/1000)+1}</td>
+                        <td>${p.xp}</td>
+                        <td>${p.id !== jogadorAtual ? `<button onclick="iniciarDuelo('${p.id}','${p.n}')" style="background:#ef4444; padding:5px;">Lutar</button>` : '-'}</td>
+                    </tr>`;
                 });
             });
+        }
+
+        function atualizarRankingVelha() {
+            const tb = document.getElementById('ranking-velha-body'); if(!tb) return; tb.innerHTML = "";
+            const sortedV = Object.keys(vitoriasVelha).map(k => ({ id: k, v: vitoriasVelha[k] || 0, n: (dadosGerais[k] ? dadosGerais[k].nick : k) })).sort((a,b) => b.v - a.v);
+            sortedV.forEach((p, i) => { tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.n}</td><td>${p.v}</td></tr>`; });
         }
 
         function atualizarTela() {
@@ -283,32 +292,25 @@
             document.getElementById('p-img').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
             document.getElementById('p-img-large').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
 
-            // Missões Diárias
             const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
-            const dO = document.getElementById('lista-obrigatoria'); 
-            dO.innerHTML = "";
+            const dO = document.getElementById('lista-obrigatoria'); dO.innerHTML = "";
             ["Treino Fisico", "Trabalho", "Estudo"].forEach(n => {
                 const id = `d-${n}-${hoje}`, feito = (p.missoes||[]).some(m => m.id === id && m.concluida);
                 dO.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:8px"><span>${n}</span><button class="${feito?'btn-done':'btn-check'}" onclick="concluirMissao('${id}', 10, true)" ${feito?'disabled':''}>${feito?'OK':'✔'}</button></div>`;
             });
 
-            // Arsenal (Loja)
-            const tL = document.querySelector('#tabela-loja tbody'); 
-            tL.innerHTML = "";
+            const tL = document.querySelector('#tabela-loja tbody'); tL.innerHTML = "";
             [{n:'Passear',p:900},{n:'Presente',p:5000},{n:'Lanche',p:400}].forEach(i => {
                 tL.innerHTML += `<tr><td>${i.n}</td><td>💰${i.p}</td><td><button class="btn-buy" onclick="comprar(${i.p})">Resgatar</button></td></tr>`;
             });
 
-            // Missões Pessoais
-            const dP = document.getElementById('lista-missoes-pessoais');
-            dP.innerHTML = "";
+            const dP = document.getElementById('lista-missoes-pessoais'); dP.innerHTML = "";
             (p.missoes || []).filter(m => m.id.startsWith('m-')).forEach(m => {
-                dP.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;">
-                <span>${m.nome}</span><div><button class="${m.concluida?'btn-done':'btn-check'}" onclick="concluirMissao('${m.id}', ${m.valor})" ${m.concluida?'disabled':''}>✔</button><button class="btn-del" onclick="removerMissao('${m.id}')">🗑️</button></div></div>`;
+                dP.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;"><span>${m.nome}</span><div><button class="${m.concluida?'btn-done':'btn-check'}" onclick="concluirMissao('${m.id}', ${m.valor})" ${m.concluida?'disabled':''}>✔</button><button class="btn-del" onclick="removerMissao('${m.id}')">🗑️</button></div></div>`;
             });
         }
 
-        // --- FUNÇÕES DE APOIO ---
+        // --- FUNÇÕES GERAIS ---
         function concluirMissao(id, v, d=false) {
             const p = dadosGerais[jogadorAtual], ms = p.missoes || [];
             let m = ms.find(x => x.id === id);
@@ -319,30 +321,27 @@
         function addMissao() { const n = document.getElementById('missao-input').value, v = parseInt(document.getElementById('cat-input').value); const ms = dadosGerais[jogadorAtual].missoes || []; ms.push({ id:'m-'+Date.now(), nome:n, valor:v, concluida:false }); db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms); }
         function comprar(pr) { const p = dadosGerais[jogadorAtual]; if(p.coins >= pr) { db.ref('rpg_data/'+jogadorAtual).update({coins:p.coins-pr}); alert("Resgatado!"); } }
         function aplicarPenalidade() { const q = parseInt(document.getElementById('input-penalidade').value), p = dadosGerais[jogadorAtual]; if(q) db.ref('rpg_data/'+jogadorAtual).update({ xp: Math.max(0, (p.xp||0) - (q*300)) }); }
-        function mudarAba(aba) { document.getElementById('tab-home').classList.toggle('hidden', aba !== 'home'); document.getElementById('tab-profile').classList.toggle('hidden', aba !== 'profile'); document.getElementById('nav-home').classList.toggle('active', aba === 'home'); document.getElementById('nav-profile').classList.toggle('active', aba === 'profile'); }
-        function alternarTela(c) { document.getElementById('login-area').className = c?'hidden':''; document.getElementById('register-area').className = c?'':'hidden'; }
-        function fazerLogin() { const e = document.getElementById('login-email').value, p = document.getElementById('login-pass').value; auth.signInWithEmailAndPassword(e, p).catch(err => alert("Erro ao entrar!")); }
-        function fazerCadastro() {
-            const nick = document.getElementById('reg-nick').value, e = document.getElementById('reg-email').value, p = document.getElementById('reg-pass').value;
-            if(!nick) return alert("Digite um Nick!");
-            auth.createUserWithEmailAndPassword(e,p).then(() => {
-                db.ref('rpg_data/'+e.split('@')[0].replace(/[.#$[\]]/g, "_")).set({ nick: nick, photo: "", xp: 0, coins: 0 });
-            }).catch(err => alert("Erro ao cadastrar!"));
-        }
         function logout() { auth.signOut(); }
         function salvarPerfil() { const n = document.getElementById('edit-nick').value, f = document.getElementById('edit-photo').value.trim(); db.ref('rpg_data/'+jogadorAtual).update({ nick: n, photo: f }).then(() => mudarAba('home')); }
-        
-        // --- SISTEMA DE DUELO BÁSICO ---
+        function mudarAba(aba) { document.getElementById('tab-home').classList.toggle('hidden', aba !== 'home'); document.getElementById('tab-profile').classList.toggle('hidden', aba !== 'profile'); document.getElementById('nav-home').classList.toggle('active', aba === 'home'); document.getElementById('nav-profile').classList.toggle('active', aba === 'profile'); }
+        function alternarTela(c) { document.getElementById('login-area').className = c?'hidden':''; document.getElementById('register-area').className = c?'':'hidden'; }
+        function fazerLogin() { const e = document.getElementById('login-email').value, p = document.getElementById('login-pass').value; auth.signInWithEmailAndPassword(e, p).catch(() => alert("Erro!")); }
+        function fazerCadastro() {
+            const nick = document.getElementById('reg-nick').value, e = document.getElementById('reg-email').value, p = document.getElementById('reg-pass').value;
+            auth.createUserWithEmailAndPassword(e,p).then(() => { db.ref('rpg_data/'+e.split('@')[0].replace(/[.#$[\]]/g, "_")).set({ nick: nick, photo: "", xp: 0, coins: 0 }); }).catch(() => alert("Erro!"));
+        }
+
+        // --- SISTEMA DUELO (RESTAURADO) ---
         let batalhaAtiva = false, statsP = {}, statsE = {};
-        function iniciarDuelo(idAdversario, nickAdversario) {
-            const p = dadosGerais[jogadorAtual], e = dadosGerais[idAdversario];
+        function iniciarDuelo(idE, nickE) {
+            const p = dadosGerais[jogadorAtual], e = dadosGerais[idE];
             const lP = Math.floor((p.xp||0)/1000)+1, lE = Math.floor((e.xp||0)/1000)+1;
             statsP = { hp: lP*500, max: lP*500, atk: 50+(lP*5) };
             statsE = { hp: lE*500, max: lE*500, atk: 50+(lE*5) };
             document.getElementById('img-p').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
             document.getElementById('img-e').src = e.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            document.getElementById('name-e').innerText = nickE;
             document.getElementById('arena-duelo').style.display = 'flex';
-            document.getElementById('battle-log').innerText = "Combate contra " + nickAdversario;
             batalhaAtiva = true; atualizarBarras();
         }
         function atualizarBarras() {
@@ -351,9 +350,9 @@
         }
         function comandoBatalha(t) {
             if(!batalhaAtiva) return;
-            let d = statsP.atk; statsE.hp -= d;
-            if(statsE.hp <= 0) { alert("Você Venceu!"); fecharArena(); }
-            else { statsP.hp -= statsE.atk; atualizarBarras(); if(statsP.hp <=0) { alert("Você Perdeu!"); fecharArena(); } }
+            statsE.hp -= statsP.atk;
+            if(statsE.hp <= 0) { alert("Vitória!"); fecharArena(); }
+            else { statsP.hp -= statsE.atk; atualizarBarras(); if(statsP.hp <=0) { alert("Derrota!"); fecharArena(); } }
         }
         function fecharArena() { document.getElementById('arena-duelo').style.display='none'; batalhaAtiva=false; }
     </script>
