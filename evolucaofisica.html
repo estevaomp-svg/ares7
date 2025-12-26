@@ -11,94 +11,107 @@
         :root { --primary: #3b82f6; --danger: #ef4444; --success: #22c55e; --bg: #0f172a; }
         body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #f8fafc; padding: 15px; margin: 0; }
         .card { background: rgba(30, 41, 59, 0.9); padding: 20px; border-radius: 15px; border: 1px solid rgba(51, 65, 85, 0.5); margin-bottom: 15px; }
-        .grid-exercicios { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .grid-fisico { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .stat-box { background: rgba(51, 65, 85, 0.6); padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #475569; }
-        input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: none; box-sizing: border-box; background: #1e293b; color: white; text-align: center; }
+        input { width: 100%; padding: 8px; margin: 5px 0; border-radius: 5px; border: none; text-align: center; }
         button { cursor: pointer; padding: 10px; border: none; border-radius: 8px; color: white; font-weight: bold; width: 100%; background: var(--danger); }
         .btn-back { background: var(--primary); text-decoration: none; display: block; text-align: center; padding: 12px; border-radius: 8px; color: white; margin-bottom: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <a href="index.html" class="btn-back">⬅ VOLTAR AO PAINEL</a>
+    <a href="index.html" class="btn-back">⬅ VOLTAR AO RPG</a>
 
     <div class="card">
-        <h3 style="text-align:center; color: var(--danger);">🏋️ MINHA EVOLUÇÃO</h3>
-        <p id="player-name" style="text-align:center; color: #94a3b8; font-size: 14px;">Carregando atleta...</p>
+        <h3 style="text-align:center; color: var(--danger);">🏋️ SALA DE TREINAMENTO</h3>
+        <p id="player-status" style="text-align:center; color: #94a3b8; font-size: 14px;">Verificando login...</p>
         
-        <div class="grid-exercicios" id="lista-treino">
+        <div class="grid-fisico" id="grid-exercicios">
             </div>
     </div>
 
     <script>
-        // Use a sua firebaseConfig idêntica ao index.html
+        // Configuração exata do seu projeto
         const firebaseConfig = {
-            apiKey: "AIzaSy...", 
-            authDomain: "aresrpg-...",
-            databaseURL: "https://aresrpg-...",
-            projectId: "aresrpg-...",
-            storageBucket: "aresrpg-...",
-            messagingSenderId: "...",
-            appId: "..."
+            apiKey: "AIzaSyBanevR51ejaTE0ccqlmlU6VRh7Qg4EETs",
+            authDomain: "aresrpg-7daf4.firebaseapp.com",
+            databaseURL: "https://aresrpg-7daf4-default-rtdb.firebaseio.com",
+            projectId: "aresrpg-7daf4",
+            storageBucket: "aresrpg-7daf4.firebasestorage.app",
+            messagingSenderId: "153757603214",
+            appId: "1:153757603214:web:fb572985353c8fad7f80df"
         };
 
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        const auth = firebase.auth();
+        const db = firebase.database(), auth = firebase.auth();
+        let jogadorAtual = "";
 
-        // Lista de Exercícios Completa
-        const exercicios = [
-            { id: 'supino', nome: 'Supino Reto' },
-            { id: 'agachamento', nome: 'Agachamento' },
-            { id: 'terra', nome: 'Lev. Terra' },
-            { id: 'rosca', nome: 'Rosca Direta' },
-            { id: 'triceps', nome: 'Tríceps Pulley' },
-            { id: 'legpress', nome: 'Leg Press' },
-            { id: 'desenvolvimento', nome: 'Ombros' },
-            { id: 'puxada', nome: 'Puxada Costas' }
+        // Lista completa de exercícios baseada no seu index.html
+        const exArr = [
+            {id:'supino', n:'💪 Supino Reto/Máq', m:'kg', c:'#3b82f6', d:20},
+            {id:'biceps_rosca', n:'💪 Bíceps Rosca', m:'kg', c:'#3b82f6', d:15},
+            {id:'triceps_pulley', n:'💪 Tríceps Pulley', m:'kg', c:'#3b82f6', d:15},
+            {id:'elevacao_pelvica', n:'🍑 Elevação Pélvica', m:'kg', c:'#f59e0b', d:20},
+            {id:'puxada', n:'👐 Puxada Aberta', m:'kg', c:'#3b82f6', d:20},
+            {id:'remada', n:'🚣 Remada', m:'kg', c:'#3b82f6', d:20},
+            {id:'elevacao_halters', n:'🦋 Elevação Halters', m:'kg', c:'#3b82f6', d:4},
+            {id:'leg_press', n:'🦵 Leg Press 45', m:'kg', c:'#f59e0b', d:30},
+            {id:'hack', n:'🍑 Hack Machine', m:'kg', c:'#f59e0b', d:40},
+            {id:'extensora', n:'🦵 Extensora', m:'kg', c:'#f59e0b', d:20},
+            {id:'panturrilha', n:'🦶 Panturrilha', m:'kg', c:'#f59e0b', d:40},
+            {id:'flexao', n:'🧘 Flexão Braço', m:'reps', c:'#10b981', d:10},
+            {id:'barra', n:'🧗 Barra Fixa', m:'reps', c:'#10b981', d:10},
+            {id:'agachamentoLivre', n:'🤸 Agach. Livre', m:'reps', c:'#10b981', d:10},
+            {id:'stamina', n:'跑 Cardio/Dança', m:'min', c:'#ec4899', d:10}
         ];
 
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                const jogadorId = user.email.split('@')[0].replace(/[.#$[\]]/g, "_");
-                document.getElementById('player-name').innerText = "Atleta: " + jogadorId;
-                
-                db.ref('rpg_data/' + jogadorId).on('value', snapshot => {
-                    const data = snapshot.val() || {};
-                    renderizar(data, jogadorId);
+        auth.onAuthStateChanged(u => {
+            if(u) {
+                jogadorAtual = u.email.split('@')[0].replace(/[.#$[\]]/g, "_");
+                document.getElementById('player-status').innerText = "Atleta: " + jogadorAtual;
+                db.ref('rpg_data/' + jogadorAtual).on('value', s => {
+                    renderizar(s.val() || {});
                 });
             } else {
-                window.location.href = "index.html";
+                document.getElementById('player-status').innerText = "⚠️ Você precisa estar logado no site principal!";
             }
         });
 
-        function renderizar(data, jogadorId) {
-            const container = document.getElementById('lista-treino');
-            const records = data.recordsFisico || {};
-            
-            container.innerHTML = exercicios.map(ex => `
-                <div class="stat-box">
-                    <span style="font-size: 12px; display:block; margin-bottom:5px;">${ex.nome}</span>
-                    <input type="number" id="input-${ex.id}" placeholder="${records[ex.id] || 0}kg">
-                    <button onclick="salvarTreino('${ex.id}', '${jogadorId}')">SALVAR</button>
-                </div>
-            `).join('');
+        function renderizar(p) {
+            const container = document.getElementById('grid-exercicios');
+            container.innerHTML = exArr.map(ex => {
+                const r = (p.records && p.records[ex.id]) !== undefined ? p.records[ex.id] : ex.d;
+                return `
+                <div class="stat-box" style="border-top: 3px solid ${ex.c};">
+                    <b style="color:${ex.c}; font-size:11px;">${ex.n}</b><br>
+                    <span style="font-size: 10px;">Recorde: ${r}${ex.m}</span>
+                    <input type="number" id="in-${ex.id}" placeholder="+">
+                    <button style="background:${ex.c};" onclick="upFisico('${ex.id}','${ex.m}',${r})">UP</button>
+                </div>`;
+            }).join('');
         }
 
-        async function salvarTreino(id, jogadorId) {
-            const peso = document.getElementById('input-' + id).value;
-            if(!peso || peso <= 0) return alert("Insira um peso!");
+        async function upFisico(id, m, r) {
+            const val = parseInt(document.getElementById('in-' + id).value);
+            if (!val || val <= r) return alert("Supere seu recorde anterior!");
 
-            const ref = db.ref('rpg_data/' + jogadorId);
+            const ref = db.ref('rpg_data/' + jogadorAtual);
             const snap = await ref.get();
-            const player = snap.val() || {};
+            const p = snap.val();
 
-            // Atualiza XP e o recorde do exercício específico
+            // Lógica de XP idêntica ao seu index.html
+            let mult = (id === 'elevacao_halters') ? 500 : 100;
+            let ganho = (m === 'kg') ? (val - r) * mult : (val - r) * 45;
+
+            const novosRecords = { ... (p.records || {}) };
+            novosRecords[id] = val;
+
             await ref.update({
-                xp: (player.xp || 0) + 1,
-                [`recordsFisico/${id}`]: peso
+                xp: (p.xp || 0) + ganho,
+                coins: (p.coins || 0) + ganho,
+                records: novosRecords
             });
 
-            alert("Evolução salva! +1 XP");
+            alert(`Evolução salva! +${ganho} XP`);
         }
     </script>
 </body>
