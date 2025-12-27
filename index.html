@@ -564,8 +564,31 @@
                 dO.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:8px"><span>${n}</span><button class="${feito?'btn-done':'btn-check'}" onclick="concluirMissao('${id}', 10, true)" ${feito?'disabled':''}>${feito?'OK':'✔'}</button></div>`;
             });
 
-            const dP = document.getElementById('lista-missoes-pessoais'); dP.innerHTML = "";
-            (p.missoes || []).filter(m => m.id.startsWith('m-')).forEach(m => { dP.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;"><span>${m.nome}</span><div><button class="${m.concluida?'btn-done':'btn-check'}" onclick="concluirMissao('${m.id}', ${m.valor})" ${m.concluida?'disabled':''}>✔</button><button class="btn-del" onclick="removerMissao('${m.id}')">🗑️</button></div></div>`; });
+            const dP = document.getElementById('lista-missoes-pessoais'); 
+dP.innerHTML = "";
+
+(p.missoes || []).filter(m => m.id.startsWith('m-')).forEach(m => {
+    // Define a cor de fundo padrão
+    let corFundo = "rgba(255,255,255,0.05)"; 
+
+    // Se NÃO estiver concluída e for Prioridade (XP >= 30), fica Laranja/Vermelho
+    if (!m.concluida) {
+        if (m.valor >= 50) {
+            corFundo = "rgba(239, 68, 68, 0.3)"; // Vermelho claro para XP muito alto
+        } else if (m.valor >= 30) {
+            corFundo = "rgba(251, 191, 36, 0.3)"; // Laranja claro para Prioridade (30 XP)
+        }
+    }
+
+    dP.innerHTML += `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:${corFundo}; padding:10px; border-radius:8px; border: 1px solid ${m.concluida ? 'transparent' : 'rgba(255,255,255,0.1)'};">
+            <span>${m.nome} <small>(${m.valor} XP)</small></span>
+            <div>
+                <button class="${m.concluida?'btn-done':'btn-check'}" onclick="concluirMissao('${m.id}', ${m.valor})" ${m.concluida?'disabled':''}>✔</button>
+                <button class="btn-del" onclick="removerMissao('${m.id}')">🗑️</button>
+            </div>
+        </div>`;
+});
 
             const tL = document.querySelector('#tabela-loja tbody'); if(tL) { tL.innerHTML = ""; [{n:'Passear',p:900},{n:'Auto Presente',p:5000},{n:'Lanche (dia do lixo)',p:400}].forEach(i => { tL.innerHTML += `<tr><td>${i.n}</td><td>💰${i.p}</td><td><button class="btn-buy" onclick="comprar(${i.p},'${i.n}')">Resgatar</button></td></tr>`; }); }
         }
@@ -585,6 +608,7 @@
     </script>
 </body>
 </html>
+
 
 
 
