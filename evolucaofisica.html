@@ -56,7 +56,62 @@
             {id:'levantamento_terra', n:'🏋️ Levantamento Terra', m:'kg', c:'#f59e0b', d:30},
             {id:'extensora_perna', n:'🦵 Cadeira Extensora', m:'kg', c:'#f59e0b', d:20}
         ];
+<div class="card" style="border-top: 3px solid #ec4899;">
+    <h3 style="text-align:center; color: #ec4899; margin-top: 0;">📊 BIOESTATÍSTICA</h3>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+        <div>
+            <label style="font-size: 11px;">Sexo:</label>
+            <select id="calc-sexo" style="width: 100%; padding: 8px; border-radius: 5px; background: #1e293b; color: white; border: none;">
+                <option value="m">Masculino</option>
+                <option value="f">Feminino</option>
+            </select>
+        </div>
+        <div>
+            <label style="font-size: 11px;">Idade:</label>
+            <input type="number" id="calc-idade" placeholder="Anos">
+        </div>
+    </div>
 
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+        <div>
+            <label style="font-size: 11px;">Peso (kg):</label>
+            <input type="number" id="calc-peso" placeholder="Ex: 80">
+        </div>
+        <div>
+            <label style="font-size: 11px;">Altura (cm):</label>
+            <input type="number" id="calc-altura" placeholder="Ex: 175">
+        </div>
+    </div>
+
+    <div id="campos-gordura" style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 0;">Para % de Gordura (opcional):</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <input type="number" id="calc-pescoco" placeholder="Pescoço (cm)">
+            <input type="number" id="calc-cintura" placeholder="Cintura (cm)">
+        </div>
+    </div>
+    
+    <button style="background: #ec4899;" onclick="calcularBio()">CALCULAR TUDO</button>
+
+    <div id="resultado-bio" style="display:none; margin-top: 20px;">
+        <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 10px;">
+            <span style="color: #94a3b8; font-size: 12px;">Calorias p/ Manter:</span>
+            <div id="res-manter" style="font-size: 20px; font-weight: bold; color: #22c55e;">--</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div style="background: rgba(59, 130, 246, 0.2); padding: 10px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 11px; color: #3b82f6;">Peso Ideal</div>
+                <div id="res-peso-ideal" style="font-weight: bold;">--</div>
+            </div>
+            <div style="background: rgba(245, 158, 11, 0.2); padding: 10px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 11px; color: #f59e0b;">% Gordura</div>
+                <div id="res-bf" style="font-weight: bold;">--</div>
+            </div>
+        </div>
+    </div>
+</div>
         auth.onAuthStateChanged(u => {
             if(u) {
                 jogador = u.email.split('@')[0].replace(/[.#$[\]]/g, "_");
@@ -129,6 +184,56 @@
                 alert(diferenca > 0 ? `UP! +${variacaoXP} XP` : `Correção aplicada. ${variacaoXP} XP`);
             }
         }
+        if (confirmacao) {
+                await db.ref('rpg_data/' + jogador).update({
+                    xp: Math.max(0, (p.xp || 0) + variacaoXP), 
+                    coins: Math.max(0, (p.coins || 0) + variacaoXP),
+                    records: novosRecs, 
+                    evolucao_diaria: novoHist
+                });
+                
+                alert(diferenca > 0 ? `UP! +${variacaoXP} XP` : `Correção aplicada. ${variacaoXP} XP`);
+            }
+        } // <--- Esse é o fim da função up que já está lá
+
+        // COLE AQUI O CÓDIGO NOVO:
+        function calcularBio() {
+            const peso = parseFloat(document.getElementById('calc-peso').value);
+            const altura = parseFloat(document.getElementById('calc-altura').value);
+            const idade = parseFloat(document.getElementById('calc-idade').value);
+            const sexo = document.getElementById('calc-sexo').value;
+            const pescoco = parseFloat(document.getElementById('calc-pescoco').value);
+            const cintura = parseFloat(document.getElementById('calc-cintura').value);
+
+            if (!peso || !altura || !idade) return alert("Preencha Peso, Altura e Idade!");
+
+            let tmb = (sexo === 'm') 
+                ? (10 * peso) + (6.25 * altura) - (5 * idade) + 5 
+                : (10 * peso) + (6.25 * altura) - (5 * idade) - 161;
+            let manutencao = Math.round(tmb * 1.375);
+
+            let alturaPol = altura / 2.54;
+            let pesoIdeal = (sexo === 'm')
+                ? 52 + 1.9 * (alturaPol - 60)
+                : 49 + 1.7 * (alturaPol - 60);
+
+            let bf = "--";
+            if (pescoco && cintura) {
+                if (sexo === 'm') {
+                    bf = (495 / (1.0324 - 0.19077 * Math.log10(cintura - pescoco) + 0.15456 * Math.log10(altura))) - 450;
+                } else {
+                    bf = (495 / (1.29579 - 0.35004 * Math.log10(cintura + 80 - pescoco) + 0.221 * Math.log10(altura))) - 450;
+                }
+                bf = bf.toFixed(1) + "%";
+            }
+
+            document.getElementById('res-manter').innerText = manutencao + " kcal";
+            document.getElementById('res-peso-ideal').innerText = Math.round(pesoIdeal) + " kg";
+            document.getElementById('res-bf').innerText = bf;
+            document.getElementById('resultado-bio').style.display = 'block';
+        }
+        // FIM DO CÓDIGO NOVO
+
     </script>
 </body>
 </html>
