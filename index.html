@@ -559,7 +559,7 @@
             }
 
             const dO = document.getElementById('lista-obrigatoria'); dO.innerHTML = "";
-            ["Treino Fisico", "Trabalho", "Estudo"].forEach(n => {
+            ["Treino Fisico", "Trabalho", "Estudo", "Meditação/Oração/Gratidão"].forEach(n => {
                 const id = `d-${n}-${hoje}`, feito = (p.missoes||[]).some(m => m.id === id && m.concluida);
                 dO.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:8px"><span>${n}</span><button class="${feito?'btn-done':'btn-check'}" onclick="concluirMissao('${id}', 10, true)" ${feito?'disabled':''}>${feito?'OK':'✔'}</button></div>`;
             });
@@ -567,7 +567,7 @@
             const dP = document.getElementById('lista-missoes-pessoais'); dP.innerHTML = "";
             (p.missoes || []).filter(m => m.id.startsWith('m-')).forEach(m => { dP.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px;"><span>${m.nome}</span><div><button class="${m.concluida?'btn-done':'btn-check'}" onclick="concluirMissao('${m.id}', ${m.valor})" ${m.concluida?'disabled':''}>✔</button><button class="btn-del" onclick="removerMissao('${m.id}')">🗑️</button></div></div>`; });
 
-            const tL = document.querySelector('#tabela-loja tbody'); if(tL) { tL.innerHTML = ""; [{n:'Passear',p:900},{n:'Presente',p:5000},{n:'Lanche',p:400}].forEach(i => { tL.innerHTML += `<tr><td>${i.n}</td><td>💰${i.p}</td><td><button class="btn-buy" onclick="comprar(${i.p},'${i.n}')">Resgatar</button></td></tr>`; }); }
+            const tL = document.querySelector('#tabela-loja tbody'); if(tL) { tL.innerHTML = ""; [{n:'Passear',p:900},{n:'Auto Presente',p:5000},{n:'Lanche (dia do lixo)',p:400}].forEach(i => { tL.innerHTML += `<tr><td>${i.n}</td><td>💰${i.p}</td><td><button class="btn-buy" onclick="comprar(${i.p},'${i.n}')">Resgatar</button></td></tr>`; }); }
         }
 
         function concluirMissao(id, v, d=false) {
@@ -585,6 +585,7 @@
     </script>
 </body>
 </html>
+
 
 
 
