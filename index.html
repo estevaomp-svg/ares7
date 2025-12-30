@@ -590,7 +590,7 @@ dP.innerHTML = "";
         </div>`;
 });
 
-            const tL = document.querySelector('#tabela-loja tbody'); if(tL) { tL.innerHTML = ""; [{n:'Passear',p:900},{n:'Auto Presente',p:5000},{n:'Lanche (dia do lixo)',p:400}].forEach(i => { tL.innerHTML += `<tr><td>${i.n}</td><td>💰${i.p}</td><td><button class="btn-buy" onclick="comprar(${i.p},'${i.n}')">Resgatar</button></td></tr>`; }); }
+            const tL = document.querySelector('#tabela-loja tbody'); if(tL) { tL.innerHTML = ""; [{n:'Passear',p:19000},{n:'Auto Presente',p:15000},{n:'Lanche (dia do lixo)',p:14000}].forEach(i => { tL.innerHTML += `<tr><td>${i.n}</td><td>💰${i.p}</td><td><button class="btn-buy" onclick="comprar(${i.p},'${i.n}')">Resgatar</button></td></tr>`; }); }
         }
 
         function concluirMissao(id, v, d=false) {
@@ -608,6 +608,7 @@ dP.innerHTML = "";
     </script>
 </body>
 </html>
+
 
 
 
