@@ -57,10 +57,13 @@
 
         <div id="campos-gordura" style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 15px;">
             <p style="font-size: 11px; color: #94a3b8; margin-top: 0;">Para % de Gordura (opcional):</p>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <input type="number" id="calc-pescoco" placeholder="Pescoço (cm)">
-                <input type="number" id="calc-cintura" placeholder="Cintura (cm)">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                <input type="number" id="calc-pescoco" placeholder="Pescoço">
+                <input type="number" id="calc-cintura" placeholder="Cintura">
+                <input type="number" id="calc-quadril" placeholder="Quadril">
             </div>
+            <p style="font-size: 9px; color: #64748b; margin: 5px 0 0 0;">*Quadril é essencial para mulheres.</p>
+        </div>
         </div>
         
         <button style="background: #ec4899;" onclick="calcularBio()">CALCULAR TUDO</button>
@@ -178,6 +181,7 @@
             const sexo = document.getElementById('calc-sexo').value;
             const pescoco = parseFloat(document.getElementById('calc-pescoco').value);
             const cintura = parseFloat(document.getElementById('calc-cintura').value);
+            const quadril = parseFloat(document.getElementById('calc-quadril').value);
 
             if (!peso || !altura || !idade) return alert("Preencha Peso, Altura e Idade!");
 
@@ -190,11 +194,17 @@
             let bf = "--";
             if (pescoco && cintura) {
                 if (sexo === 'm') {
+                    // Fórmula Masculina (Cintura e Pescoço)
                     bf = (495 / (1.0324 - 0.19077 * Math.log10(cintura - pescoco) + 0.15456 * Math.log10(altura))) - 450;
                 } else {
-                    bf = (495 / (1.29579 - 0.35004 * Math.log10(cintura + 80 - pescoco) + 0.221 * Math.log10(altura))) - 450;
+                    // Fórmula Feminina Corrigida (Cintura, Quadril e Pescoço)
+                    if (!quadril) {
+                        alert("Para mulheres, a medida do quadril é necessária!");
+                        return;
+                    }
+                    bf = (495 / (1.29579 - 0.35004 * Math.log10(cintura + quadril - pescoco) + 0.221 * Math.log10(altura))) - 450;
                 }
-                bf = bf.toFixed(1) + "%";
+                bf = Math.max(0, bf).toFixed(1) + "%";
             }
 
             document.getElementById('res-manter').innerText = manutencao + " kcal";
