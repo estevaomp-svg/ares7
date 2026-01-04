@@ -564,7 +564,7 @@
                     setTimeout(() => {
                         document.getElementById('char-player').classList.remove('anim-attack-p');
                         document.getElementById('char-enemy').classList.remove('anim-damage');
-                        if(statsE.hp <= 0) finalizar(true); else setTimeout(turnoInimigo, 1500); 
+                        if(statsE.hp <= 0) finalizar(true); else setTimeout(turnoInimigo, 2500); 
                     }, 400);
                 }, 300);
             } else { statsP.def = true; setTimeout(turnoInimigo, 1000); }
@@ -699,4 +699,5 @@
     </script>
 </body>
 </html>
+
 
