@@ -322,7 +322,7 @@
             { id: "npc_poseidon", nick: "Rafael", xp: 5399, photo: "https://cdn-icons-png.flaticon.com/512/3663/3663345.png", vitorias: 2 }
         ];
         let jogandoContraNPC = false;
-        let npcAtualID = ""; // Variável global para rastrear qual NPC está jogando
+        let aguardandoNPC = false;
 
         const missoesSorte = [
             "Abraçar sua mãe(pode mandar o abraço por mensagem)", "Abraçar seu filho (a) (pode mandar o abraço por mensagem)", "Abraçar seu pai (pode mandar o abraço por mensagem)", "Abraçar seu irmão (a) ( pode mandar o abraço por mensagem)", "Abraçar sua namorada (o)",
@@ -361,9 +361,9 @@
         // --- LÓGICA DO JOGO DA VELHA ---
         let salaV = null, meuS = "";
 
-        function iniciarVelhaNPC(id) {
+        function iniciarVelhaNPC() {
             jogandoContraNPC = true;
-            npcAtualID = id; // Define qual NPC está enfrentando para poder pontuar
+            aguardandoNPC = false;
             document.getElementById('arena-velha').style.display = 'flex';
             document.getElementById('velha-info').innerText = "Sua vez!";
             document.querySelectorAll('.velha-cell').forEach(c => c.innerText = "");
@@ -371,10 +371,18 @@
 
         function cliqueVelha(i) {
             if(jogandoContraNPC) {
+                if(aguardandoNPC) return; // Trava o clique enquanto o NPC pensa
+                
                 const cells = document.querySelectorAll('.velha-cell');
                 if(cells[i].innerText !== "") return;
+                
                 cells[i].innerText = "X";
-                if(!checarWinLocal()) setTimeout(jogadaNPC, 600);
+                
+                if(!checarWinLocal()) {
+                    aguardandoNPC = true;
+                    document.getElementById('velha-info').innerText = "Oponente jogando...";
+                    setTimeout(jogadaNPC, 2000); // Atraso de 2 segundos para o NPC
+                }
             } else {
                 if(!salaV) return;
                 db.ref('velha_online/'+salaV).get().then(s => {
@@ -393,11 +401,35 @@
         }
 
         function jogadaNPC() {
+            if(!jogandoContraNPC) return;
+            
             let cells = Array.from(document.querySelectorAll('.velha-cell')).map(c => c.innerText);
-            let vazias = cells.map((s, idx) => s === "" ? idx : null).filter(idx => idx !== null);
-            if(vazias.length > 0) {
-                let j = vazias[Math.floor(Math.random()*vazias.length)];
-                document.querySelectorAll('.velha-cell')[j].innerText = "O";
+            let jogada = -1;
+            const linhas = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            
+            const buscarIndex = (simbolo) => {
+                for (let l of linhas) {
+                    let combo = l.map(idx => cells[idx]);
+                    if (combo.filter(s => s === simbolo).length === 2 && combo.filter(s => s === "").length === 1) {
+                        return l[combo.indexOf("")];
+                    }
+                }
+                return -1;
+            };
+
+            jogada = buscarIndex("O"); 
+            if (jogada === -1) jogada = buscarIndex("X"); 
+            if (jogada === -1) {
+                if (cells[4] === "") jogada = 4;
+                else {
+                    let livres = cells.map((s, idx) => s === "" ? idx : null).filter(idx => idx !== null);
+                    jogada = livres[Math.floor(Math.random() * livres.length)];
+                }
+            }
+            if (jogada !== -1) {
+                document.querySelectorAll('.velha-cell')[jogada].innerText = "O";
+                document.getElementById('velha-info').innerText = "Sua vez!";
+                aguardandoNPC = false; // Libera o clique do jogador
                 checarWinLocal();
             }
         }
@@ -415,14 +447,21 @@
                 r.innerText = msg; r.className = "show " + (v === "X" ? "msg-win" : "msg-lose");
                 
                 if(v === "X") {
-                    db.ref('rpg_data/'+jogadorAtual).update({xp:(dadosGerais[jogadorAtual].xp||0)+10, coins:(dadosGerais[jogadorAtual].coins||0)+10});
+                    // Adiciona XP e Moedas
+                    db.ref('rpg_data/'+jogadorAtual).update({
+                        xp:(dadosGerais[jogadorAtual].xp||0)+10, 
+                        coins:(dadosGerais[jogadorAtual].coins||0)+10
+                    });
+                    // ATUALIZA RANKING DE VITÓRIAS
                     db.ref('vitorias_velha/'+jogadorAtual).transaction(c => (c||0) + 1);
-                } else if (v === "O" && jogandoContraNPC && npcAtualID) {
-                    // CONTA VITÓRIA PARA O NPC NO FIREBASE
-                    db.ref('vitorias_velha/' + npcAtualID).transaction(c => (c||0) + 1);
                 }
 
-                setTimeout(() => { r.className = ""; document.getElementById('arena-velha').style.display = 'none'; jogandoContraNPC = false; }, 2000);
+                setTimeout(() => { 
+                    r.className = ""; 
+                    document.getElementById('arena-velha').style.display = 'none'; 
+                    jogandoContraNPC = false; 
+                    aguardandoNPC = false;
+                }, 2000);
                 return true;
             }
             return false;
@@ -488,6 +527,7 @@
             document.getElementById('arena-velha').style.display='none'; 
             document.getElementById('convite-velha').style.display='none'; 
             jogandoContraNPC = false;
+            aguardandoNPC = false;
             if(salaV){ db.ref('velha_online/'+salaV).off(); db.ref('velha_online/'+salaV).remove(); salaV=null; }
         }
 
@@ -524,7 +564,7 @@
                     setTimeout(() => {
                         document.getElementById('char-player').classList.remove('anim-attack-p');
                         document.getElementById('char-enemy').classList.remove('anim-damage');
-                        if(statsE.hp <= 0) finalizar(true); else setTimeout(turnoInimigo, 1000); 
+                        if(statsE.hp <= 0) finalizar(true); else setTimeout(turnoInimigo, 2500); 
                     }, 400);
                 }, 300);
             } else { statsP.def = true; setTimeout(turnoInimigo, 1000); }
@@ -584,7 +624,7 @@
                 const isOnline = p.npc ? true : (dadosOnline[p.id] && dadosOnline[p.id].online);
                 const row = document.createElement('tr');
                 if(isOnline && p.id === jogadorAtual) row.className = 'online-border';
-                row.innerHTML = `<td>${i+1}º</td><td style="display:flex; align-items:center"><span class="status-dot ${isOnline ? 'online' : ''}"></span>${p.n}</td><td>${Math.floor(p.xp/1000)+1}</td><td>${p.xp}</td><td>${p.id !== jogadorAtual ? `<button onclick="iniciarDuelo('${p.id}','${p.n}')" style="background:#ef4444; padding:5px; margin-right:5px">Lutar</button><button onclick="${p.npc ? `iniciarVelhaNPC('${p.id}')` : `desafiarVelha('${p.id}')`}" style="background:#3b82f6; padding:5px; border-radius:50%">⭕</button>` : '-'}</td>`;
+                row.innerHTML = `<td>${i+1}º</td><td style="display:flex; align-items:center"><span class="status-dot ${isOnline ? 'online' : ''}"></span>${p.n}</td><td>${Math.floor(p.xp/1000)+1}</td><td>${p.xp}</td><td>${p.id !== jogadorAtual ? `<button onclick="iniciarDuelo('${p.id}','${p.n}')" style="background:#ef4444; padding:5px; margin-right:5px">Lutar</button><button onclick="${p.npc ? 'iniciarVelhaNPC()' : `desafiarVelha('${p.id}')`}" style="background:#3b82f6; padding:5px; border-radius:50%">⭕</button>` : '-'}</td>`;
                 tb.appendChild(row);
             });
         }
@@ -596,27 +636,48 @@
             
             let listaV = [];
             
-            // 1. Processa vitórias do Banco de Dados
+            // 1. Coleta vitórias do Banco de Dados
             Object.keys(vitoriasVelha).forEach(id => {
                 const npc = NPCs.find(n => n.id === id);
                 if (npc) {
-                    // Se for NPC, soma vitórias base + novas vitórias do banco
+                    // Soma vitórias base do NPC + vitórias conquistadas no banco
                     listaV.push({ id: id, v: (npc.vitorias || 0) + (vitoriasVelha[id] || 0), n: npc.nick });
-                } else if (dadosGerais[id]) {
-                    // Se for jogador real
-                    listaV.push({ id: id, v: vitoriasVelha[id] || 0, n: dadosGerais[id].nick || id });
+                } else {
+                    // JOGADOR REAL: Prioriza o Nick. Se não houver, limpa o ID/E-mail
+                    let nomeExibicao = id;
+                    if(dadosGerais[id] && dadosGerais[id].nick) {
+                        nomeExibicao = dadosGerais[id].nick;
+                    } else {
+                        // Tenta remover partes de e-mail se o nick estiver vazio
+                        nomeExibicao = id.split('@')[0].replace(/[._-]/g, ' ');
+                    }
+                    listaV.push({ id: id, v: vitoriasVelha[id] || 0, n: nomeExibicao });
                 }
             });
 
-            // 2. Garante que NPCs sem vitórias extras no banco também apareçam
+            // 2. Garante que NPCs sem vitórias extras também apareçam no ranking
             NPCs.forEach(n => {
                 if (!listaV.find(item => item.id === n.id)) {
                     listaV.push({ id: n.id, v: n.vitorias || 0, n: n.nick });
                 }
             });
 
-            // 3. Ordena e exibe
-            listaV.sort((a,b) => b.v - a.v).forEach((p, i) => { 
+            // 3. Remove duplicatas pelo nome (evita nick antigo e novo na mesma lista)
+            const rankingFinal = [];
+            const nomesProcessados = new Set();
+
+            // Ordena primeiro por vitórias para manter o maior valor se houver conflito
+            listaV.sort((a, b) => b.v - a.v);
+
+            listaV.forEach(item => {
+                if (!nomesProcessados.has(item.n)) {
+                    rankingFinal.push(item);
+                    nomesProcessados.add(item.n);
+                }
+            });
+
+            // 4. Renderiza na tabela
+            rankingFinal.forEach((p, i) => { 
                 tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.n}</td><td>${p.v}</td></tr>`; 
             });
         }
@@ -684,3 +745,6 @@
     </script>
 </body>
 </html>
+
+
+
