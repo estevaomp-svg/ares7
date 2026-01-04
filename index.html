@@ -447,21 +447,17 @@
                 r.innerText = msg; r.className = "show " + (v === "X" ? "msg-win" : "msg-lose");
                 
                 if(v === "X") {
-                    // Adiciona XP e Moedas
-                    db.ref('rpg_data/'+jogadorAtual).update({
-                        xp:(dadosGerais[jogadorAtual].xp||0)+10, 
-                        coins:(dadosGerais[jogadorAtual].coins||0)+10
-                    });
-                    // ATUALIZA RANKING DE VITÓRIAS
+                    // Você ganhou: ganha XP, Moedas e 1 Vitória no Ranking
+                    db.ref('rpg_data/'+jogadorAtual).update({xp:(dadosGerais[jogadorAtual].xp||0)+10, coins:(dadosGerais[jogadorAtual].coins||0)+10});
                     db.ref('vitorias_velha/'+jogadorAtual).transaction(c => (c||0) + 1);
+                } else if (v === "O") {
+                    // O NPC ganhou: Aqui damos o ponto para o Rafael/NPC no Firebase
+                    if(jogandoContraNPC && npcAtualID) {
+                        db.ref('vitorias_velha/' + npcAtualID).transaction(c => (c||0) + 1);
+                    }
                 }
 
-                setTimeout(() => { 
-                    r.className = ""; 
-                    document.getElementById('arena-velha').style.display = 'none'; 
-                    jogandoContraNPC = false; 
-                    aguardandoNPC = false;
-                }, 2000);
+                setTimeout(() => { r.className = ""; document.getElementById('arena-velha').style.display = 'none'; jogandoContraNPC = false; }, 2000);
                 return true;
             }
             return false;
@@ -634,41 +630,39 @@
             if(!tb) return; 
             tb.innerHTML = "";
             
-            let listaV = [];
-            
-            // 1. Criar um mapa para agrupar tudo por ID e evitar duplicados
             let consolidado = {};
 
-            // Adicionar vitórias dos NPCs (Base)
+            // 1. Primeiro, carrega todos os NPCs com seus valores iniciais (Base)
             NPCs.forEach(n => {
                 consolidado[n.id] = { v: n.vitorias || 0, n: n.nick };
             });
 
-            // Adicionar/Somar vitórias vindas do Firebase (vitoriasVelha)
+            // 2. Soma as vitórias que estão no Firebase
             Object.keys(vitoriasVelha).forEach(id => {
+                let vitoriasNoBanco = parseInt(vitoriasVelha[id]) || 0;
+
                 if (consolidado[id]) {
-                    // Se já existe (é um NPC), soma as novas vitórias às vitórias base
-                    consolidado[id].v += vitoriasVelha[id];
+                    // Se o ID for de um NPC, SOMA: Base + Banco
+                    consolidado[id].v += vitoriasNoBanco;
                 } else {
-                    // Se não existe (é um jogador real)
-                    let nomeExibicao = id;
-                    if(dadosGerais[id] && dadosGerais[id].nick) {
-                        nomeExibicao = dadosGerais[id].nick;
+                    // Se for um jogador real
+                    let nomeLimpo = id;
+                    if (dadosGerais[id] && dadosGerais[id].nick) {
+                        nomeLimpo = dadosGerais[id].nick;
                     } else {
-                        // Limpa o e-mail: pega o que vem antes do @ e troca pontos por espaço
-                        nomeExibicao = id.split('@')[0].split('_')[0].replace(/[.]/g, ' ');
+                        // Se não tem nick, remove o @gmail e caracteres estranhos
+                        nomeLimpo = id.split('@')[0].split('_')[0].replace(/[.]/g, ' ');
                     }
-                    consolidado[id] = { v: vitoriasVelha[id], n: nomeExibicao };
+                    consolidado[id] = { v: vitoriasNoBanco, n: nomeLimpo };
                 }
             });
 
-            // 2. Transformar o objeto consolidado em lista para ordenar
-            listaV = Object.values(consolidado);
-
-            // 3. Ordenar do maior para o menor e exibir
-            listaV.sort((a,b) => b.v - a.v).forEach((p, i) => { 
-                tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.n}</td><td>${p.v}</td></tr>`; 
-            });
+            // 3. Transforma em lista, ordena e exibe
+            Object.values(consolidado)
+                .sort((a, b) => b.v - a.v)
+                .forEach((p, i) => { 
+                    tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.n}</td><td>${p.v}</td></tr>`; 
+                });
         }
 
         function atualizarTela() {
@@ -734,6 +728,7 @@
     </script>
 </body>
 </html>
+
 
 
 
