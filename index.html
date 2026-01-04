@@ -323,7 +323,6 @@
         ];
         let jogandoContraNPC = false;
         let aguardandoNPC = false;
-        let npcAtualID = ""; // VARIÁVEL PARA RASTREAR QUAL NPC ESTÁ JOGANDO
 
         const missoesSorte = [
             "Abraçar sua mãe(pode mandar o abraço por mensagem)", "Abraçar seu filho (a) (pode mandar o abraço por mensagem)", "Abraçar seu pai (pode mandar o abraço por mensagem)", "Abraçar seu irmão (a) ( pode mandar o abraço por mensagem)", "Abraçar sua namorada (o)",
@@ -362,10 +361,9 @@
         // --- LÓGICA DO JOGO DA VELHA ---
         let salaV = null, meuS = "";
 
-        function iniciarVelhaNPC(id) {
+        function iniciarVelhaNPC() {
             jogandoContraNPC = true;
             aguardandoNPC = false;
-            npcAtualID = id; // SALVA QUAL NPC ESTAMOS ENFRENTANDO
             document.getElementById('arena-velha').style.display = 'flex';
             document.getElementById('velha-info').innerText = "Sua vez!";
             document.querySelectorAll('.velha-cell').forEach(c => c.innerText = "");
@@ -449,16 +447,13 @@
                 r.innerText = msg; r.className = "show " + (v === "X" ? "msg-win" : "msg-lose");
                 
                 if(v === "X") {
+                    // Adiciona XP e Moedas
                     db.ref('rpg_data/'+jogadorAtual).update({
                         xp:(dadosGerais[jogadorAtual].xp||0)+10, 
                         coins:(dadosGerais[jogadorAtual].coins||0)+10
                     });
+                    // ATUALIZA RANKING DE VITÓRIAS
                     db.ref('vitorias_velha/'+jogadorAtual).transaction(c => (c||0) + 1);
-                } else if (v === "O") {
-                    // MODIFICADO: CONTA VITÓRIA PARA O NPC NO FIREBASE
-                    if(npcAtualID) {
-                        db.ref('vitorias_velha/' + npcAtualID).transaction(c => (c||0) + 1);
-                    }
                 }
 
                 setTimeout(() => { 
@@ -629,37 +624,16 @@
                 const isOnline = p.npc ? true : (dadosOnline[p.id] && dadosOnline[p.id].online);
                 const row = document.createElement('tr');
                 if(isOnline && p.id === jogadorAtual) row.className = 'online-border';
-                row.innerHTML = `<td>${i+1}º</td><td style="display:flex; align-items:center"><span class="status-dot ${isOnline ? 'online' : ''}"></span>${p.n}</td><td>${Math.floor(p.xp/1000)+1}</td><td>${p.xp}</td><td>${p.id !== jogadorAtual ? `<button onclick="iniciarDuelo('${p.id}','${p.n}')" style="background:#ef4444; padding:5px; margin-right:5px">Lutar</button><button onclick="${p.npc ? `iniciarVelhaNPC('${p.id}')` : `desafiarVelha('${p.id}')`}" style="background:#3b82f6; padding:5px; border-radius:50%">⭕</button>` : '-'}</td>`;
+                row.innerHTML = `<td>${i+1}º</td><td style="display:flex; align-items:center"><span class="status-dot ${isOnline ? 'online' : ''}"></span>${p.n}</td><td>${Math.floor(p.xp/1000)+1}</td><td>${p.xp}</td><td>${p.id !== jogadorAtual ? `<button onclick="iniciarDuelo('${p.id}','${p.n}')" style="background:#ef4444; padding:5px; margin-right:5px">Lutar</button><button onclick="${p.npc ? 'iniciarVelhaNPC()' : `desafiarVelha('${p.id}')`}" style="background:#3b82f6; padding:5px; border-radius:50%">⭕</button>` : '-'}</td>`;
                 tb.appendChild(row);
             });
         }
 
         function atualizarRankingVelha() {
             const tb = document.getElementById('ranking-velha-body'); if(!tb) return; tb.innerHTML = "";
-            let listaV = [];
-            
-            // MAPEA IDS PARA NOMES AMIGÁVEIS (JOGADORES E NPCs)
-            Object.keys(vitoriasVelha).forEach(k => {
-                let nomeFinal = k;
-                const npc = NPCs.find(n => n.id === k);
-                if(npc) nomeFinal = npc.nick;
-                else if(dadosGerais[k]) nomeFinal = dadosGerais[k].nick || k;
-                
-                listaV.push({ id: k, v: vitoriasVelha[k] || 0, n: nomeFinal });
-            });
-
-            // GARANTE QUE TODOS OS NPCs APAREÇAM NO RANKING MESMO SEM VITÓRIAS NO FIREBASE
-            NPCs.forEach(n => {
-                if(!vitoriasVelha[n.id]) {
-                    listaV.push({ id: n.id, v: n.vitorias, n: n.nick });
-                }
-            });
-
-            // REMOVE DUPLICATAS E ORDENA
-            const uniqueList = Array.from(new Map(listaV.map(item => [item.n, item])).values());
-            uniqueList.sort((a,b) => b.v - a.v).forEach((p, i) => { 
-                tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.n}</td><td>${p.v}</td></tr>`; 
-            });
+            let listaV = Object.keys(vitoriasVelha).map(k => ({ id: k, v: vitoriasVelha[k] || 0, n: (dadosGerais[k] ? dadosGerais[k].nick : k) }));
+            NPCs.forEach(n => listaV.push({ id: n.id, v: n.vitorias, n: n.nick }));
+            listaV.sort((a,b) => b.v - a.v).forEach((p, i) => { tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.n}</td><td>${p.v}</td></tr>`; });
         }
 
         function atualizarTela() {
@@ -725,3 +699,6 @@
     </script>
 </body>
 </html>
+
+
+
