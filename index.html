@@ -106,14 +106,15 @@
     </style>
 </head>
 <body>
-<div id="download-banner" style="background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid #3b82f6; padding: 10px; text-align: center; position: sticky; top: 0; z-index: 9999;">
-    <span style="font-size: 12px; color: #cbd5e1; margin-right: 10px;">Jogue com melhor performance:</span>
-    <a href="https://estevaomp-svg.github.io/ares7/ARES%20RPG.apk" 
-       style="background: #22c55e; color: white; padding: 5px 15px; border-radius: 20px; text-decoration: none; font-size: 12px; font-weight: bold;">
-       📥 BAIXAR APP
-    </a>
-    <button onclick="document.getElementById('download-banner').style.display='none'" style="background:none; border:none; color:white; margin-left:10px; cursor:pointer;">✕</button>
-</div>
+    <div id="download-banner" style="background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid #3b82f6; padding: 10px; text-align: center; position: sticky; top: 0; z-index: 9999;">
+        <span style="font-size: 12px; color: #cbd5e1; margin-right: 10px;">Jogue com melhor performance:</span>
+        <a href="https://estevaomp-svg.github.io/ares7/ARES%20RPG.apk" 
+           style="background: #22c55e; color: white; padding: 5px 15px; border-radius: 20px; text-decoration: none; font-size: 12px; font-weight: bold;">
+           📥 BAIXAR APP
+        </a>
+        <button onclick="document.getElementById('download-banner').style.display='none'" style="background:none; border:none; color:white; margin-left:10px; cursor:pointer;">✕</button>
+    </div>
+    
     <div id="res-velha-msg"></div>
 
     <div id="convite-velha">
@@ -310,7 +311,17 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database(), auth = firebase.auth();
-        let jogadorAtual = "", dadosGerais = {}, vitoriasVelha = {};
+        let jogadorAtual = "", dadosGerais = {}, vitoriasVelha = {}, dadosOnline = {};
+
+        // NPCs DEFINITION
+        const NPCs = [
+            { id: "npc_ares", nick: "Ares (NPC)", xp: 15000, photo: "https://i.ibb.co/X3vDgg/image.png", vitorias: 50 },
+            { id: "npc_zeus", nick: "Zeus (NPC)", xp: 12000, photo: "https://cdn-icons-png.flaticon.com/512/3663/3663335.png", vitorias: 40 },
+            { id: "npc_atena", nick: "Atena (NPC)", xp: 10000, photo: "https://cdn-icons-png.flaticon.com/512/3663/3663339.png", vitorias: 35 },
+            { id: "npc_hades", nick: "Hades (NPC)", xp: 8000, photo: "https://cdn-icons-png.flaticon.com/512/3663/3663342.png", vitorias: 30 },
+            { id: "npc_poseidon", nick: "Poseidon (NPC)", xp: 5000, photo: "https://cdn-icons-png.flaticon.com/512/3663/3663345.png", vitorias: 25 }
+        ];
+        let jogandoContraNPC = false;
 
         const missoesSorte = [
             "Abraçar sua mãe(pode mandar o abraço por mensagem)", "Abraçar seu filho (a) (pode mandar o abraço por mensagem)", "Abraçar seu pai (pode mandar o abraço por mensagem)", "Abraçar seu irmão (a) ( pode mandar o abraço por mensagem)", "Abraçar sua namorada (o)",
@@ -339,13 +350,97 @@
             statusRef.set({ online: true });
             statusRef.onDisconnect().set({ online: false });
             db.ref('status').on('value', s => {
+                dadosOnline = s.val() || {};
                 let ativos = 0; s.forEach(child => { if(child.val().online) ativos++; });
                 document.getElementById('global-online-count').innerText = 5 + ativos;
+                atualizarRanking();
             });
         }
 
-        // --- LÓGICA DO JOGO DA VELHA REVISADA ---
+        // --- LÓGICA DO JOGO DA VELHA ---
         let salaV = null, meuS = "";
+
+        function iniciarVelhaNPC() {
+            jogandoContraNPC = true;
+            document.getElementById('arena-velha').style.display = 'flex';
+            document.getElementById('velha-info').innerText = "Sua vez contra NPC!";
+            document.querySelectorAll('.velha-cell').forEach(c => c.innerText = "");
+        }
+
+        function cliqueVelha(i) {
+            if(jogandoContraNPC) {
+                const cells = document.querySelectorAll('.velha-cell');
+                if(cells[i].innerText !== "") return;
+                cells[i].innerText = "X";
+                if(!checarWinLocal()) {
+                    document.getElementById('velha-info').innerText = "NPC jogando...";
+                    setTimeout(jogadaNPC, 600);
+                }
+            } else {
+                if(!salaV) return;
+                db.ref('velha_online/'+salaV).get().then(s => {
+                    const d = s.val(); 
+                    if(!d || d.status !== "jogando" || d.turno !== jogadorAtual || d.tabuleiro[i] !== "" || d.vencedor !== "") return;
+                    d.tabuleiro[i] = meuS;
+                    const win = checarWinV(d.tabuleiro);
+                    const empate = !win && d.tabuleiro.every(c => c !== "");
+                    db.ref('velha_online/'+salaV).update({ 
+                        tabuleiro: d.tabuleiro, 
+                        turno: (d.turno === d.p1 ? d.p2 : d.p1), 
+                        vencedor: win ? jogadorAtual : (empate ? "EMPATE" : "") 
+                    });
+                });
+            }
+        }
+
+        function jogadaNPC() {
+            let cells = Array.from(document.querySelectorAll('.velha-cell')).map(c => c.innerText);
+            let jogada = -1;
+            const linhas = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            
+            const buscarIndex = (simbolo) => {
+                for (let l of linhas) {
+                    let combo = l.map(idx => cells[idx]);
+                    if (combo.filter(s => s === simbolo).length === 2 && combo.filter(s => s === "").length === 1) {
+                        return l[combo.indexOf("")];
+                    }
+                }
+                return -1;
+            };
+
+            jogada = buscarIndex("O"); 
+            if (jogada === -1) jogada = buscarIndex("X"); 
+            if (jogada === -1) {
+                if (cells[4] === "") jogada = 4;
+                else {
+                    let livres = cells.map((s, idx) => s === "" ? idx : null).filter(idx => idx !== null);
+                    jogada = livres[Math.floor(Math.random() * livres.length)];
+                }
+            }
+            if (jogada !== -1) {
+                document.querySelectorAll('.velha-cell')[jogada].innerText = "O";
+                checarWinLocal();
+            }
+        }
+
+        function checarWinLocal() {
+            let cells = Array.from(document.querySelectorAll('.velha-cell')).map(c => c.innerText);
+            const linhas = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            let v = null;
+            for (let l of linhas) {
+                if (cells[l[0]] && cells[l[0]] === cells[l[1]] && cells[l[0]] === cells[l[2]]) { v = cells[l[0]]; break; }
+            }
+            if (v || !cells.includes("")) {
+                let msg = v === "X" ? "GANHOU!" : (v === "O" ? "PERDEU!" : "EMPATE!");
+                const r = document.getElementById('res-velha-msg');
+                r.innerText = msg; r.className = "show " + (v === "X" ? "msg-win" : "msg-lose");
+                if(v === "X") db.ref('rpg_data/'+jogadorAtual).update({xp:(dadosGerais[jogadorAtual].xp||0)+10, coins:(dadosGerais[jogadorAtual].coins||0)+10});
+                setTimeout(() => { r.className = ""; document.getElementById('arena-velha').style.display = 'none'; jogandoContraNPC = false; }, 2000);
+                return true;
+            }
+            return false;
+        }
+
         function desafiarVelha(idOponente) {
             salaV = [jogadorAtual, idOponente].sort().join("_vs_");
             const refSala = db.ref('velha_online/' + salaV);
@@ -360,12 +455,13 @@
                 ouvirVelha(); 
             });
         }
+
         function ouvirVelha() {
             if(!salaV) return;
             db.ref('velha_online/' + salaV).on('value', s => {
                 const d = s.val(); 
                 if(!d) {
-                    if(document.getElementById('arena-velha').style.display === 'flex') {
+                    if(document.getElementById('arena-velha').style.display === 'flex' && !jogandoContraNPC) {
                         alert("Partida encerrada ou recusada.");
                         sairVelha();
                     }
@@ -375,11 +471,9 @@
                 meuS = (d.p1 === jogadorAtual) ? "X" : "O";
                 const cells = document.querySelectorAll('.velha-cell');
                 d.tabuleiro.forEach((v, i) => { cells[i].innerText = v; });
-                
                 if(d.status === "jogando") {
                     document.getElementById('velha-info').innerText = (d.turno === jogadorAtual) ? "Sua vez ("+meuS+")" : "Aguarde o oponente...";
                 }
-
                 if(d.vencedor) {
                     const resMsg = document.getElementById('res-velha-msg');
                     if(d.vencedor === jogadorAtual) { resMsg.innerText = "GANHOU!"; resMsg.className = "show msg-win"; db.ref('vitorias_velha/'+jogadorAtual).transaction(c => (c||0)+1); }
@@ -387,23 +481,6 @@
                     else { resMsg.innerText = "PERDEU!"; resMsg.className = "show msg-lose"; }
                     setTimeout(() => { resMsg.className = ""; sairVelha(); }, 3000);
                 }
-            });
-        }
-        function cliqueVelha(i) {
-            if(!salaV) return;
-            db.ref('velha_online/'+salaV).get().then(s => {
-                const d = s.val(); 
-                if(!d || d.status !== "jogando" || d.turno !== jogadorAtual || d.tabuleiro[i] !== "" || d.vencedor !== "") return;
-                
-                d.tabuleiro[i] = meuS;
-                const win = checarWinV(d.tabuleiro);
-                const empate = !win && d.tabuleiro.every(c => c !== "");
-                
-                db.ref('velha_online/'+salaV).update({ 
-                    tabuleiro: d.tabuleiro, 
-                    turno: (d.turno === d.p1 ? d.p2 : d.p1), 
-                    vencedor: win ? jogadorAtual : (empate ? "EMPATE" : "") 
-                });
             });
         }
         function checarWinV(b) { const w = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; return w.some(z => b[z[0]] && b[z[0]] === b[z[1]] && b[z[0]] === b[z[2]]); }
@@ -423,13 +500,15 @@
         function sairVelha() { 
             document.getElementById('arena-velha').style.display='none'; 
             document.getElementById('convite-velha').style.display='none'; 
+            jogandoContraNPC = false;
             if(salaV){ db.ref('velha_online/'+salaV).off(); db.ref('velha_online/'+salaV).remove(); salaV=null; }
         }
 
         // --- LÓGICA DE DUELO ---
         let batalhaAtiva = false, statsP = {}, statsE = {};
         function iniciarDuelo(idAdversario, nickAdversario) {
-            const p = dadosGerais[jogadorAtual], e = dadosGerais[idAdversario];
+            let p = dadosGerais[jogadorAtual], e = dadosGerais[idAdversario];
+            if(!e) e = NPCs.find(n => n.id === idAdversario);
             const lP = Math.floor((p.xp||0)/1000)+1, lE = Math.floor((e.xp||0)/1000)+1;
             statsP = { hp: (lP*1500)+(p.xp||0), max: (lP*1500)+(p.xp||0), atk: Math.floor((lP*50)+((p.xp||0)/40)) };
             statsE = { hp: (lE*1500)+(e.xp||0), max: (lE*1500)+(e.xp||0), atk: Math.floor((lE*50)+((e.xp||0)/40)) };
@@ -511,22 +590,22 @@
 
         function atualizarRanking() {
             const tb = document.getElementById('ranking-body'); if(!tb) return; tb.innerHTML = "";
-            const sorted = Object.keys(dadosGerais).map(k => ({ id: k, n: dadosGerais[k].nick || k, xp: dadosGerais[k].xp || 0 })).sort((a,b) => b.xp - a.xp);
-            sorted.forEach((p, i) => {
-                db.ref('status/' + p.id).on('value', snap => {
-                    const isOnline = snap.val() && snap.val().online;
-                    const row = document.createElement('tr');
-                    if(isOnline) row.className = 'online-border';
-                    row.innerHTML = `<td>${i+1}º</td><td style="display:flex; align-items:center"><span class="status-dot ${isOnline ? 'online' : ''}"></span>${p.n}</td><td>${Math.floor(p.xp/1000)+1}</td><td>${p.xp}</td><td>${p.id !== jogadorAtual ? `<button onclick="iniciarDuelo('${p.id}','${p.n}')" style="background:#ef4444; padding:5px; margin-right:5px">Lutar</button><button onclick="desafiarVelha('${p.id}')" style="background:#3b82f6; padding:5px; border-radius:50%">⭕</button>` : '-'}</td>`;
-                    tb.appendChild(row);
-                });
+            let lista = Object.keys(dadosGerais).map(k => ({ id: k, n: dadosGerais[k].nick || k, xp: dadosGerais[k].xp || 0, npc: false }));
+            NPCs.forEach(n => lista.push({ id: n.id, n: n.nick, xp: n.xp, npc: true }));
+            lista.sort((a,b) => b.xp - a.xp).forEach((p, i) => {
+                const isOnline = p.npc ? true : (dadosOnline[p.id] && dadosOnline[p.id].online);
+                const row = document.createElement('tr');
+                if(isOnline && p.id === jogadorAtual) row.className = 'online-border';
+                row.innerHTML = `<td>${i+1}º</td><td style="display:flex; align-items:center"><span class="status-dot ${isOnline ? 'online' : ''}"></span>${p.n}</td><td>${Math.floor(p.xp/1000)+1}</td><td>${p.xp}</td><td>${p.id !== jogadorAtual ? `<button onclick="iniciarDuelo('${p.id}','${p.n}')" style="background:#ef4444; padding:5px; margin-right:5px">Lutar</button><button onclick="${p.npc ? 'iniciarVelhaNPC()' : `desafiarVelha('${p.id}')`}" style="background:#3b82f6; padding:5px; border-radius:50%">⭕</button>` : '-'}</td>`;
+                tb.appendChild(row);
             });
         }
 
         function atualizarRankingVelha() {
             const tb = document.getElementById('ranking-velha-body'); if(!tb) return; tb.innerHTML = "";
-            const sortedV = Object.keys(vitoriasVelha).map(k => ({ id: k, v: vitoriasVelha[k] || 0, n: (dadosGerais[k] ? dadosGerais[k].nick : k) })).sort((a,b) => b.v - a.v);
-            sortedV.forEach((p, i) => { tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.n}</td><td>${p.v}</td></tr>`; });
+            let listaV = Object.keys(vitoriasVelha).map(k => ({ id: k, v: vitoriasVelha[k] || 0, n: (dadosGerais[k] ? dadosGerais[k].nick : k) }));
+            NPCs.forEach(n => listaV.push({ id: n.id, v: n.vitorias, n: n.nick }));
+            listaV.sort((a,b) => b.v - a.v).forEach((p, i) => { tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.n}</td><td>${p.v}</td></tr>`; });
         }
 
         function atualizarTela() {
@@ -564,31 +643,15 @@
                 dO.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:8px"><span>${n}</span><button class="${feito?'btn-done':'btn-check'}" onclick="concluirMissao('${id}', 10, true)" ${feito?'disabled':''}>${feito?'OK':'✔'}</button></div>`;
             });
 
-            const dP = document.getElementById('lista-missoes-pessoais'); 
-dP.innerHTML = "";
-
-(p.missoes || []).filter(m => m.id.startsWith('m-')).forEach(m => {
-    // Define a cor de fundo padrão
-    let corFundo = "rgba(255,255,255,0.05)"; 
-
-    // Se NÃO estiver concluída e for Prioridade (XP >= 30), fica Laranja/Vermelho
-    if (!m.concluida) {
-        if (m.valor >= 50) {
-            corFundo = "rgba(239, 68, 68, 0.3)"; // Vermelho claro para XP muito alto
-        } else if (m.valor >= 30) {
-            corFundo = "rgba(251, 191, 36, 0.3)"; // Laranja claro para Prioridade (30 XP)
-        }
-    }
-
-    dP.innerHTML += `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:${corFundo}; padding:10px; border-radius:8px; border: 1px solid ${m.concluida ? 'transparent' : 'rgba(255,255,255,0.1)'};">
-            <span>${m.nome} <small>(${m.valor} XP)</small></span>
-            <div>
-                <button class="${m.concluida?'btn-done':'btn-check'}" onclick="concluirMissao('${m.id}', ${m.valor})" ${m.concluida?'disabled':''}>✔</button>
-                <button class="btn-del" onclick="removerMissao('${m.id}')">🗑️</button>
-            </div>
-        </div>`;
-});
+            const dP = document.getElementById('lista-missoes-pessoais'); dP.innerHTML = "";
+            (p.missoes || []).filter(m => m.id.startsWith('m-')).forEach(m => {
+                let corFundo = "rgba(255,255,255,0.05)"; 
+                if (!m.concluida) {
+                    if (m.valor >= 50) corFundo = "rgba(239, 68, 68, 0.3)";
+                    else if (m.valor >= 30) corFundo = "rgba(251, 191, 36, 0.3)";
+                }
+                dP.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:${corFundo}; padding:10px; border-radius:8px; border: 1px solid ${m.concluida ? 'transparent' : 'rgba(255,255,255,0.1)'};"><span>${m.nome} <small>(${m.valor} XP)</small></span><div><button class="${m.concluida?'btn-done':'btn-check'}" onclick="concluirMissao('${m.id}', ${m.valor})" ${m.concluida?'disabled':''}>✔</button><button class="btn-del" onclick="removerMissao('${m.id}')">🗑️</button></div></div>`;
+            });
 
             const tL = document.querySelector('#tabela-loja tbody'); if(tL) { tL.innerHTML = ""; [{n:'Passear',p:19000},{n:'Auto Presente',p:15000},{n:'Lanche (dia do lixo)',p:14000}].forEach(i => { tL.innerHTML += `<tr><td>${i.n}</td><td>💰${i.p}</td><td><button class="btn-buy" onclick="comprar(${i.p},'${i.n}')">Resgatar</button></td></tr>`; }); }
         }
@@ -608,15 +671,3 @@ dP.innerHTML = "";
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
