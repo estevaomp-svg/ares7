@@ -636,48 +636,37 @@
             
             let listaV = [];
             
-            // 1. Coleta vitórias do Banco de Dados
+            // 1. Criar um mapa para agrupar tudo por ID e evitar duplicados
+            let consolidado = {};
+
+            // Adicionar vitórias dos NPCs (Base)
+            NPCs.forEach(n => {
+                consolidado[n.id] = { v: n.vitorias || 0, n: n.nick };
+            });
+
+            // Adicionar/Somar vitórias vindas do Firebase (vitoriasVelha)
             Object.keys(vitoriasVelha).forEach(id => {
-                const npc = NPCs.find(n => n.id === id);
-                if (npc) {
-                    // Soma vitórias base do NPC + vitórias conquistadas no banco
-                    listaV.push({ id: id, v: (npc.vitorias || 0) + (vitoriasVelha[id] || 0), n: npc.nick });
+                if (consolidado[id]) {
+                    // Se já existe (é um NPC), soma as novas vitórias às vitórias base
+                    consolidado[id].v += vitoriasVelha[id];
                 } else {
-                    // JOGADOR REAL: Prioriza o Nick. Se não houver, limpa o ID/E-mail
+                    // Se não existe (é um jogador real)
                     let nomeExibicao = id;
                     if(dadosGerais[id] && dadosGerais[id].nick) {
                         nomeExibicao = dadosGerais[id].nick;
                     } else {
-                        // Tenta remover partes de e-mail se o nick estiver vazio
-                        nomeExibicao = id.split('@')[0].replace(/[._-]/g, ' ');
+                        // Limpa o e-mail: pega o que vem antes do @ e troca pontos por espaço
+                        nomeExibicao = id.split('@')[0].split('_')[0].replace(/[.]/g, ' ');
                     }
-                    listaV.push({ id: id, v: vitoriasVelha[id] || 0, n: nomeExibicao });
+                    consolidado[id] = { v: vitoriasVelha[id], n: nomeExibicao };
                 }
             });
 
-            // 2. Garante que NPCs sem vitórias extras também apareçam no ranking
-            NPCs.forEach(n => {
-                if (!listaV.find(item => item.id === n.id)) {
-                    listaV.push({ id: n.id, v: n.vitorias || 0, n: n.nick });
-                }
-            });
+            // 2. Transformar o objeto consolidado em lista para ordenar
+            listaV = Object.values(consolidado);
 
-            // 3. Remove duplicatas pelo nome (evita nick antigo e novo na mesma lista)
-            const rankingFinal = [];
-            const nomesProcessados = new Set();
-
-            // Ordena primeiro por vitórias para manter o maior valor se houver conflito
-            listaV.sort((a, b) => b.v - a.v);
-
-            listaV.forEach(item => {
-                if (!nomesProcessados.has(item.n)) {
-                    rankingFinal.push(item);
-                    nomesProcessados.add(item.n);
-                }
-            });
-
-            // 4. Renderiza na tabela
-            rankingFinal.forEach((p, i) => { 
+            // 3. Ordenar do maior para o menor e exibir
+            listaV.sort((a,b) => b.v - a.v).forEach((p, i) => { 
                 tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.n}</td><td>${p.v}</td></tr>`; 
             });
         }
@@ -745,6 +734,7 @@
     </script>
 </body>
 </html>
+
 
 
 
