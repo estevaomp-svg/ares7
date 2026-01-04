@@ -323,7 +323,7 @@
         ];
         let jogandoContraNPC = false;
         let aguardandoNPC = false;
-        let npcAtualId = ""; // Adicionado: Identificador do NPC na partida atual
+        let npcAtualId = "";
 
         const missoesSorte = [
             "Abraçar sua mãe(pode mandar o abraço por mensagem)", "Abraçar seu filho (a) (pode mandar o abraço por mensagem)", "Abraçar seu pai (pode mandar o abraço por mensagem)", "Abraçar seu irmão (a) ( pode mandar o abraço por mensagem)", "Abraçar sua namorada (o)",
@@ -359,12 +359,9 @@
             });
         }
 
-        // --- LÓGICA DO JOGO DA VELHA ---
-        let salaV = null, meuS = "";
-
-        function iniciarVelhaNPC(idNPC) { // Alterado: Agora recebe o ID do NPC
+        function iniciarVelhaNPC(idNPC) {
             jogandoContraNPC = true;
-            npcAtualId = idNPC; // Salva o ID do NPC que está sendo desafiado
+            npcAtualId = idNPC;
             aguardandoNPC = false;
             document.getElementById('arena-velha').style.display = 'flex';
             document.getElementById('velha-info').innerText = "Sua vez!";
@@ -373,17 +370,14 @@
 
         function cliqueVelha(i) {
             if(jogandoContraNPC) {
-                if(aguardandoNPC) return; // Trava o clique enquanto o NPC pensa
-                
+                if(aguardandoNPC) return;
                 const cells = document.querySelectorAll('.velha-cell');
                 if(cells[i].innerText !== "") return;
-                
                 cells[i].innerText = "X";
-                
                 if(!checarWinLocal()) {
                     aguardandoNPC = true;
                     document.getElementById('velha-info').innerText = "Oponente jogando...";
-                    setTimeout(jogadaNPC, 2000); // Atraso de 2 segundos para o NPC
+                    setTimeout(jogadaNPC, 2000);
                 }
             } else {
                 if(!salaV) return;
@@ -404,11 +398,9 @@
 
         function jogadaNPC() {
             if(!jogandoContraNPC) return;
-            
             let cells = Array.from(document.querySelectorAll('.velha-cell')).map(c => c.innerText);
             let jogada = -1;
             const linhas = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-            
             const buscarIndex = (simbolo) => {
                 for (let l of linhas) {
                     let combo = l.map(idx => cells[idx]);
@@ -418,7 +410,6 @@
                 }
                 return -1;
             };
-
             jogada = buscarIndex("O"); 
             if (jogada === -1) jogada = buscarIndex("X"); 
             if (jogada === -1) {
@@ -431,7 +422,7 @@
             if (jogada !== -1) {
                 document.querySelectorAll('.velha-cell')[jogada].innerText = "O";
                 document.getElementById('velha-info').innerText = "Sua vez!";
-                aguardandoNPC = false; // Libera o clique do jogador
+                aguardandoNPC = false;
                 checarWinLocal();
             }
         }
@@ -447,25 +438,23 @@
                 let msg = v === "X" ? "GANHOU!" : (v === "O" ? "PERDEU!" : "EMPATE!");
                 const r = document.getElementById('res-velha-msg');
                 r.innerText = msg; r.className = "show " + (v === "X" ? "msg-win" : "msg-lose");
-                
                 if(v === "X") {
                     db.ref('rpg_data/'+jogadorAtual).update({
                         xp:(dadosGerais[jogadorAtual].xp||0)+10, 
                         coins:(dadosGerais[jogadorAtual].coins||0)+10
                     });
                     db.ref('vitorias_velha/'+jogadorAtual).transaction(c => (c||0) + 1);
-                } else if (v === "O") { // Adicionado: Incrementa vitórias do NPC
+                } else if (v === "O") {
                     if(npcAtualId) {
                         db.ref('vitorias_velha/' + npcAtualId).transaction(c => (c||0) + 1);
                     }
                 }
-
                 setTimeout(() => { 
                     r.className = ""; 
                     document.getElementById('arena-velha').style.display = 'none'; 
                     jogandoContraNPC = false; 
                     aguardandoNPC = false;
-                    npcAtualId = ""; // Limpa o ID após a partida
+                    npcAtualId = "";
                 }, 2000);
                 return true;
             }
@@ -514,197 +503,310 @@
                 }
             });
         }
-        function checarWinV(b) { const w = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]; return w.some(z => b[z[0]] && b[z[0]] === b[z[1]] && b[z[0]] === b[z[2]]); }
-        function aceitarVelha() { 
-            if(!salaV) return;
-            db.ref('velha_online/'+salaV).update({status:"jogando"}).then(() => { 
-                document.getElementById('convite-velha').style.display='none'; 
-                document.getElementById('arena-velha').style.display='flex'; 
-                db.ref('velha_online/'+salaV).onDisconnect().remove();
-                ouvirVelha(); 
-            }); 
-        }
-        function recusarVelha() { 
-            if(salaV) { db.ref('velha_online/'+salaV).remove(); salaV = null; }
-            document.getElementById('convite-velha').style.display='none'; 
+        function checarWinV(b) {
+            const l = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            return l.some(r => b[r[0]] && b[r[0]] === b[r[1]] && b[r[0]] === b[r[2]]);
         }
         function sairVelha() { 
-            document.getElementById('arena-velha').style.display='none'; 
-            document.getElementById('convite-velha').style.display='none'; 
+            if(salaV) { db.ref('velha_online/'+salaV).remove(); salaV = null; } 
+            document.getElementById('arena-velha').style.display = 'none'; 
             jogandoContraNPC = false;
-            aguardandoNPC = false;
-            if(salaV){ db.ref('velha_online/'+salaV).off(); db.ref('velha_online/'+salaV).remove(); salaV=null; }
+        }
+        function aceitarVelha() { db.ref('velha_online/'+salaV).update({ status: "jogando" }); document.getElementById('convite-velha').style.display = 'none'; document.getElementById('arena-velha').style.display = 'flex'; ouvirVelha(); }
+        function recusarVelha() { db.ref('velha_online/'+salaV).remove(); document.getElementById('convite-velha').style.display = 'none'; }
+
+        // --- SISTEMA DE COMBATE ---
+        let batalhaAtual = null;
+        function iniciarDuelo(idOponente) {
+            const p = dadosGerais[jogadorAtual], o = NPCs.find(n => n.id === idOponente) || dadosGerais[idOponente];
+            batalhaAtual = {
+                p1: { id: jogadorAtual, nick: p.nick, hp: 100 + (Math.floor((p.xp||0)/1000)*10), maxHp: 100 + (Math.floor((p.xp||0)/1000)*10), atk: 10 + Math.floor((p.xp||0)/2000), def: 5, img: p.photo || 'https://via.placeholder.com/100' },
+                p2: { id: idOponente, nick: o.nick, hp: 100 + (Math.floor((o.xp||0)/1000)*10), maxHp: 100 + (Math.floor((o.xp||0)/1000)*10), atk: 10 + Math.floor((o.xp||0)/2000), def: 5, img: o.photo || 'https://via.placeholder.com/100' },
+                turno: 'p1', log: "Duelo iniciado! Seu turno."
+            };
+            document.getElementById('arena-duelo').style.display = 'flex';
+            atualizarInterfaceBatalha();
         }
 
-        // --- LÓGICA DE DUELO ---
-        let batalhaAtiva = false, statsP = {}, statsE = {};
-        function iniciarDuelo(idAdversario, nickAdversario) {
-            let p = dadosGerais[jogadorAtual], e = dadosGerais[idAdversario];
-            if(!e) e = NPCs.find(n => n.id === idAdversario);
-            const lP = Math.floor((p.xp||0)/1000)+1, lE = Math.floor((e.xp||0)/1000)+1;
-            statsP = { hp: (lP*1500)+(p.xp||0), max: (lP*1500)+(p.xp||0), atk: Math.floor((lP*50)+((p.xp||0)/40)) };
-            statsE = { hp: (lE*1500)+(e.xp||0), max: (lE*1500)+(e.xp||0), atk: Math.floor((lE*50)+((e.xp||0)/40)) };
-            document.getElementById('name-p').innerText = `${p.nick||"Você"} Lv.${lP}`;
-            document.getElementById('name-e').innerText = `${nickAdversario} Lv.${lE}`;
-            document.getElementById('img-p').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-            document.getElementById('img-e').src = e.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-            document.getElementById('battle-log').innerText = "Duelo iniciado!";
+        function atualizarInterfaceBatalha() {
+            const b = batalhaAtual;
+            document.getElementById('name-p').innerText = b.p1.nick;
+            document.getElementById('img-p').src = b.p1.img;
+            document.getElementById('hp-p-fill').style.width = (b.p1.hp/b.p1.maxHp*100)+'%';
+            document.getElementById('hp-text-p').innerText = `${Math.ceil(b.p1.hp)}/${b.p1.maxHp}`;
+            
+            document.getElementById('name-e').innerText = b.p2.nick;
+            document.getElementById('img-e').src = b.p2.img;
+            document.getElementById('hp-e-fill').style.width = (b.p2.hp/b.p2.maxHp*100)+'%';
+            document.getElementById('hp-text-e').innerText = `${Math.ceil(b.p2.hp)}/${b.p2.maxHp}`;
+            
+            document.getElementById('battle-log').innerText = b.log;
+            
+            const controls = document.querySelectorAll('.btn-action:not(#btn-fechar-duelo)');
+            controls.forEach(btn => btn.disabled = (b.turno !== 'p1'));
+        }
+
+        function comandoBatalha(acao) {
+            if(batalhaAtual.turno !== 'p1') return;
+            processarTurno('p1', acao);
+            if(batalhaAtual.p2.hp > 0) {
+                setTimeout(() => processarTurno('p2', 'atacar'), 1500);
+            }
+        }
+
+        function processarTurno(quem, acao) {
+            const b = batalhaAtual;
+            const atacante = quem === 'p1' ? b.p1 : b.p2;
+            const defensor = quem === 'p1' ? b.p2 : b.p1;
+            
+            if(acao === 'atacar') {
+                const dano = Math.max(5, atacante.atk - (Math.random() * defensor.def));
+                defensor.hp -= dano;
+                b.log = `${atacante.nick} atacou e causou ${Math.floor(dano)} de dano!`;
+                
+                const imgId = quem === 'p1' ? 'img-p' : 'img-e';
+                const enemyImgId = quem === 'p1' ? 'img-e' : 'img-p';
+                document.getElementById(imgId).classList.add(quem === 'p1' ? 'anim-attack-p' : 'anim-attack-e');
+                setTimeout(() => document.getElementById(imgId).classList.remove(quem === 'p1' ? 'anim-attack-p' : 'anim-attack-e'), 500);
+                setTimeout(() => document.getElementById(enemyImgId).classList.add('anim-damage'), 200);
+                setTimeout(() => document.getElementById(enemyImgId).classList.remove('anim-damage'), 600);
+            } else {
+                atacante.hp = Math.min(atacante.maxHp, atacante.hp + 15);
+                b.log = `${atacante.nick} se defendeu e recuperou HP!`;
+            }
+
+            if(defensor.hp <= 0) {
+                defensor.hp = 0;
+                b.log = `VITÓRIA! ${atacante.nick} venceu o duelo!`;
+                document.getElementById('btn-fechar-duelo').classList.remove('hidden');
+                if(quem === 'p1') {
+                    db.ref('rpg_data/'+jogadorAtual).update({ xp: (dadosGerais[jogadorAtual].xp||0) + 50, coins: (dadosGerais[jogadorAtual].coins||0) + 20 });
+                }
+            }
+            
+            b.turno = quem === 'p1' ? 'p2' : 'p1';
+            atualizarInterfaceBatalha();
+        }
+
+        function fecharArena() {
+            document.getElementById('arena-duelo').style.display = 'none';
             document.getElementById('btn-fechar-duelo').classList.add('hidden');
-            atualizarBarras(); document.getElementById('arena-duelo').style.display = 'flex'; batalhaAtiva = true;
-        }
-        function atualizarBarras() {
-            document.getElementById('hp-p-fill').style.width = (statsP.hp/statsP.max*100)+"%";
-            document.getElementById('hp-e-fill').style.width = (statsE.hp/statsE.max*100)+"%";
-            document.getElementById('hp-text-p').innerText = `${Math.max(0,Math.floor(statsP.hp))} / ${statsP.max}`;
-            document.getElementById('hp-text-e').innerText = `${Math.max(0,Math.floor(statsE.hp))} / ${statsE.max}`;
-        }
-        function comandoBatalha(t) {
-            if(!batalhaAtiva) return;
-            if(t==='atacar') {
-                document.getElementById('char-player').classList.add('anim-attack-p');
-                setTimeout(() => {
-                    let d = statsP.atk + Math.floor(Math.random()*20); statsE.hp -= d;
-                    document.getElementById('char-enemy').classList.add('anim-damage');
-                    atualizarBarras();
-                    setTimeout(() => {
-                        document.getElementById('char-player').classList.remove('anim-attack-p');
-                        document.getElementById('char-enemy').classList.remove('anim-damage');
-                        if(statsE.hp <= 0) finalizar(true); else setTimeout(turnoInimigo, 2500); 
-                    }, 400);
-                }, 300);
-            } else { statsP.def = true; setTimeout(turnoInimigo, 1000); }
-        }
-        function turnoInimigo() {
-            if(!batalhaAtiva) return;
-            document.getElementById('char-enemy').classList.add('anim-attack-e');
-            setTimeout(() => {
-                let d = statsE.atk; if(statsP.def){ d=Math.floor(d*0.4); statsP.def=false; }
-                statsP.hp -= d; document.getElementById('char-player').classList.add('anim-damage');
-                atualizarBarras();
-                setTimeout(() => {
-                    document.getElementById('char-enemy').classList.remove('anim-attack-e');
-                    document.getElementById('char-player').classList.remove('anim-damage');
-                    if(statsP.hp <= 0) finalizar(false);
-                }, 400);
-            }, 300);
-        }
-        function finalizar(v) { batalhaAtiva = false; document.getElementById('battle-log').innerText = v ? "VITÓRIA!" : "DERROTA!"; document.getElementById('btn-fechar-duelo').classList.remove('hidden'); if(v) db.ref('rpg_data/'+jogadorAtual).update({xp:(dadosGerais[jogadorAtual].xp||0)+5}); }
-        function fecharArena() { document.getElementById('arena-duelo').style.display = 'none'; }
-
-        function mudarAba(aba) { document.getElementById('tab-home').classList.toggle('hidden', aba !== 'home'); document.getElementById('tab-profile').classList.toggle('hidden', aba !== 'profile'); }
-        function limparNome(e) { return e.split('@')[0].replace(/[.#$[\]]/g, "_"); }
-        function alternarTela(c) { document.getElementById('login-area').className = c?'hidden':''; document.getElementById('register-area').className = c?'':'hidden'; }
-        function fazerLogin() { auth.signInWithEmailAndPassword(document.getElementById('login-email').value, document.getElementById('login-pass').value); }
-        function fazerCadastro() {
-            const nick = document.getElementById('reg-nick').value, e = document.getElementById('reg-email').value, p = document.getElementById('reg-pass').value;
-            auth.createUserWithEmailAndPassword(e,p).then(() => { db.ref('rpg_data/'+limparNome(e)).set({ nick: nick, xp: 0, coins: 0 }); });
         }
 
-        auth.onAuthStateChanged(u => {
-            if(u) {
-                jogadorAtual = limparNome(u.email); gerenciarPresenca(jogadorAtual);
+        // --- CORE LOGIC ---
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                jogadorAtual = user.uid;
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('game-content').classList.remove('hidden');
-                db.ref('rpg_data').on('value', s => { dadosGerais = s.val() || {}; atualizarTela(); atualizarRanking(); });
+                
+                db.ref('rpg_data/' + user.uid).on('value', s => {
+                    const p = s.val() || {};
+                    if(!p.nick) db.ref('rpg_data/'+user.uid).update({nick: user.email.split('@')[0], xp:0, coins:0});
+                    
+                    document.getElementById('player-name').innerText = p.nick || "---";
+                    document.getElementById('p-img').src = p.photo || 'https://via.placeholder.com/50';
+                    document.getElementById('p-img-large').src = p.photo || 'https://via.placeholder.com/120';
+                    document.getElementById('xp').innerText = p.xp || 0;
+                    document.getElementById('coins').innerText = p.coins || 0;
+                    
+                    const level = Math.floor((p.xp || 0) / 1000) + 1;
+                    document.getElementById('lvl').innerText = level;
+                    const prog = ((p.xp || 0) % 1000) / 10;
+                    document.getElementById('progress').style.width = prog + "%";
+
+                    const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
+                    if(p.missaoBau && p.missaoBau.data === hoje) {
+                        document.getElementById('gift-counter').innerText = `Giros: ${p.missaoBau.contagem}/10`;
+                        if(!p.missaoBau.concluida) {
+                            document.getElementById('lucky-msg').classList.add('hidden');
+                            document.getElementById('lucky-mission-container').classList.remove('hidden');
+                            document.getElementById('lucky-mission-text').innerText = p.missaoBau.nome;
+                            const btn = document.getElementById('btn-concluir-bau');
+                            btn.innerText = "CONCLUIR (+10 XP)";
+                            btn.onclick = () => {
+                                db.ref('rpg_data/'+jogadorAtual+'/missaoBau').update({concluida: true});
+                                db.ref('rpg_data/'+jogadorAtual).update({xp: (p.xp||0)+10, coins: (p.coins||0)+5});
+                                alert("Parabéns! Recompensa resgatada.");
+                            };
+                        } else {
+                            document.getElementById('lucky-msg').classList.remove('hidden');
+                            document.getElementById('lucky-msg').innerText = "Missão concluída! Clique para o próximo presente.";
+                            document.getElementById('lucky-mission-container').classList.add('hidden');
+                            document.getElementById('gift-icon').classList.remove('open');
+                            document.getElementById('gift-icon').classList.add('gift-shake');
+                        }
+                    }
+
+                    const lista = document.getElementById('lista-missoes-pessoais');
+                    lista.innerHTML = "";
+                    (p.missoes || []).forEach(m => {
+                        lista.innerHTML += `
+                            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:5px; border-left: 4px solid ${m.valor > 0 ? '#22c55e' : '#ef4444'}">
+                                <span style="${m.concluida ? 'text-decoration:line-through; opacity:0.5' : ''}">${m.nome} (${m.valor > 0 ? '+' : ''}${m.valor} XP)</span>
+                                <div>
+                                    ${!m.concluida ? `<button class="btn-check" onclick="concluirMissao('${m.id}', ${m.valor})">✓</button>` : `<span style="color:#22c55e; font-weight:bold; margin-right:10px">OK</span>`}
+                                    <button class="btn-del" onclick="removerMissao('${m.id}')">✕</button>
+                                </div>
+                            </div>`;
+                    });
+
+                    const listaO = document.getElementById('lista-obrigatoria');
+                    listaO.innerHTML = "";
+                    const missoesO = [
+                        {id:'o1', nome:'📖 Estudar 1 Hora'},
+                        {id:'o2', nome:'🍎 Comer Saudável'},
+                        {id:'o3', nome:'💧 Beber 2L de Água'},
+                        {id:'o4', nome:'🏃 Atividade Física'}
+                    ];
+                    const concluidasO = p.concluidasO || {};
+                    missoesO.forEach(m => {
+                        const done = concluidasO[m.id] === hoje;
+                        listaO.innerHTML += `
+                            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:5px">
+                                <span>${m.nome}</span>
+                                <button class="${done ? 'btn-done' : 'btn-check'}" onclick="${done ? '' : `concluirObrig('${m.id}')`}" ${done ? 'disabled' : ''}>
+                                    ${done ? 'Concluído' : 'Concluir'}
+                                </button>
+                            </div>`;
+                    });
+                });
+
+                db.ref('rpg_data').on('value', s => { dadosGerais = s.val() || {}; atualizarRanking(); });
                 db.ref('vitorias_velha').on('value', s => { vitoriasVelha = s.val() || {}; atualizarRankingVelha(); });
                 db.ref('velha_online').on('value', s => {
-                    const salas = s.val();
-                    for(let id in salas) { 
-                        if(salas[id].p2 === jogadorAtual && salas[id].status === "convite") { 
-                            salaV = id; 
-                            document.getElementById('msg-convite').innerText = "Desafio de " + (salas[id].p1_nick || salas[id].p1); 
-                            document.getElementById('convite-velha').style.display = 'block'; 
-                            ouvirVelha(); 
-                        } 
-                    }
+                    const salas = s.val() || {};
+                    Object.keys(salas).forEach(idSala => {
+                        if(salas[idSala].p2 === jogadorAtual && salas[idSala].status === "convite") {
+                            salaV = idSala;
+                            document.getElementById('convite-velha').style.display = 'block';
+                            document.getElementById('msg-convite').innerText = salas[idSala].p1_nick + " te desafiou no Jogo da Velha!";
+                        }
+                    });
                 });
-            } else { document.getElementById('auth-screen').classList.remove('hidden'); document.getElementById('game-content').classList.add('hidden'); }
+                gerenciarPresenca(user.uid);
+            } else {
+                document.getElementById('auth-screen').classList.remove('hidden');
+                document.getElementById('game-content').classList.add('hidden');
+            }
         });
 
         function atualizarRanking() {
             const tb = document.getElementById('ranking-body'); if(!tb) return; tb.innerHTML = "";
-            let lista = Object.keys(dadosGerais).map(k => ({ id: k, n: dadosGerais[k].nick || k, xp: dadosGerais[k].xp || 0, npc: false }));
-            NPCs.forEach(n => lista.push({ id: n.id, n: n.nick, xp: n.xp, npc: true }));
-            lista.sort((a,b) => b.xp - a.xp).forEach((p, i) => {
-                const isOnline = p.npc ? true : (dadosOnline[p.id] && dadosOnline[p.id].online);
-                const row = document.createElement('tr');
-                if(isOnline && p.id === jogadorAtual) row.className = 'online-border';
-                row.innerHTML = `<td>${i+1}º</td><td style="display:flex; align-items:center"><span class="status-dot ${isOnline ? 'online' : ''}"></span>${p.n}</td><td>${Math.floor(p.xp/1000)+1}</td><td>${p.xp}</td><td>${p.id !== jogadorAtual ? `<button onclick="iniciarDuelo('${p.id}','${p.n}')" style="background:#ef4444; padding:5px; margin-right:5px">Lutar</button><button onclick="${p.npc ? `iniciarVelhaNPC('${p.id}')` : `desafiarVelha('${p.id}')`}" style="background:#3b82f6; padding:5px; border-radius:50%">⭕</button>` : '-'}</td>`;
-                tb.appendChild(row);
+            let lista = Object.keys(dadosGerais).map(k => ({id:k, ...dadosGerais[k]}));
+            NPCs.forEach(n => lista.push(n));
+            lista.sort((a,b) => (b.xp||0) - (a.xp||0)).forEach((p, i) => {
+                const isOnline = (dadosOnline[p.id] && dadosOnline[p.id].online) || p.id.startsWith('npc_');
+                tb.innerHTML += `
+                    <tr class="${p.id === jogadorAtual ? 'online-border' : ''}">
+                        <td>${i+1}º</td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:5px">
+                                <span class="status-dot ${isOnline ? 'online' : ''}"></span>
+                                ${p.nick}
+                            </div>
+                        </td>
+                        <td>${Math.floor((p.xp||0)/1000)+1}</td>
+                        <td>${p.xp||0}</td>
+                        <td>
+                            ${p.id !== jogadorAtual ? `
+                                <button onclick="iniciarDuelo('${p.id}')" style="background:var(--danger); padding:4px 8px; font-size:10px">DUELO</button>
+                                <button onclick="${p.id.startsWith('npc_') ? `iniciarVelhaNPC('${p.id}')` : `desafiarVelha('${p.id}')`}" style="background:var(--primary); padding:4px 8px; font-size:10px; margin-top:2px">VELHA</button>
+                            ` : '-'}
+                        </td>
+                    </tr>`;
             });
         }
 
         function atualizarRankingVelha() {
-            const tb = document.getElementById('ranking-velha-body'); if(!tb) return; tb.innerHTML = "";
-            let listaV = Object.keys(vitoriasVelha).map(k => ({ id: k, v: vitoriasVelha[k] || 0, n: (dadosGerais[k] ? dadosGerais[k].nick : k) }));
-            NPCs.forEach(n => {
-                // Soma vitórias base + vitórias do banco de dados para os NPCs
-                let vBanco = vitoriasVelha[n.id] || 0;
-                listaV.push({ id: n.id, v: n.vitorias + vBanco, n: n.nick });
-            });
-            listaV.sort((a,b) => b.v - a.v).forEach((p, i) => { tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.n}</td><td>${p.v}</td></tr>`; });
-        }
+            const tb = document.getElementById('ranking-velha-body'); 
+            if(!tb) return; 
+            tb.innerHTML = "";
 
-        function atualizarTela() {
-            const p = dadosGerais[jogadorAtual] || {xp:0, coins:0, missoes:[]};
-            document.getElementById('player-name').innerText = p.nick || jogadorAtual;
-            document.getElementById('xp').innerText = p.xp || 0;
-            document.getElementById('coins').innerText = p.coins || 0;
-            document.getElementById('lvl').innerText = Math.floor((p.xp || 0)/1000)+1;
-            document.getElementById('progress').style.width = ((p.xp || 0)%1000)/10 + "%";
-            document.getElementById('p-img').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-            
-            const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
-            const contagem = (p.missaoBau && p.missaoBau.data === hoje) ? (p.missaoBau.contagem || 0) : 0;
-            document.getElementById('gift-counter').innerText = `Giros: ${contagem}/10`;
-            const gIcon = document.getElementById('gift-icon');
-            if (p.missaoBau && p.missaoBau.data === hoje && !p.missaoBau.concluida) {
-                document.getElementById('lucky-mission-container').classList.remove('hidden');
-                document.getElementById('lucky-msg').classList.add('hidden');
-                gIcon.innerText = "✨"; gIcon.classList.remove('gift-shake');
-                document.getElementById('lucky-mission-text').innerText = p.missaoBau.nome;
-                const btnB = document.getElementById('btn-concluir-bau');
-                btnB.innerText = "CONCLUIR +20 XP";
-                btnB.onclick = () => { db.ref('rpg_data/'+jogadorAtual).update({xp:(p.xp||0)+20, coins:(p.coins||0)+20, 'missaoBau/concluida':true}); };
-            } else {
-                document.getElementById('lucky-mission-container').classList.add('hidden');
-                document.getElementById('lucky-msg').classList.remove('hidden');
-                gIcon.innerText = "🎁";
-                if(contagem < 10) gIcon.classList.add('gift-shake');
-                else document.getElementById('lucky-msg').innerText = "Limite diário atingido!";
-            }
+            // Criamos uma lista baseada em quem já tem vitórias no banco
+            let listaV = Object.keys(vitoriasVelha).map(k => {
+                let npcConfig = NPCs.find(n => n.id === k);
+                let nomeFinal = "";
 
-            const dO = document.getElementById('lista-obrigatoria'); dO.innerHTML = "";
-            ["Treino Fisico", "Trabalho", "Estudo", "Meditação/Oração/Gratidão", "Tempo de qualidade com a Família"].forEach(n => {
-                const id = `d-${n}-${hoje}`, feito = (p.missoes||[]).some(m => m.id === id && m.concluida);
-                dO.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:8px"><span>${n}</span><button class="${feito?'btn-done':'btn-check'}" onclick="concluirMissao('${id}', 10, true)" ${feito?'disabled':''}>${feito?'OK':'✔'}</button></div>`;
-            });
-
-            const dP = document.getElementById('lista-missoes-pessoais'); dP.innerHTML = "";
-            (p.missoes || []).filter(m => m.id.startsWith('m-')).forEach(m => {
-                let corFundo = "rgba(255,255,255,0.05)"; 
-                if (!m.concluida) {
-                    if (m.valor >= 50) corFundo = "rgba(239, 68, 68, 0.3)";
-                    else if (m.valor >= 30) corFundo = "rgba(251, 191, 36, 0.3)";
+                if (npcConfig) {
+                    nomeFinal = npcConfig.nick; // Prioriza o nick da sua lista NPCs (LeoBrito, Rafael, etc)
+                } else {
+                    nomeFinal = (dadosGerais[k] ? dadosGerais[k].nick : k); // Player normal
                 }
-                dP.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:${corFundo}; padding:10px; border-radius:8px; border: 1px solid ${m.concluida ? 'transparent' : 'rgba(255,255,255,0.1)'};"><span>${m.nome} <small>(${m.valor} XP)</small></span><div><button class="${m.concluida?'btn-done':'btn-check'}" onclick="concluirMissao('${m.id}', ${m.valor})" ${m.concluida?'disabled':''}>✔</button><button class="btn-del" onclick="removerMissao('${m.id}')">🗑️</button></div></div>`;
+
+                return { id: k, v: vitoriasVelha[k] || 0, n: nomeFinal };
             });
 
-            const tL = document.querySelector('#tabela-loja tbody'); if(tL) { tL.innerHTML = ""; [{n:'Passear',p:19000},{n:'Auto Presente',p:15000},{n:'Lanche (dia do lixo)',p:14000}].forEach(i => { tL.innerHTML += `<tr><td>${i.n}</td><td>💰${i.p}</td><td><button class="btn-buy" onclick="comprar(${i.p},'${i.n}')">Resgatar</button></td></tr>`; }); }
+            // Adiciona NPCs que ainda não ganharam nenhuma vez ou garante a base de vitórias
+            NPCs.forEach(n => {
+                let itemExistente = listaV.find(item => item.id === n.id);
+                if (!itemExistente) {
+                    listaV.push({ id: n.id, v: n.vitorias, n: n.nick });
+                } else {
+                    // Soma a vitória base do NPC com o que ele ganhou no banco de dados
+                    itemExistente.v = n.vitorias + (vitoriasVelha[n.id] || 0);
+                    itemExistente.n = n.nick; // Garante que o nome seja o da lista oficial
+                }
+            });
+
+            // Ordena, remove duplicatas e gera a tabela
+            listaV.sort((a,b) => b.v - a.v)
+                  .filter((value, index, self) => self.findIndex(t => t.id === value.id) === index)
+                  .forEach((p, i) => { 
+                      tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.n}</td><td>${p.v}</td></tr>`; 
+                  });
         }
 
-        function concluirMissao(id, v, d=false) {
-            const p = dadosGerais[jogadorAtual], ms = p.missoes || [];
-            let m = ms.find(x => x.id === id);
-            if(!m && d) { ms.push({id, nome:id.split('-')[1], valor:10, concluida:true}); db.ref('rpg_data/'+jogadorAtual).update({xp:(p.xp||0)+10, coins:(p.coins||0)+10, missoes:ms}); }
+        const itensLoja = [
+            {n: "🍟 Porção de Batata", p: 250}, {n: "🍔 Hambúrguer", p: 400}, 
+            {n: "🍕 Pizza", p: 600}, {n: "🍫 Chocolate", p: 150},
+            {n: "🎮 1h de Jogo", p: 200}, {n: "🎬 Ver Filme", p: 300},
+            {n: "🥤 Refrigerante", p: 180}, {n: "🍦 Sorvete", p: 200}
+        ];
+        const tLoja = document.querySelector('#tabela-loja tbody');
+        itensLoja.forEach(it => {
+            tLoja.innerHTML += `<tr><td>${it.n}</td><td>💰 ${it.p}</td><td><button class="btn-buy" onclick="comprar(${it.p}, '${it.n}')">Comprar</button></td></tr>`;
+        });
+
+        function fazerLogin() {
+            const e = document.getElementById('login-email').value, p = document.getElementById('login-pass').value;
+            auth.signInWithEmailAndPassword(e, p).catch(err => alert("Erro: " + err.message));
+        }
+        function fazerCadastro() {
+            const n = document.getElementById('reg-nick').value, e = document.getElementById('reg-email').value, p = document.getElementById('reg-pass').value;
+            if(!n) return alert("Escolha um nick!");
+            auth.createUserWithEmailAndPassword(e, p).then(res => {
+                db.ref('rpg_data/' + res.user.uid).set({ nick: n, xp: 0, coins: 0, missoes: [] });
+            }).catch(err => alert("Erro: " + err.message));
+        }
+        function logout() { auth.signOut(); location.reload(); }
+        function alternarTela(reg) { document.getElementById('login-area').classList.toggle('hidden', reg); document.getElementById('register-area').classList.toggle('hidden', !reg); }
+        function mudarAba(aba) {
+            document.getElementById('tab-home').classList.toggle('hidden', aba !== 'home');
+            document.getElementById('tab-profile').classList.toggle('hidden', aba !== 'profile');
+            document.getElementById('nav-home').classList.toggle('active', aba === 'home');
+            document.getElementById('nav-profile').classList.toggle('active', aba === 'profile');
+        }
+        function salvarPerfil() {
+            const n = document.getElementById('edit-nick').value, f = document.getElementById('edit-photo').value;
+            const up = {}; if(n) up.nick = n; if(f) up.photo = f;
+            db.ref('rpg_data/' + jogadorAtual).update(up).then(() => alert("Perfil atualizado!"));
+        }
+        function concluirObrig(id) {
+            const hoje = new Date().toLocaleDateString().replace(/\//g, '-'), p = dadosGerais[jogadorAtual];
+            db.ref('rpg_data/'+jogadorAtual+'/concluidasO').update({ [id]: hoje });
+            db.ref('rpg_data/'+jogadorAtual).update({ xp: (p.xp||0)+10, coins: (p.coins||0)+10 });
+        }
+        function concluirMissao(id, v) {
+            const p = dadosGerais[jogadorAtual], ms = p.missoes;
+            const m = ms.find(x => x.id === id);
+            if(m && v < 0) { m.concluida = true; db.ref('rpg_data/'+jogadorAtual).update({xp:(p.xp||0)+10, coins:(p.coins||0)+10, missoes:ms}); }
             else if(m && !m.concluida) { m.concluida = true; db.ref('rpg_data/'+jogadorAtual).update({xp:(p.xp||0)+v, coins:(p.coins||0)+(v>0?v:0), missoes:ms}); }
         }
         function removerMissao(id) { const ms = (dadosGerais[jogadorAtual].missoes || []).filter(m => m.id !== id); db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms); }
         function aplicarPenalidade() { const q = parseInt(document.getElementById('input-penalidade').value), p = dadosGerais[jogadorAtual]; if(q) db.ref('rpg_data/'+jogadorAtual).update({ xp: Math.max(0, (p.xp||0) - (q*300)) }); }
         function addMissao() { const n = document.getElementById('missao-input').value, v = parseInt(document.getElementById('cat-input').value); const ms = dadosGerais[jogadorAtual].missoes || []; ms.push({ id:'m-'+Date.now(), nome:n, valor:v, concluida:false }); db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms); document.getElementById('missao-input').value = ""; }
-        function comprar(pr, n) { const p = dadosGerais[jogadorAtual]; if(p.coins >= pr) { db.ref('rpg_data/'+jogadorAtual).update({coins:p.coins-pr}); alert("Resgatado!"); } }
-        function salvarPerfil() { db.ref('rpg_data/'+jogadorAtual).update({ nick: document.getElementById('edit-nick').value, photo: document.getElementById('edit-photo').value.trim() }).then(() => mudarAba('home')); }
-        function logout() { auth.signOut(); }
+        function comprar(pr, n) { const p = dadosGerais[jogadorAtual]; if(p.coins >= pr) { db.ref('rpg_data/'+jogadorAtual).update({ coins: p.coins - pr }); alert("Você comprou: " + n); } else alert("Moedas insuficientes!"); }
     </script>
 </body>
 </html>
