@@ -434,8 +434,22 @@
                 let msg = v === "X" ? "GANHOU!" : (v === "O" ? "PERDEU!" : "EMPATE!");
                 const r = document.getElementById('res-velha-msg');
                 r.innerText = msg; r.className = "show " + (v === "X" ? "msg-win" : "msg-lose");
-                if(v === "X") db.ref('rpg_data/'+jogadorAtual).update({xp:(dadosGerais[jogadorAtual].xp||0)+10, coins:(dadosGerais[jogadorAtual].coins||0)+10});
-                setTimeout(() => { r.className = ""; document.getElementById('arena-velha').style.display = 'none'; jogandoContraNPC = false; }, 2000);
+                
+                if(v === "X") {
+                    // Adiciona XP e Moedas
+                    db.ref('rpg_data/'+jogadorAtual).update({
+                        xp:(dadosGerais[jogadorAtual].xp||0)+10, 
+                        coins:(dadosGerais[jogadorAtual].coins||0)+10
+                    });
+                    // ESTA LINHA ABAIXO FAZ CONTAR NO RANKING DE VITÓRIAS
+                    db.ref('vitorias_velha/'+jogadorAtual).transaction(c => (c||0) + 1);
+                }
+
+                setTimeout(() => { 
+                    r.className = ""; 
+                    document.getElementById('arena-velha').style.display = 'none'; 
+                    jogandoContraNPC = false; 
+                }, 2000);
                 return true;
             }
             return false;
@@ -671,5 +685,6 @@
     </script>
 </body>
 </html>
+
 
 
