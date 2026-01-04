@@ -200,7 +200,7 @@
         const auth = firebase.auth(), db = firebase.database();
 
         let jogadorAtual = null, dadosGerais = {}, vitoriasVelha = {};
-        let npcAtualID = null, jogandoContraNPC = false, aguardandoNPC = false;
+        let npcAtualID = null, jogandoContraNPC = false;
 
         const NPCs = [
             { id: 'npc_poseidon', nick: 'Rafael', vitorias: 2, photo: 'https://i.ibb.co/X3vDgg/image.png', xp: 5000 },
@@ -285,7 +285,6 @@
             });
         }
 
-        // --- RANKING HONRA (CORRIGIDO: LIMPEZA DE E-MAIL) ---
         function atualizarRanking() {
             const tb = document.getElementById('ranking-body'); if(!tb) return; tb.innerHTML = "";
             let lista = [];
@@ -293,9 +292,9 @@
             NPCs.forEach(n => { if(!lista.find(l=>l.id===n.id)) lista.push(n); });
             
             lista.sort((a,b) => (b.xp||0) - (a.xp||0)).forEach((p, i) => {
-                // LIMPEZA DE NICK: Se não tiver nick, limpa o e-mail
+                // LIMPEZA DE E-MAIL AQUI
                 let nomeExibicao = p.nick || p.id.split('@')[0].split('_')[0].replace(/[.]/g, ' ');
-                
+
                 let btnDuelo = "";
                 if(p.id !== jogadorAtual && !p.id.startsWith('npc_')) {
                     btnDuelo = `<button class="btn-primary" onclick="convidarDuelo('${p.id}')" style="padding:2px 5px; font-size:10px; margin-left:10px;">Duelar</button>`;
@@ -311,20 +310,14 @@
             });
         }
 
-        // --- RANKING VELHA (CORRIGIDO: SOMA NPCS E LIMPEZA) ---
         function atualizarRankingVelha() {
-            const tb = document.getElementById('ranking-velha-body'); 
-            if(!tb) return; 
-            tb.innerHTML = "";
-            
+            const tb = document.getElementById('ranking-velha-body'); if(!tb) return; tb.innerHTML = "";
             let consolidado = {};
 
-            // 1. Inicia com a base fixa dos NPCs
-            NPCs.forEach(n => {
-                consolidado[n.id] = { v: n.vitorias || 0, n: n.nick };
-            });
+            // Carrega base fixa dos NPCs
+            NPCs.forEach(n => { consolidado[n.id] = { v: n.vitorias || 0, n: n.nick }; });
 
-            // 2. Soma os valores do Firebase
+            // Soma vitórias do Firebase
             Object.keys(vitoriasVelha).forEach(id => {
                 let vBanco = parseInt(vitoriasVelha[id]) || 0;
                 if (consolidado[id]) {
@@ -341,7 +334,7 @@
         }
 
         function iniciarVelhaNPC(id) {
-            jogandoContraNPC = true; npcAtualID = id; aguardandoNPC = false;
+            jogandoContraNPC = true; npcAtualID = id;
             document.getElementById('arena-velha').style.display = 'flex';
             document.getElementById('velha-info').innerText = "Sua vez! (X)";
             document.querySelectorAll('.velha-cell').forEach(c => c.innerText = "");
@@ -349,13 +342,11 @@
         }
 
         function cliqueVelha(i) {
-            if(aguardandoNPC) return;
             const cells = document.querySelectorAll('.velha-cell');
             if(cells[i].innerText !== "") return;
             
             cells[i].innerText = "X";
             if(!checarWinLocal()) {
-                aguardandoNPC = true;
                 document.getElementById('velha-info').innerText = "NPC pensando...";
                 setTimeout(jogadaNPC, 800);
             }
@@ -371,11 +362,9 @@
                 cellsElements[j].innerText = "O";
                 checarWinLocal();
             }
-            aguardandoNPC = false;
             document.getElementById('velha-info').innerText = "Sua vez! (X)";
         }
 
-        // --- CHECAR VITÓRIA (CORRIGIDO: FECHAMENTO AUTOMÁTICO) ---
         function checarWinLocal() {
             let cells = Array.from(document.querySelectorAll('.velha-cell')).map(c => c.innerText);
             const linhas = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
@@ -397,12 +386,13 @@
                     }
                 }
                 
-                // FECHO AUTOMÁTICO APÓS 2 SEGUNDOS
+                // FECHAMENTO AUTOMÁTICO AQUI
                 setTimeout(() => { 
                     r.className = ""; 
                     document.getElementById('arena-velha').style.display = 'none'; 
                     jogandoContraNPC = false;
                 }, 2000);
+
                 return true;
             }
             return false;
