@@ -322,6 +322,7 @@
             { id: "npc_poseidon", nick: "Rafael", xp: 5000, photo: "https://cdn-icons-png.flaticon.com/512/3663/3663345.png", vitorias: 2 }
         ];
         let jogandoContraNPC = false;
+        let aguardandoNPC = false;
 
         const missoesSorte = [
             "Abraçar sua mãe(pode mandar o abraço por mensagem)", "Abraçar seu filho (a) (pode mandar o abraço por mensagem)", "Abraçar seu pai (pode mandar o abraço por mensagem)", "Abraçar seu irmão (a) ( pode mandar o abraço por mensagem)", "Abraçar sua namorada (o)",
@@ -362,6 +363,7 @@
 
         function iniciarVelhaNPC() {
             jogandoContraNPC = true;
+            aguardandoNPC = false;
             document.getElementById('arena-velha').style.display = 'flex';
             document.getElementById('velha-info').innerText = "Sua vez!";
             document.querySelectorAll('.velha-cell').forEach(c => c.innerText = "");
@@ -369,12 +371,17 @@
 
         function cliqueVelha(i) {
             if(jogandoContraNPC) {
+                if(aguardandoNPC) return; // Trava o clique enquanto o NPC pensa
+                
                 const cells = document.querySelectorAll('.velha-cell');
                 if(cells[i].innerText !== "") return;
+                
                 cells[i].innerText = "X";
+                
                 if(!checarWinLocal()) {
+                    aguardandoNPC = true;
                     document.getElementById('velha-info').innerText = "Oponente jogando...";
-                    setTimeout(jogadaNPC, 800);
+                    setTimeout(jogadaNPC, 2000); // Atraso de 2 segundos para o NPC
                 }
             } else {
                 if(!salaV) return;
@@ -394,6 +401,8 @@
         }
 
         function jogadaNPC() {
+            if(!jogandoContraNPC) return;
+            
             let cells = Array.from(document.querySelectorAll('.velha-cell')).map(c => c.innerText);
             let jogada = -1;
             const linhas = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
@@ -419,6 +428,8 @@
             }
             if (jogada !== -1) {
                 document.querySelectorAll('.velha-cell')[jogada].innerText = "O";
+                document.getElementById('velha-info').innerText = "Sua vez!";
+                aguardandoNPC = false; // Libera o clique do jogador
                 checarWinLocal();
             }
         }
@@ -441,7 +452,7 @@
                         xp:(dadosGerais[jogadorAtual].xp||0)+10, 
                         coins:(dadosGerais[jogadorAtual].coins||0)+10
                     });
-                    // ESTA LINHA ABAIXO FAZ CONTAR NO RANKING DE VITÓRIAS
+                    // ATUALIZA RANKING DE VITÓRIAS
                     db.ref('vitorias_velha/'+jogadorAtual).transaction(c => (c||0) + 1);
                 }
 
@@ -449,6 +460,7 @@
                     r.className = ""; 
                     document.getElementById('arena-velha').style.display = 'none'; 
                     jogandoContraNPC = false; 
+                    aguardandoNPC = false;
                 }, 2000);
                 return true;
             }
@@ -515,6 +527,7 @@
             document.getElementById('arena-velha').style.display='none'; 
             document.getElementById('convite-velha').style.display='none'; 
             jogandoContraNPC = false;
+            aguardandoNPC = false;
             if(salaV){ db.ref('velha_online/'+salaV).off(); db.ref('velha_online/'+salaV).remove(); salaV=null; }
         }
 
@@ -551,12 +564,13 @@
                     setTimeout(() => {
                         document.getElementById('char-player').classList.remove('anim-attack-p');
                         document.getElementById('char-enemy').classList.remove('anim-damage');
-                        if(statsE.hp <= 0) finalizar(true); else turnoInimigo();
+                        if(statsE.hp <= 0) finalizar(true); else setTimeout(turnoInimigo, 1500); 
                     }, 400);
                 }, 300);
-            } else { statsP.def = true; turnoInimigo(); }
+            } else { statsP.def = true; setTimeout(turnoInimigo, 1000); }
         }
         function turnoInimigo() {
+            if(!batalhaAtiva) return;
             document.getElementById('char-enemy').classList.add('anim-attack-e');
             setTimeout(() => {
                 let d = statsE.atk; if(statsP.def){ d=Math.floor(d*0.4); statsP.def=false; }
@@ -685,6 +699,3 @@
     </script>
 </body>
 </html>
-
-
-
