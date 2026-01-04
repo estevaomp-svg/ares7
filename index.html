@@ -620,20 +620,28 @@
             } else { document.getElementById('auth-screen').classList.remove('hidden'); document.getElementById('game-content').classList.add('hidden'); }
         });
 
-        // CORREÇÃO PARA O RANKING DE HONRA (O PRIMEIRO)
         function atualizarRanking() {
-            const tb = document.getElementById('ranking-body'); if(!tb) return; tb.innerHTML = "";
+            const tb = document.getElementById('ranking-body'); 
+            if(!tb) return; 
+            tb.innerHTML = "";
             let lista = [];
+            
             Object.keys(dadosGerais).forEach(id => { lista.push({id:id, ...dadosGerais[id]}); });
             NPCs.forEach(n => { if(!lista.find(l=>l.id===n.id)) lista.push(n); });
             
             lista.sort((a,b) => (b.xp||0) - (a.xp||0)).forEach((p, i) => {
-                // LIMPEZA DE NICK PARA JOGADORES SEM NICK
+                // LIMPEZA DE NICK: Se não tiver nick, limpa o e-mail
                 let nomeExibicao = p.nick || p.id.split('@')[0].split('_')[0].replace(/[.]/g, ' ');
                 
+                // Botão de duelo: só aparece se não for o próprio jogador e não for NPC
+                let btnDuelo = "";
+                if(p.id !== jogadorAtual && !p.id.startsWith('npc_')) {
+                    btnDuelo = `<button class="btn-primary" onclick="convidarDuelo('${p.id}')" style="padding:2px 5px; font-size:10px; margin-left:10px;">Duelar</button>`;
+                }
+
                 tb.innerHTML += `<tr>
                     <td>${i+1}º</td>
-                    <td><img src="${p.photo || ''}" class="player-img" style="width:20px;height:20px"> ${nomeExibicao}</td>
+                    <td><img src="${p.photo || ''}" class="player-img" style="width:20px;height:20px"> ${nomeExibicao} ${btnDuelo}</td>
                     <td>${Math.floor((p.xp||0)/1000)+1}</td>
                     <td>${p.xp||0}</td>
                     <td>${p.vitorias_duelo||0}</td>
@@ -730,6 +738,7 @@
     </script>
 </body>
 </html>
+
 
 
 
