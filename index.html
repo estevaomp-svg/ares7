@@ -363,7 +363,7 @@
         function iniciarVelhaNPC() {
             jogandoContraNPC = true;
             document.getElementById('arena-velha').style.display = 'flex';
-            document.getElementById('velha-info').innerText = "Sua vez contra NPC!";
+            document.getElementById('velha-info').innerText = "Sua vez!";
             document.querySelectorAll('.velha-cell').forEach(c => c.innerText = "");
         }
 
@@ -373,8 +373,8 @@
                 if(cells[i].innerText !== "") return;
                 cells[i].innerText = "X";
                 if(!checarWinLocal()) {
-                    document.getElementById('velha-info').innerText = "NPC jogando...";
-                    setTimeout(jogadaNPC, 600);
+                    document.getElementById('velha-info').innerText = "Oponente jogando...";
+                    setTimeout(jogadaNPC, 800);
                 }
             } else {
                 if(!salaV) return;
@@ -671,4 +671,5 @@
     </script>
 </body>
 </html>
+
 
