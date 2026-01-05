@@ -549,6 +549,16 @@
                 jogadorAtual = limparNome(u.email); gerenciarPresenca(jogadorAtual);
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('game-content').classList.remove('hidden');
+                auth.onAuthStateChanged(user => {
+    if (user) {
+        // ... (seu código existente de login)
+        
+        // ADICIONE ESTA LINHA AQUI:
+        checkNPCDailyXP(); 
+        
+        // ... (resto do código)
+    }
+});
                 db.ref('rpg_data').on('value', s => { dadosGerais = s.val() || {}; atualizarTela(); atualizarRanking(); });
                 db.ref('vitorias_velha').on('value', s => { vitoriasVelha = s.val() || {}; atualizarRankingVelha(); });
                 db.ref('velha_online').on('value', s => {
@@ -634,6 +644,32 @@
         function comprar(pr, n) { const p = dadosGerais[jogadorAtual]; if(p.coins >= pr) { db.ref('rpg_data/'+jogadorAtual).update({coins:p.coins-pr}); alert("Resgatado!"); } }
         function salvarPerfil() { db.ref('rpg_data/'+jogadorAtual).update({ nick: document.getElementById('edit-nick').value, photo: document.getElementById('edit-photo').value.trim() }).then(() => mudarAba('home')); }
         function logout() { auth.signOut(); }
+        
+        // --- SISTEMA DE XP DIÁRIO NPC (300 XP) ---
+function checkNPCDailyXP() {
+    const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
+    
+    // Verifica no banco qual foi o último dia que os NPCs ganharam XP
+    db.ref('config/lastNPCUpdate').get().then(s => {
+        if(s.val() !== hoje) {
+            // Se hoje ainda não ganharam, percorre a lista de NPCs definida no seu código
+            NPCs.forEach(npc => {
+                db.ref('rpg_data/' + npc.id).transaction(currentData => {
+                    if (!currentData) {
+                        // Se o NPC não existir no banco, cria com XP Base + 300
+                        return { nick: npc.nick, xp: npc.xp + 300, photo: npc.photo };
+                    }
+                    // Se já existe, soma 300 ao XP atual dele
+                    return { ...currentData, xp: (currentData.xp || npc.xp) + 300 };
+                });
+            });
+            // Marca que hoje o XP já foi entregue
+            db.ref('config/lastNPCUpdate').set(hoje);
+            console.log("NPCs receberam 300 de XP diário.");
+        }
+    });
+}
     </script>
 </body>
 </html>
+
