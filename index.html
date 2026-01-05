@@ -353,7 +353,7 @@
             db.ref('status').on('value', s => {
                 dadosOnline = s.val() || {};
                 let ativos = 0; s.forEach(child => { if(child.val().online) ativos++; });
-                document.getElementById('global-online-count').innerText = 5 + ativos;
+                document.getElementById('global-online-count').innerText = 8 + ativos;
                 atualizarRanking();
             });
         }
@@ -675,5 +675,6 @@ function checkNPCDailyXP() {
     </script>
 </body>
 </html>
+
 
 
