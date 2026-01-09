@@ -29,7 +29,31 @@
             margin-bottom: 15px; border: 1px solid rgba(51, 65, 85, 0.5); 
         }
 
-        /* Estilo para abas removíveis */
+        /* Estilo para abas de filtro de missões */
+        .filter-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            scrollbar-width: none;
+        }
+        .filter-container::-webkit-scrollbar { display: none; }
+        .btn-filter {
+            background: #334155;
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            white-space: nowrap;
+            transition: 0.2s;
+        }
+        .btn-filter.active {
+            background: var(--primary);
+            border-color: #60a5fa;
+        }
+
         .header-removivel {
             display: flex;
             align-items: center;
@@ -55,7 +79,6 @@
             background: rgba(0, 0, 0, 0.6);
         }
 
-        /* Estilos dos Novos Botões de Ranking */
         .btn-ranking-toggle {
             width: 100%;
             padding: 15px;
@@ -73,7 +96,6 @@
         .btn-honra { background: linear-gradient(45deg, #1e3a8a, #3b82f6); }
         .btn-old { background: linear-gradient(45deg, #7e22ce, #a855f7); }
 
-        /* Estilo do Modal (Abas de Ranking) */
         .modal-ranking {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.98);
@@ -354,11 +376,22 @@
 
             <div class="card">
                 <h3>📜 Missões Pessoais</h3>
+                
+                <div class="filter-container">
+                    <button id="btn-f-tudo" class="btn-filter active" onclick="filtrarMissoes('tudo')">Tudo</button>
+                    <button id="btn-f-30" class="btn-filter" onclick="filtrarMissoes('30')">🚀 Prioridade</button>
+                    <button id="btn-f-15" class="btn-filter" onclick="filtrarMissoes('15')">⚙️ Comum</button>
+                    <button id="btn-f-5" class="btn-filter" onclick="filtrarMissoes('5')">🛒 Compras</button>
+                    <button id="btn-f--500" class="btn-filter" onclick="filtrarMissoes('-500')">⚠️ Sombrio</button>
+                </div>
+
                 <div id="lista-missoes-pessoais" style="margin-bottom:15px"></div>
-                <input type="text" id="missao-input" placeholder="Nova missão...">
+                
+                <input type="text" id="missao-input" placeholder="Nova missão ou item...">
                 <select id="cat-input">
                     <option value="30">🚀 Prioridade (+30 XP)</option>
                     <option value="15">⚙️ Comum (+15 XP)</option>
+                    <option value="5">🛒 Lista de Compras (+5 XP)</option>
                     <option value="-500">⚠️ Hábito Sombrio (-500 XP)</option>
                 </select>
                 <button onclick="addMissao()" style="background:#3b82f6; width:100%">Registar</button>
@@ -394,8 +427,10 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database(), auth = firebase.auth();
         let jogadorAtual = "", dadosGerais = {}, vitoriasVelha = {}, dadosOnline = {};
+        
+        // Variável de controle do filtro
+        let filtroAtivo = 'tudo';
 
-        // Funções de Modal para os Rankings
         function abrirModalRanking(id) { document.getElementById(id).style.display = 'flex'; }
         function fecharModalRanking(id) { document.getElementById(id).style.display = 'none'; }
 
@@ -674,6 +709,17 @@
             Object.values(consolidado).sort((a,b) => b.v - a.v).forEach((p, i) => { tb.innerHTML += `<tr><td>${i+1}º</td><td>${p.n}</td><td>${p.v}</td></tr>`; });
         }
 
+        function filtrarMissoes(valor) {
+            filtroAtivo = valor;
+            // Atualiza classe ativa nos botões
+            document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
+            const btnId = 'btn-f-' + valor;
+            const btnAtivo = document.getElementById(btnId);
+            if(btnAtivo) btnAtivo.classList.add('active');
+            
+            atualizarTela();
+        }
+
         function atualizarTela() {
             const p = dadosGerais[jogadorAtual] || {xp:0, coins:0, missoes:[]};
             document.getElementById('player-name').innerText = p.nick || jogadorAtual.split('@')[0];
@@ -705,12 +751,31 @@
                 const id = `d-${n}-${hoje}`, feito = (p.missoes||[]).some(m => m.id === id && m.concluida);
                 dO.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:8px"><span>${n}</span><button class="${feito?'btn-done':'btn-check'}" onclick="concluirMissao('${id}', 10, true)" ${feito?'disabled':''}>${feito?'OK':'✔'}</button></div>`;
             });
+
+            // LÓGICA DE MISSÕES PESSOAIS COM FILTRO
             const dP = document.getElementById('lista-missoes-pessoais'); dP.innerHTML = "";
             (p.missoes || []).filter(m => m.id.startsWith('m-')).forEach(m => {
+                
+                // Aplicar Filtro
+                if (filtroAtivo !== 'tudo' && m.valor.toString() !== filtroAtivo) return;
+
                 let corFundo = "rgba(255,255,255,0.05)"; 
-                if (!m.concluida) { if (m.valor >= 50) corFundo = "rgba(239, 68, 68, 0.3)"; else if (m.valor >= 30) corFundo = "rgba(251, 191, 36, 0.3)"; }
-                dP.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:${corFundo}; padding:10px; border-radius:8px; border: 1px solid ${m.concluida ? 'transparent' : 'rgba(255,255,255,0.1)'};"><span>${m.nome} <small>(${m.valor} XP)</small></span><div><button class="${m.concluida?'btn-done':'btn-check'}" onclick="concluirMissao('${m.id}', ${m.valor})" ${m.concluida?'disabled':''}>✔</button><button class="btn-del" onclick="removerMissao('${m.id}')">🗑️</button></div></div>`;
+                if (!m.concluida) { 
+                    if (m.valor >= 50) corFundo = "rgba(239, 68, 68, 0.3)"; 
+                    else if (m.valor == 30) corFundo = "rgba(251, 191, 36, 0.3)"; 
+                    else if (m.valor == 5) corFundo = "rgba(34, 197, 94, 0.2)"; // Cor para compras
+                }
+                
+                dP.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:${corFundo}; padding:10px; border-radius:8px; border: 1px solid ${m.concluida ? 'transparent' : 'rgba(255,255,255,0.1)'};">
+                        <span>${m.nome} <small>(${m.valor} XP)</small></span>
+                        <div>
+                            <button class="${m.concluida?'btn-done':'btn-check'}" onclick="concluirMissao('${m.id}', ${m.valor})" ${m.concluida?'disabled':''}>✔</button>
+                            <button class="btn-del" onclick="removerMissao('${m.id}')">🗑️</button>
+                        </div>
+                    </div>`;
             });
+
             const tL = document.querySelector('#tabela-loja tbody'); if(tL) { tL.innerHTML = ""; [{n:'Passear',p:19000},{n:'Auto Presente',p:15000},{n:'Lanche (dia do lixo)',p:14000}].forEach(i => { tL.innerHTML += `<tr><td>${i.n}</td><td>💰${i.p}</td><td><button class="btn-buy" onclick="comprar(${i.p},'${i.n}')">Resgatar</button></td></tr>`; }); }
         }
 
