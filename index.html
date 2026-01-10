@@ -347,7 +347,7 @@
                         <div id="lucky-mission-text" class="lucky-mission-text"></div>
                         <button id="btn-concluir-bau" class="btn-check" style="margin-top:10px; width:100%"></button>
                     </div>
-                    <p id="lucky-msg" style="margin-top:10px; font-weight:bold; color:#fbbf24">Clique para descobrir sua missão da sorte!</p>
+                    <p id="lucky-msg" style="margin-top:10px; font-weight:bold; color:#fbbf24">Clique para descobrir sua nova Habilidade!</p>
                 </div>
             </div>
 
@@ -747,7 +747,7 @@
                 else document.getElementById('lucky-msg').innerText = "Limite diário atingido!";
             }
             const dO = document.getElementById('lista-obrigatoria'); dO.innerHTML = "";
-            ["Treino Fisico", "Trabalho", "Estudo", "Meditação/Oração/Gratidão", "Tempo de qualidade com a Família"].forEach(n => {
+            ["Treino Fisico", "Trabalho", "Organizar a Casa", "Estudar", "Meditação/Oração/Gratidão", "Tempo de qualidade com a Família"].forEach(n => {
                 const id = `d-${n}-${hoje}`, feito = (p.missoes||[]).some(m => m.id === id && m.concluida);
                 dO.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:8px"><span>${n}</span><button class="${feito?'btn-done':'btn-check'}" onclick="concluirMissao('${id}', 10, true)" ${feito?'disabled':''}>${feito?'OK':'✔'}</button></div>`;
             });
@@ -809,3 +809,4 @@
     </script>
 </body>
 </html>
+
