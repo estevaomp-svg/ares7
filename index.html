@@ -428,7 +428,6 @@
         const db = firebase.database(), auth = firebase.auth();
         let jogadorAtual = "", dadosGerais = {}, vitoriasVelha = {}, dadosOnline = {};
         
-        // Variável de controle do filtro
         let filtroAtivo = 'tudo';
 
         function abrirModalRanking(id) { document.getElementById(id).style.display = 'flex'; }
@@ -664,11 +663,73 @@
         function mudarAba(aba) { document.getElementById('tab-home').classList.toggle('hidden', aba !== 'home'); document.getElementById('tab-profile').classList.toggle('hidden', aba !== 'profile'); }
         function limparNome(e) { return e.split('@')[0].replace(/[.#$[\]]/g, "_"); }
         function alternarTela(c) { document.getElementById('login-area').className = c?'hidden':''; document.getElementById('register-area').className = c?'':'hidden'; }
-        function fazerLogin() { auth.signInWithEmailAndPassword(document.getElementById('login-email').value, document.getElementById('login-pass').value); }
-        function fazerCadastro() {
-            const nick = document.getElementById('reg-nick').value, e = document.getElementById('reg-email').value, p = document.getElementById('reg-pass').value;
-            auth.createUserWithEmailAndPassword(e,p).then(() => { db.ref('rpg_data/'+limparNome(e)).set({ nick: nick, xp: 0, coins: 0 }); });
+        
+        // --- FUNÇÕES DE AUTH ATUALIZADAS COM AVISOS ---
+        function fazerLogin() { 
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+
+            if (!email || !pass) {
+                alert("Por favor, preencha todos os campos para entrar.");
+                return;
+            }
+
+            auth.signInWithEmailAndPassword(email, pass)
+                .catch(error => {
+                    console.error(error.code);
+                    switch (error.code) {
+                        case 'auth/wrong-password':
+                            alert("Senha incorreta! Tente novamente.");
+                            break;
+                        case 'auth/user-not-found':
+                            alert("Este e-mail não está cadastrado.");
+                            break;
+                        case 'auth/invalid-email':
+                            alert("Formato de e-mail inválido.");
+                            break;
+                        default:
+                            alert("Erro ao entrar: " + error.message);
+                    }
+                });
         }
+
+        function fazerCadastro() {
+            const nick = document.getElementById('reg-nick').value;
+            const e = document.getElementById('reg-email').value;
+            const p = document.getElementById('reg-pass').value;
+
+            if (!nick || !e || !p) {
+                alert("Preencha todos os campos para criar sua conta.");
+                return;
+            }
+
+            auth.createUserWithEmailAndPassword(e, p)
+                .then(() => { 
+                    db.ref('rpg_data/' + limparNome(e)).set({ 
+                        nick: nick, 
+                        xp: 0, 
+                        coins: 0 
+                    }); 
+                    alert("Conta criada com sucesso! Bem-vindo, " + nick);
+                })
+                .catch(error => {
+                    console.error(error.code);
+                    switch (error.code) {
+                        case 'auth/email-already-in-use':
+                            alert("Já existe uma conta com este e-mail.");
+                            break;
+                        case 'auth/weak-password':
+                            alert("A senha deve ter no mínimo 6 caracteres.");
+                            break;
+                        case 'auth/invalid-email':
+                            alert("E-mail inválido.");
+                            break;
+                        default:
+                            alert("Erro ao cadastrar: " + error.message);
+                    }
+                });
+        }
+        // ----------------------------------------------
 
         auth.onAuthStateChanged(u => {
             if(u) {
@@ -711,12 +772,10 @@
 
         function filtrarMissoes(valor) {
             filtroAtivo = valor;
-            // Atualiza classe ativa nos botões
             document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
             const btnId = 'btn-f-' + valor;
             const btnAtivo = document.getElementById(btnId);
             if(btnAtivo) btnAtivo.classList.add('active');
-            
             atualizarTela();
         }
 
@@ -752,20 +811,15 @@
                 dO.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:8px"><span>${n}</span><button class="${feito?'btn-done':'btn-check'}" onclick="concluirMissao('${id}', 10, true)" ${feito?'disabled':''}>${feito?'OK':'✔'}</button></div>`;
             });
 
-            // LÓGICA DE MISSÕES PESSOAIS COM FILTRO
             const dP = document.getElementById('lista-missoes-pessoais'); dP.innerHTML = "";
             (p.missoes || []).filter(m => m.id.startsWith('m-')).forEach(m => {
-                
-                // Aplicar Filtro
                 if (filtroAtivo !== 'tudo' && m.valor.toString() !== filtroAtivo) return;
-
                 let corFundo = "rgba(255,255,255,0.05)"; 
                 if (!m.concluida) { 
                     if (m.valor >= 50) corFundo = "rgba(239, 68, 68, 0.3)"; 
                     else if (m.valor == 30) corFundo = "rgba(251, 191, 36, 0.3)"; 
-                    else if (m.valor == 5) corFundo = "rgba(34, 197, 94, 0.2)"; // Cor para compras
+                    else if (m.valor == 5) corFundo = "rgba(34, 197, 94, 0.2)";
                 }
-                
                 dP.innerHTML += `
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:${corFundo}; padding:10px; border-radius:8px; border: 1px solid ${m.concluida ? 'transparent' : 'rgba(255,255,255,0.1)'};">
                         <span>${m.nome} <small>(${m.valor} XP)</small></span>
@@ -809,5 +863,3 @@
     </script>
 </body>
 </html>
-
-
