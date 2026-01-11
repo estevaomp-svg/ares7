@@ -17,47 +17,46 @@
         .label { font-size: 10px; color: #94a3b8; text-transform: uppercase; }
         .progress-box { background: #1e293b; height: 10px; border-radius: 5px; margin-top: 5px; overflow: hidden; }
         .bar { height: 100%; width: 0%; transition: 1s ease; }
-        .btn-voltar { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-voltar { width: 100%; padding: 15px; background: #334155; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="card">
-        <div class="nickname" id="nick">---</div>
-        <div id="lv-text" style="color: var(--primary); font-weight: bold; font-size: 20px;">LV --</div>
-        <div class="progress-box"><div id="xp-bar" class="bar" style="background: var(--accent);"></div></div>
-        <div id="xp-display" style="font-size: 12px; margin-top: 5px;">XP: --</div>
+        <div class="nickname" id="n">---</div>
+        <div id="l" style="color: var(--primary); font-weight: bold; font-size: 22px;">LV --</div>
+        <div class="progress-box"><div id="pb" class="bar" style="background: var(--accent);"></div></div>
+        <div id="x" style="font-size: 12px; margin-top: 5px;">XP: --</div>
     </div>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div class="card"><span class="val" id="moedas" style="color: gold;">0</span><span class="label">Moedas</span></div>
+        <div class="card"><span class="val" id="m" style="color: gold;">0</span><span class="label">Moedas</span></div>
         <div class="card"><span class="val" id="bf" style="color: #ec4899;">--%</span><span class="label">B.F.</span></div>
     </div>
 
     <div class="card">
         <span class="label" style="color: #ef4444;">Força & Defesa</span>
-        <span class="val" id="muscular" style="color: #ef4444;">0</span>
-        <div class="progress-box"><div id="bar-muscular" class="bar" style="background: #ef4444;"></div></div>
+        <span class="val" id="fd">0</span>
+        <div class="progress-box"><div id="pfd" class="bar" style="background: #ef4444;"></div></div>
     </div>
 
     <div class="card">
-        <span class="label" style="color: #22c55e;">Stamina (Cardio)</span>
-        <span class="val" id="stamina" style="color: #22c55e;">0</span>
-        <div class="progress-box"><div id="bar-stamina" class="bar" style="background: #22c55e;"></div></div>
+        <span class="label" style="color: #22c55e;">Stamina</span>
+        <span class="val" id="st">0</span>
+        <div class="progress-box"><div id="pst" class="bar" style="background: #22c55e;"></div></div>
     </div>
 
     <div class="card">
         <span class="label" style="color: #eab308;">Inteligência</span>
-        <span class="val" id="intel" style="color: #eab308;">0</span>
-        <div class="progress-box"><div id="bar-intel" class="bar" style="background: #eab308;"></div></div>
+        <span class="val" id="it">0</span>
+        <div class="progress-box"><div id="pit" class="bar" style="background: #eab308;"></div></div>
     </div>
 
     <button class="btn-voltar" onclick="location.href='index.html'">VOLTAR</button>
 </div>
 
 <script>
-    // Configuração idêntica aos teus ficheiros
     const firebaseConfig = {
         apiKey: "AIzaSyBanevR51ejaTE0ccqlmlU6VRh7Qg4EETs",
         authDomain: "aresrpg-7daf4.firebaseapp.com",
@@ -77,40 +76,39 @@
                 const d = snap.val() || {};
                 const r = d.records || {};
 
-                // 1. LV E MOEDAS (IGUAL AO INDEX)
-                document.getElementById('nick').innerText = d.nick || "Herói";
-                document.getElementById('moedas').innerText = d.moedas || 0;
+                // REPETIR INDEX
+                document.getElementById('n').innerText = d.nick || "Herói";
+                document.getElementById('m').innerText = d.moedas || 0;
                 
                 let xp = parseInt(d.xp) || 0;
-                // A lógica exata do teu index.html para o LV 72
-                let lv = Math.floor(xp / 100) + 1; 
-                document.getElementById('lv-text').innerText = "LV " + lv;
-                document.getElementById('xp-display').innerText = "XP: " + xp + " / " + (lv * 100);
-                document.getElementById('xp-bar').style.width = (xp % 100) + "%";
+                let lv = Math.floor(xp / 100); 
+                document.getElementById('l').innerText = "LV " + lv;
+                document.getElementById('x').innerText = "XP: " + xp;
+                document.getElementById('pb').style.width = (xp % 100) + "%";
 
-                // 2. BF (PUXA DA EVOLUÇÃO FÍSICA)
+                // BF (Vem de records.bf)
                 document.getElementById('bf').innerText = r.bf ? r.bf + "%" : "--%";
 
-                // 3. FORÇA & DEFESA (SOMA KG + REPETIÇÃO)
-                let muscular = (parseFloat(r.supino) || 0) + (parseFloat(r.legpress) || 0) + 
-                               (parseFloat(r.remada) || 0) + (parseFloat(r.desenvolvimento) || 0) + 
-                               (parseFloat(r.terra) || 0) + (parseFloat(r.rosca) || 0) +
-                               (parseFloat(r.agachamento) || 0) + (parseFloat(r.flexao) || 0) + 
-                               (parseFloat(r.barra) || 0) + (parseFloat(r.mergulho) || 0);
+                // FORÇA & DEFESA (Soma exata dos campos da evolucaofisica.html)
+                let f = (parseFloat(r.supino) || 0) + (parseFloat(r.legpress) || 0) + 
+                        (parseFloat(r.remada) || 0) + (parseFloat(r.desenvolvimento) || 0) + 
+                        (parseFloat(r.terra) || 0) + (parseFloat(r.rosca) || 0) +
+                        (parseFloat(r.agachamento) || 0) + (parseFloat(r.flexao) || 0) + 
+                        (parseFloat(r.barra) || 0) + (parseFloat(r.mergulho) || 0);
                 
-                document.getElementById('muscular').innerText = muscular;
-                document.getElementById('bar-muscular').style.width = Math.min((muscular / 1000) * 100, 100) + "%";
+                document.getElementById('fd').innerText = f.toFixed(1);
+                document.getElementById('pfd').style.width = Math.min((f / 1500) * 100, 100) + "%";
 
-                // 4. STAMINA (CARDIO)
-                let stamina = (parseFloat(r.corrida) || 0) + (parseFloat(r.cardio) || 0) + (parseFloat(r.natacao) || 0);
-                document.getElementById('stamina').innerText = stamina;
-                document.getElementById('bar-stamina').style.width = Math.min((stamina / 500) * 100, 100) + "%";
+                // STAMINA
+                let s = (parseFloat(r.corrida) || 0) + (parseFloat(r.cardio) || 0) + (parseFloat(r.natacao) || 0);
+                document.getElementById('st').innerText = s.toFixed(1);
+                document.getElementById('pst').style.width = Math.min((s / 500) * 100, 100) + "%";
 
-                // 5. INTELIGÊNCIA
-                let intel = (parseInt(d.missoesExecutadas) || 0) + (parseInt(d.missoesDiarias) || 0) + 
-                            (parseInt(d.usoPenalidade) || 0) + (parseInt(d.usoLoja) || 0);
-                document.getElementById('intel').innerText = intel;
-                document.getElementById('bar-intel').style.width = Math.min((intel / 100) * 100, 100) + "%";
+                // INTELIGÊNCIA
+                let i = (parseInt(d.missoesExecutadas) || 0) + (parseInt(d.missoesDiarias) || 0) + 
+                        (parseInt(d.usoPenalidade) || 0) + (parseInt(d.usoLoja) || 0);
+                document.getElementById('it').innerText = i;
+                document.getElementById('pit').style.width = Math.min((i / 100) * 100, 100) + "%";
             });
         }
     });
