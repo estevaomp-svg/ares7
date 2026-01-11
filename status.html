@@ -17,7 +17,7 @@
         .label { font-size: 10px; color: #94a3b8; text-transform: uppercase; }
         .progress-box { background: #1e293b; height: 10px; border-radius: 5px; margin-top: 5px; overflow: hidden; }
         .bar { height: 100%; width: 0%; transition: 1s ease; }
-        .btn-voltar { width: 100%; padding: 15px; background: #334155; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; display: block; text-decoration: none; }
+        .btn-voltar { width: 100%; padding: 15px; background: #334155; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -72,52 +72,47 @@
     firebase.auth().onAuthStateChanged(user => {
         if (user) {
             let id = user.email.split('@')[0].replace(/[.#$[\]]/g, "_");
-            
-            // Listener em tempo real
             db.ref('rpg_data/' + id).on('value', snap => {
                 const d = snap.val() || {};
-                const r = d.records || {}; // Onde os dados da evolucaofisica.html ficam
+                const r = d.records || {};
 
-                // 1. DADOS BÁSICOS (Repetindo lógica do index)
+                // MOEDAS E XP (Idêntico ao index.html)
                 document.getElementById('n').innerText = d.nick || "Herói";
                 document.getElementById('m').innerText = d.moedas || 0;
                 
-                let xpTotal = parseInt(d.xp) || 0;
-                let lv = Math.floor(xpTotal / 1000); 
-                let xpNoNivel = xpTotal % 1000;
-                document.getElementById('l').innerText = "LV " + lv;
-                document.getElementById('x').innerText = "XP: " + xpTotal;
-                document.getElementById('pb').style.width = (xpNoNivel / 10) + "%";
+                let xp = parseInt(d.xp) || 0;
+                let lv = Math.floor(xp / 1000); // 1000 de XP por Level
+                let progresso = (xp % 1000) / 10; // porcentagem de 0 a 1000
 
-                // 2. BF (Puxando de records/bf)
-                // Se r.bf existir, mostra. Senão mostra "--%"
-                if (r.bf) {
-                    document.getElementById('bf').innerText = r.bf + "%";
+                document.getElementById('l').innerText = "LV " + lv;
+                document.getElementById('x').innerText = "XP: " + xp;
+                document.getElementById('pb').style.width = progresso + "%";
+
+                // CÁLCULO MANUAL DO BF (Pois o bioestatistica não salva o BF final)
+                if (r.cintura && r.pescoco && r.altura) {
+                    let bfCalc = (495 / (1.0324 - 0.19077 * Math.log10(r.cintura - r.pescoco) + 0.15456 * Math.log10(r.altura))) - 450;
+                    document.getElementById('bf').innerText = bfCalc.toFixed(1) + "%";
                 } else {
                     document.getElementById('bf').innerText = "--%";
                 }
 
-                // 3. FORÇA & DEFESA (Soma dos pesos da Sala de Treinamento)
-                let forca = (parseFloat(r.supino) || 0) + (parseFloat(r.legpress) || 0) + 
-                            (parseFloat(r.remada) || 0) + (parseFloat(r.desenvolvimento) || 0) + 
-                            (parseFloat(r.terra) || 0) + (parseFloat(r.rosca) || 0) +
-                            (parseFloat(r.agachamento) || 0) + (parseFloat(r.flexao) || 0) + 
-                            (parseFloat(r.barra) || 0) + (parseFloat(r.mergulho) || 0);
+                // FORÇA & DEFESA (Soma campos de peso)
+                let f = (parseFloat(r.supino) || 0) + (parseFloat(r.legpress) || 0) + 
+                        (parseFloat(r.remada) || 0) + (parseFloat(r.desenvolvimento) || 0) + 
+                        (parseFloat(r.terra) || 0) + (parseFloat(r.rosca) || 0) +
+                        (parseFloat(r.agachamento) || 0) + (parseFloat(r.flexao) || 0) + 
+                        (parseFloat(r.barra) || 0) + (parseFloat(r.mergulho) || 0);
                 
-                document.getElementById('fd').innerText = forca.toFixed(1);
-                document.getElementById('pfd').style.width = Math.min((forca / 1500) * 100, 100) + "%";
+                document.getElementById('fd').innerText = f.toFixed(1);
+                document.getElementById('pfd').style.width = Math.min((f / 1500) * 100, 100) + "%";
 
-                // 4. STAMINA (Dados de Cardio)
-                let stamina = (parseFloat(r.corrida) || 0) + (parseFloat(r.cardio) || 0) + (parseFloat(r.natacao) || 0);
-                document.getElementById('st').innerText = stamina.toFixed(1);
-                document.getElementById('pst').style.width = Math.min((stamina / 500) * 100, 100) + "%";
+                // STAMINA (Cardio)
+                let s = (parseFloat(r.corrida) || 0) + (parseFloat(r.cardio) || 0) + (parseFloat(r.natacao) || 0);
+                document.getElementById('st').innerText = s.toFixed(1);
+                document.getElementById('pst').style.width = Math.min((s / 500) * 100, 100) + "%";
 
-                // 5. INTELIGÊNCIA (Soma de ações feitas no index.html)
-                // Usando as chaves exatas do seu index.html
-                let intel = (parseInt(d.missoesExecutadas) || 0) + 
-                            (parseInt(d.missoesDiarias) || 0) + 
-                            (parseInt(d.usoLoja) || 0);
-                
+                // INTELIGÊNCIA (Soma de atividades registradas no index.html)
+                let intel = (parseInt(d.missoesExecutadas) || 0) + (parseInt(d.missoesDiarias) || 0);
                 document.getElementById('it').innerText = intel;
                 document.getElementById('pit').style.width = Math.min((intel / 100) * 100, 100) + "%";
             });
