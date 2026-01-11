@@ -340,7 +340,7 @@
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center">
                     <h3 style="margin:0">🎁 Caixa de Presente</h3>
-                    <span id="gift-counter" style="background:#fbbf24; color:#000; padding:2px 8px; border-radius:10px; font-weight:bold; font-size:12px">Giros: 0/10</span>
+                    <span id="gift-counter" style="background:#fbbf24; color:#000; padding:2px 8px; border-radius:10px; font-weight:bold; font-size:12px">Giros: 0/01</span>
                 </div>
                 <div class="lucky-gift-box" onclick="abrirBau()">
                     <span id="gift-icon" class="gift-emoji gift-shake">🎁</span>
@@ -458,7 +458,7 @@
             const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
             if (p.missaoBau && p.missaoBau.data === hoje && !p.missaoBau.concluida) { alert("Conclua a missão atual antes de abrir o próximo!"); return; }
             const girosHoje = (p.missaoBau && p.missaoBau.data === hoje) ? (p.missaoBau.contagem || 0) : 0;
-            if (girosHoje >= 10) { alert("Você já usou seus 10 presentes de hoje!"); return; }
+            if (girosHoje >= 1) { alert("Você já usou seu presente de hoje!"); return; }
             const icon = document.getElementById('gift-icon');
             icon.classList.remove('gift-shake'); icon.classList.add('open');
             setTimeout(() => {
@@ -757,7 +757,7 @@
             document.getElementById('p-img').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
             const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
             const contagem = (p.missaoBau && p.missaoBau.data === hoje) ? (p.missaoBau.contagem || 0) : 0;
-            document.getElementById('gift-counter').innerText = `Giros: ${contagem}/10`;
+            document.getElementById('gift-counter').innerText = `Giros: ${contagem}/1`;
             const gIcon = document.getElementById('gift-icon');
             if (p.missaoBau && p.missaoBau.data === hoje && !p.missaoBau.concluida) {
                 document.getElementById('lucky-mission-container').classList.remove('hidden');
@@ -770,7 +770,7 @@
                 document.getElementById('lucky-mission-container').classList.add('hidden');
                 document.getElementById('lucky-msg').classList.remove('hidden');
                 gIcon.innerText = "🎁";
-                if(contagem < 10) gIcon.classList.add('gift-shake');
+                if(contagem < 1) gIcon.classList.add('gift-shake');
                 else document.getElementById('lucky-msg').innerText = "Limite diário atingido!";
             }
             const dO = document.getElementById('lista-obrigatoria'); dO.innerHTML = "";
@@ -884,5 +884,6 @@ aplicarBloqueioDeRecuo();
     </script>
 </body>
 </html>
+
 
 
