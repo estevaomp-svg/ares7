@@ -31,37 +31,37 @@
         <div class="nickname" id="nick">---</div>
         <div id="level-tag" style="color: var(--primary); font-weight: bold; margin-top: 5px;">LEVEL 1</div>
         <div class="progress-box" style="height: 12px;"><div id="xp-bar" class="bar" style="background: var(--accent);"></div></div>
-        <div id="xp-text" style="font-size: 12px; margin-top: 5px;">XP: 0 / 100</div>
+        <div id="xp-text" style="font-size: 12px; margin-top: 5px;">XP: 0 / 0</div>
     </div>
 
     <div class="status-grid">
         <div class="card"><span class="val" id="moedas" style="color: gold;">0</span><span class="label">Moedas</span></div>
-        <div class="card"><span class="val" id="bf" style="color: #ec4899;">--%</span><span class="label">B.F.</span></div>
+        <div class="card"><span class="val" id="bf" style="color: #ec4899;">--%</span><span class="label">B.F. (Gordura)</span></div>
 
         <div class="card full-card">
             <i class="fas fa-dumbbell" style="color: #ef4444;"></i>
-            <span class="label">Força (Poder Ofensivo)</span>
+            <span class="label">Força (Ofensivo)</span>
             <span class="val" id="forca" style="color: #ef4444;">0</span>
             <div class="progress-box"><div id="bar-forca" class="bar" style="background: #ef4444;"></div></div>
         </div>
 
         <div class="card full-card">
             <i class="fas fa-shield-alt" style="color: #3b82f6;"></i>
-            <span class="label">Defesa (Resistência Corporal)</span>
+            <span class="label">Defesa (Resistência)</span>
             <span class="val" id="defesa" style="color: #3b82f6;">0</span>
             <div class="progress-box"><div id="bar-defesa" class="bar" style="background: #3b82f6;"></div></div>
         </div>
 
         <div class="card full-card">
             <i class="fas fa-bolt" style="color: #22c55e;"></i>
-            <span class="label">Stamina (Fôlego/Cardio)</span>
+            <span class="label">Stamina (Fôlego)</span>
             <span class="val" id="stamina" style="color: #22c55e;">0</span>
             <div class="progress-box"><div id="bar-stamina" class="bar" style="background: #22c55e;"></div></div>
         </div>
 
         <div class="card full-card">
             <i class="fas fa-brain" style="color: #eab308;"></i>
-            <span class="label">Inteligência (Missões/Uso)</span>
+            <span class="label">Inteligência</span>
             <span class="val" id="intel" style="color: #eab308;">0</span>
             <div class="progress-box"><div id="bar-intel" class="bar" style="background: #eab308;"></div></div>
         </div>
@@ -90,20 +90,20 @@
                 const d = snap.val() || {};
                 const r = d.records || {};
 
+                // Nick e Moedas (Igual ao Index)
                 document.getElementById('nick').innerText = d.nick || "Herói";
                 document.getElementById('moedas').innerText = d.moedas || 0;
                 document.getElementById('bf').innerText = d.bf ? d.bf + "%" : "--%";
 
-                // XP e LEVEL
-                let xp = d.xp || 0;
-                let level = Math.floor(Math.sqrt(xp / 100)) + 1;
-                let nextXp = Math.pow(level, 2) * 100;
+                // Level e XP (Cálculo idêntico ao que o index usa)
+                let xp = parseInt(d.xp) || 0;
+                let level = Math.floor(xp / 100) + 1;
+                let nextXp = level * 100;
                 document.getElementById('level-tag').innerText = "LEVEL " + level;
                 document.getElementById('xp-text').innerText = `XP: ${xp} / ${nextXp}`;
-                document.getElementById('xp-bar').style.width = (xp / nextXp * 100) + "%";
+                document.getElementById('xp-bar').style.width = (xp % 100) + "%";
 
-                // CÁLCULO UNIFICADO: FORÇA E DEFESA
-                // Soma Kg (musculação) + Reps (calistenia)
+                // FORÇA E DEFESA (Soma Musculação + Calistenia que tem no teu HTML)
                 let muscular = (parseFloat(r.supino) || 0) + (parseFloat(r.legpress) || 0) + 
                                (parseFloat(r.remada) || 0) + (parseFloat(r.desenvolvimento) || 0) + 
                                (parseFloat(r.terra) || 0) + (parseFloat(r.rosca) || 0) +
@@ -113,14 +113,14 @@
                 atualizarAtributo('forca', muscular, 2000);
                 atualizarAtributo('defesa', muscular, 2000);
 
-                // STAMINA: Apenas os cardios da página
+                // STAMINA (Cardio da tua página)
                 let stamina = (parseFloat(r.corrida) || 0) + (parseFloat(r.cardio) || 0) + (parseFloat(r.natacao) || 0);
                 atualizarAtributo('stamina', stamina, 500);
 
-                // INTELIGÊNCIA: Missões e Atividades Extras
-                let intel = (d.missoesExecutadas || 0) + (d.missoesDiarias || 0) + 
-                            (d.usoPenalidade || 0) + (d.usoLoja || 0);
-                atualizarAtributo('intel', intel, 150);
+                // INTELIGÊNCIA (Missões e Usos)
+                let intel = (parseInt(d.missoesExecutadas) || 0) + (parseInt(d.missoesDiarias) || 0) + 
+                            (parseInt(d.usoPenalidade) || 0) + (parseInt(d.usoLoja) || 0);
+                atualizarAtributo('intel', intel, 100);
             });
         }
     });
