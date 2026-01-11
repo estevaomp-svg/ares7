@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ares RPG - Status</title>
+    <title>Ares RPG - Status do Herói</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
@@ -13,52 +13,54 @@
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 15px; }
         .container { max-width: 500px; margin: auto; }
         .header { text-align: center; padding: 20px; background: var(--card-bg); border-radius: 15px; margin-bottom: 20px; border: 1px solid #334155; }
-        .nickname { font-size: 24px; font-weight: bold; color: gold; margin-bottom: 5px; }
+        .nickname { font-size: 26px; font-weight: bold; color: gold; text-transform: uppercase; }
         .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .card { background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid #334155; text-align: center; }
-        .val { font-size: 20px; font-weight: bold; display: block; }
-        .label { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        .val { font-size: 22px; font-weight: bold; display: block; }
+        .label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
         .progress-box { background: #1e293b; height: 10px; border-radius: 5px; margin-top: 8px; overflow: hidden; }
-        .bar { height: 100%; width: 0%; transition: 1s ease; }
+        .bar { height: 100%; width: 0%; transition: 1.5s ease-in-out; }
         .full-card { grid-column: span 2; }
-        .btn-voltar { width: 100%; padding: 15px; margin-top: 20px; border-radius: 10px; border: none; background: #3b82f6; color: white; font-weight: bold; }
+        .btn-voltar { width: 100%; padding: 15px; margin-top: 20px; border-radius: 10px; border: none; background: #3b82f6; color: white; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <div class="nickname" id="display-nick">---</div>
-        <div id="display-lv" style="color: var(--primary); font-weight: bold; font-size: 18px;">LV --</div>
-        <div class="progress-box"><div id="display-xp-bar" class="bar" style="background: var(--accent);"></div></div>
-        <div id="display-xp-text" style="font-size: 12px; margin-top: 5px;">XP: -- / --</div>
+        <div class="nickname" id="nick">---</div>
+        <div id="level-tag" style="color: var(--primary); font-weight: bold; margin-top: 5px; font-size: 22px;">LV --</div>
+        <div class="progress-box" style="height: 12px;"><div id="xp-bar" class="bar" style="background: var(--accent);"></div></div>
+        <div id="xp-text" style="font-size: 13px; margin-top: 5px; font-weight: bold;">XP: --</div>
     </div>
 
     <div class="status-grid">
-        <div class="card"><span class="val" id="display-moedas" style="color: gold;">0</span><span class="label">Moedas</span></div>
-        
-        <div class="card"><span class="val" id="display-bf" style="color: #ec4899;">--%</span><span class="label">B.F.</span></div>
+        <div class="card"><span class="val" id="moedas" style="color: gold;">0</span><span class="label">Moedas</span></div>
+        <div class="card"><span class="val" id="bf" style="color: #ec4899;">--%</span><span class="label">B.F. Corporal</span></div>
 
         <div class="card full-card">
-            <span class="label" style="color: #ef4444;">Força & Defesa</span>
-            <span class="val" id="val-muscular">0</span>
+            <i class="fas fa-dumbbell" style="color: #ef4444;"></i>
+            <span class="label">Força & Defesa (Poder Físico)</span>
+            <span class="val" id="muscular" style="color: #ef4444;">0</span>
             <div class="progress-box"><div id="bar-muscular" class="bar" style="background: #ef4444;"></div></div>
         </div>
 
         <div class="card full-card">
-            <span class="label" style="color: #22c55e;">Stamina</span>
-            <span class="val" id="val-stamina">0</span>
+            <i class="fas fa-bolt" style="color: #22c55e;"></i>
+            <span class="label">Stamina (Resistência)</span>
+            <span class="val" id="stamina" style="color: #22c55e;">0</span>
             <div class="progress-box"><div id="bar-stamina" class="bar" style="background: #22c55e;"></div></div>
         </div>
 
         <div class="card full-card">
-            <span class="label" style="color: #eab308;">Inteligência</span>
-            <span class="val" id="val-intel">0</span>
+            <i class="fas fa-brain" style="color: #eab308;"></i>
+            <span class="label">Inteligência (Missões/Uso)</span>
+            <span class="val" id="intel" style="color: #eab308;">0</span>
             <div class="progress-box"><div id="bar-intel" class="bar" style="background: #eab308;"></div></div>
         </div>
     </div>
 
-    <button class="btn-voltar" onclick="location.href='index.html'">VOLTAR</button>
+    <button class="btn-voltar" onclick="location.href='index.html'">VOLTAR AO INÍCIO</button>
 </div>
 
 <script>
@@ -78,43 +80,44 @@
         if (user) {
             let id = user.email.split('@')[0].replace(/[.#$[\]]/g, "_");
             db.ref('rpg_data/' + id).on('value', snap => {
-                const data = snap.val() || {};
-                const rec = data.records || {};
+                const d = snap.val() || {};
+                const r = d.records || {};
 
-                // 1. REPETIR O QUE JÁ EXISTE NO INDEX (SEM CÁLCULOS NOVOS)
-                document.getElementById('display-nick').innerText = data.nick || "Herói";
-                document.getElementById('display-moedas').innerText = data.moedas || 0;
+                // 1. SINCRONIZAÇÃO DIRETA (REPETE O INDEX)
+                document.getElementById('nick').innerText = d.nick || "Herói";
+                document.getElementById('moedas').innerText = d.moedas || 0;
                 
-                let xp = parseInt(data.xp) || 0;
-                let lv = Math.floor(xp / 100) + 1;
-                document.getElementById('display-lv').innerText = "LV " + lv;
-                document.getElementById('display-xp-text').innerText = "XP: " + xp + " / " + (lv * 100);
-                document.getElementById('display-xp-bar').style.width = (xp % 100) + "%";
-
-                // 2. BF (Puxando de records.bf conforme sua página de evolução)
-                document.getElementById('display-bf').innerText = rec.bf ? rec.bf + "%" : "--%";
-
-                // 3. CÁLCULO DE FORÇA E DEFESA (Musculação + Calistenia)
-                let totalMuscular = 
-                    (parseFloat(rec.supino) || 0) + (parseFloat(rec.legpress) || 0) + 
-                    (parseFloat(rec.remada) || 0) + (parseFloat(rec.desenvolvimento) || 0) + 
-                    (parseFloat(rec.terra) || 0) + (parseFloat(rec.rosca) || 0) +
-                    (parseFloat(rec.agachamento) || 0) + (parseFloat(rec.flexao) || 0) + 
-                    (parseFloat(rec.barra) || 0) + (parseFloat(rec.mergulho) || 0);
+                // Puxa o XP bruto e calcula o LV exatamente como o seu index faz
+                let xp = parseInt(d.xp) || 0;
+                let level = Math.floor(xp / 100) + 1; 
                 
-                document.getElementById('val-muscular').innerText = totalMuscular;
-                document.getElementById('bar-muscular').style.width = Math.min((totalMuscular / 2000) * 100, 100) + "%";
+                document.getElementById('level-tag').innerText = "LV " + level;
+                document.getElementById('xp-text').innerText = "XP TOTAL: " + xp;
+                document.getElementById('xp-bar').style.width = (xp % 100) + "%";
 
-                // 4. CÁLCULO DE STAMINA (Cardios)
-                let totalStamina = (parseFloat(rec.corrida) || 0) + (parseFloat(rec.cardio) || 0) + (parseFloat(rec.natacao) || 0);
-                document.getElementById('val-stamina').innerText = totalStamina;
-                document.getElementById('bar-stamina').style.width = Math.min((totalStamina / 500) * 100, 100) + "%";
+                // 2. BF (Puxa do que foi salvo no evolucaofisica.html)
+                document.getElementById('bf').innerText = r.bf ? r.bf + "%" : "--%";
 
-                // 5. CÁLCULO DE INTELIGÊNCIA (Missões e Usos)
-                let totalIntel = (parseInt(data.missoesExecutadas) || 0) + (parseInt(data.missoesDiarias) || 0) + 
-                                 (parseInt(data.usoPenalidade) || 0) + (parseInt(data.usoLoja) || 0);
-                document.getElementById('val-intel').innerText = totalIntel;
-                document.getElementById('bar-intel').style.width = Math.min((totalIntel / 100) * 100, 100) + "%";
+                // 3. FORÇA E DEFESA (Soma total dos exercícios da sua página)
+                let forcaDefesa = (parseFloat(r.supino) || 0) + (parseFloat(r.legpress) || 0) + 
+                                  (parseFloat(r.remada) || 0) + (parseFloat(r.desenvolvimento) || 0) + 
+                                  (parseFloat(r.terra) || 0) + (parseFloat(r.rosca) || 0) +
+                                  (parseFloat(r.agachamento) || 0) + (parseFloat(r.flexao) || 0) + 
+                                  (parseFloat(r.barra) || 0) + (parseFloat(r.mergulho) || 0);
+                
+                document.getElementById('muscular').innerText = forcaDefesa;
+                document.getElementById('bar-muscular').style.width = Math.min((forcaDefesa / 1000) * 100, 100) + "%";
+
+                // 4. STAMINA (Corrida, Cardio, Natação)
+                let stamina = (parseFloat(r.corrida) || 0) + (parseFloat(r.cardio) || 0) + (parseFloat(r.natacao) || 0);
+                document.getElementById('stamina').innerText = stamina;
+                document.getElementById('bar-stamina').style.width = Math.min((stamina / 500) * 100, 100) + "%";
+
+                // 5. INTELIGÊNCIA (Missões, Penalidade e Loja)
+                let intel = (parseInt(d.missoesExecutadas) || 0) + (parseInt(d.missoesDiarias) || 0) + 
+                            (parseInt(d.usoPenalidade) || 0) + (parseInt(d.usoLoja) || 0);
+                document.getElementById('intel').innerText = intel;
+                document.getElementById('bar-intel').style.width = Math.min((intel / 100) * 100, 100) + "%";
             });
         }
     });
