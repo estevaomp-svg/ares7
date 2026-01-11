@@ -829,9 +829,9 @@
             });
         }
 
-        // --- CORREÇÃO DEFINITIVA DO BOTÃO VOLTAR FÍSICO ---
+        // --- CORREÇÃO DEFINITIVA E ANTI-INSISTÊNCIA DO BOTÃO VOLTAR ---
 
-// 1. Garante que o SweetAlert substitua o alert nativo em qualquer circunstância
+// 1. Mata o alert nativo do sistema para não mostrar e-mail em nenhuma hipótese
 window.alert = function(txt) {
     Swal.fire({
         text: txt,
@@ -841,44 +841,48 @@ window.alert = function(txt) {
     });
 };
 
-// 2. Cria um estado no histórico para o botão voltar ter onde "bater"
-function preventBack() {
-    history.pushState(null, null, window.location.pathname);
+// 2. Função para criar o bloqueio de saída
+function aplicarBloqueioDeRecuo() {
+    // Adiciona estados ao histórico para o botão voltar não encontrar a saída do app
+    for (let i = 0; i < 5; i++) {
+        history.pushState(null, null, window.location.pathname);
+    }
+
+    window.addEventListener('popstate', function (event) {
+        // Toda vez que ele tenta voltar, empurramos ele para frente de novo
+        history.pushState(null, null, window.location.pathname);
+
+        // Dispara o SweetAlert personalizado (que não mostra e-mail)
+        Swal.fire({
+            title: 'Sair do Ares RPG?',
+            text: "Deseja fechar o jogo agora?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3b82f6',
+            cancelButtonColor: '#ef4444',
+            confirmButtonText: 'Sim, Sair',
+            cancelButtonText: 'Continuar Jogando',
+            background: '#1e293b',
+            color: '#fff'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Tenta fechar o app de forma limpa
+                if (navigator.app && navigator.app.exitApp) {
+                    navigator.app.exitApp();
+                } else {
+                    // Se estiver no navegador, manda para uma página em branco e fecha
+                    window.location.replace("about:blank");
+                    window.close();
+                }
+            }
+        });
+    });
 }
 
-// Inicializa o bloqueio
-preventBack();
-
-// Escuta o botão voltar físico
-window.addEventListener('popstate', function (event) {
-    // Imediatamente coloca o usuário de volta na página (evita o fechamento)
-    preventBack();
-
-    // Em vez do alert do navegador, chama o SweetAlert
-    Swal.fire({
-        title: 'Sair do Ares RPG?',
-        text: "Deseja fechar o jogo agora?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3b82f6',
-        cancelButtonColor: '#ef4444',
-        confirmButtonText: 'Sim, Sair',
-        cancelButtonText: 'Continuar Jogando',
-        background: '#1e293b',
-        color: '#fff'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Se ele confirmar, tentamos fechar o app
-            if (navigator.app && navigator.app.exitApp) {
-                navigator.app.exitApp();
-            } else {
-                // Caso seja navegador comum, ele volta uma vez de verdade
-                window.history.back();
-            }
-        }
-    });
-});
+// Executa a proteção imediatamente
+aplicarBloqueioDeRecuo();
     </script>
 </body>
 </html>
+
 
