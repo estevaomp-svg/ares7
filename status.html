@@ -17,7 +17,7 @@
         .label { font-size: 10px; color: #94a3b8; text-transform: uppercase; }
         .progress-box { background: #1e293b; height: 10px; border-radius: 5px; margin-top: 5px; overflow: hidden; }
         .bar { height: 100%; width: 0%; transition: 1s ease; }
-        .btn-voltar { width: 100%; padding: 15px; background: #334155; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-voltar { width: 100%; padding: 15px; background: #334155; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; width: 100%; }
     </style>
 </head>
 <body>
@@ -76,20 +76,23 @@
                 const d = snap.val() || {};
                 const r = d.records || {};
 
-                // REPETIR INDEX
+                // 1. REPETIR LÓGICA DO INDEX (1000 XP por LV)
                 document.getElementById('n').innerText = d.nick || "Herói";
                 document.getElementById('m').innerText = d.moedas || 0;
                 
-                let xp = parseInt(d.xp) || 0;
-                let lv = Math.floor(xp / 100); 
+                let xpTotal = parseInt(d.xp) || 0;
+                let lv = Math.floor(xpTotal / 1000); 
+                let xpRestanteNoNivel = xpTotal % 1000;
+                let progressoXP = (xpRestanteNoNivel / 1000) * 100;
+
                 document.getElementById('l').innerText = "LV " + lv;
-                document.getElementById('x').innerText = "XP: " + xp;
-                document.getElementById('pb').style.width = (xp % 100) + "%";
+                document.getElementById('x').innerText = "XP: " + xpTotal;
+                document.getElementById('pb').style.width = progressoXP + "%";
 
-                // BF (Vem de records.bf)
-                document.getElementById('bf').innerText = r.bf ? r.bf + "%" : "--%";
+                // 2. BF (Percentual de Gordura do evolucaofisica.html)
+                document.getElementById('bf').innerText = r.bf ? parseFloat(r.bf).toFixed(1) + "%" : "--%";
 
-                // FORÇA & DEFESA (Soma exata dos campos da evolucaofisica.html)
+                // 3. CÁLCULO DE FORÇA (Soma dos pesos salvos)
                 let f = (parseFloat(r.supino) || 0) + (parseFloat(r.legpress) || 0) + 
                         (parseFloat(r.remada) || 0) + (parseFloat(r.desenvolvimento) || 0) + 
                         (parseFloat(r.terra) || 0) + (parseFloat(r.rosca) || 0) +
@@ -99,17 +102,21 @@
                 document.getElementById('fd').innerText = f.toFixed(1);
                 document.getElementById('pfd').style.width = Math.min((f / 1500) * 100, 100) + "%";
 
-                // STAMINA
+                // 4. CÁLCULO DE STAMINA (Cardio)
                 let s = (parseFloat(r.corrida) || 0) + (parseFloat(r.cardio) || 0) + (parseFloat(r.natacao) || 0);
                 document.getElementById('st').innerText = s.toFixed(1);
                 document.getElementById('pst').style.width = Math.min((s / 500) * 100, 100) + "%";
 
-                // INTELIGÊNCIA
-                let i = (parseInt(d.missoesExecutadas) || 0) + (parseInt(d.missoesDiarias) || 0) + 
-                        (parseInt(d.usoPenalidade) || 0) + (parseInt(d.usoLoja) || 0);
+                // 5. CÁLCULO DE INTELIGÊNCIA (Missões e Atividades)
+                let i = (parseInt(d.missoesExecutadas) || 0) + 
+                        (parseInt(d.missoesDiarias) || 0) + 
+                        (parseInt(d.usoLoja) || 0);
                 document.getElementById('it').innerText = i;
                 document.getElementById('pit').style.width = Math.min((i / 100) * 100, 100) + "%";
             });
+        } else {
+            // Se não estiver logado, volta para o index
+            location.href = 'index.html';
         }
     });
 </script>
