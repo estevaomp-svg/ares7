@@ -13,6 +13,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         :root { --primary: #3b82f6; --danger: #ef4444; --success: #22c55e; --warning: #fbbf24; --bg: #0f172a; }
@@ -664,71 +665,39 @@
         function limparNome(e) { return e.split('@')[0].replace(/[.#$[\]]/g, "_"); }
         function alternarTela(c) { document.getElementById('login-area').className = c?'hidden':''; document.getElementById('register-area').className = c?'':'hidden'; }
         
-        // --- FUNÇÕES DE AUTH ATUALIZADAS COM AVISOS ---
         function fazerLogin() { 
-    const email = document.getElementById('login-email').value;
-    const pass = document.getElementById('login-pass').value;
-
-    if (!email || !pass) {
-        alert("Por favor, preencha todos os campos para entrar.");
-        return;
-    }
-
-    auth.signInWithEmailAndPassword(email, pass)
-        .catch(error => {
-            console.error(error.code);
-            // Aqui fazemos a verificação do código de erro
-            if (error.code === 'auth/invalid-login-credentials' || 
-                error.code === 'auth/wrong-password' || 
-                error.code === 'auth/user-not-found') {
-                
-                alert("E-mail ou senha incorretos.");
-                
-            } else if (error.code === 'auth/invalid-email') {
-                alert("O formato do e-mail digitado é inválido.");
-            } else {
-                alert("Ocorreu um erro ao tentar entrar. Tente novamente.");
-            }
-        });
-}
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            if (!email || !pass) { alert("Por favor, preencha todos os campos para entrar."); return; }
+            auth.signInWithEmailAndPassword(email, pass)
+                .catch(error => {
+                    console.error(error.code);
+                    if (error.code === 'auth/invalid-login-credentials' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') { alert("E-mail ou senha incorretos."); } 
+                    else if (error.code === 'auth/invalid-email') { alert("O formato do e-mail digitado é inválido."); } 
+                    else { alert("Ocorreu um erro ao tentar entrar. Tente novamente."); }
+                });
+        }
 
         function fazerCadastro() {
             const nick = document.getElementById('reg-nick').value;
             const e = document.getElementById('reg-email').value;
             const p = document.getElementById('reg-pass').value;
-
-            if (!nick || !e || !p) {
-                alert("Preencha todos os campos para criar sua conta.");
-                return;
-            }
-
+            if (!nick || !e || !p) { alert("Preencha todos os campos para criar sua conta."); return; }
             auth.createUserWithEmailAndPassword(e, p)
                 .then(() => { 
-                    db.ref('rpg_data/' + limparNome(e)).set({ 
-                        nick: nick, 
-                        xp: 0, 
-                        coins: 0 
-                    }); 
+                    db.ref('rpg_data/' + limparNome(e)).set({ nick: nick, xp: 0, coins: 0 }); 
                     alert("Conta criada com sucesso! Bem-vindo, " + nick);
                 })
                 .catch(error => {
                     console.error(error.code);
                     switch (error.code) {
-                        case 'auth/email-already-in-use':
-                            alert("Já existe uma conta com este e-mail.");
-                            break;
-                        case 'auth/weak-password':
-                            alert("A senha deve ter no mínimo 6 caracteres.");
-                            break;
-                        case 'auth/invalid-email':
-                            alert("E-mail inválido.");
-                            break;
-                        default:
-                            alert("Erro ao cadastrar: " + error.message);
+                        case 'auth/email-already-in-use': alert("Já existe uma conta com este e-mail."); break;
+                        case 'auth/weak-password': alert("A senha deve ter no mínimo 6 caracteres."); break;
+                        case 'auth/invalid-email': alert("E-mail inválido."); break;
+                        default: alert("Erro ao cadastrar: " + error.message);
                     }
                 });
         }
-        // ----------------------------------------------
 
         auth.onAuthStateChanged(u => {
             if(u) {
@@ -859,7 +828,42 @@
                 }
             });
         }
+
+        // --- INÍCIO DA CORREÇÃO DO BOTÃO VOLTAR E ALERTAS ---
+        // 1. Substitui o alert antigo pelo SweetAlert (tira o nome do site/e-mail do topo)
+        window.alert = function(txt) {
+            Swal.fire({
+                text: txt,
+                confirmButtonColor: '#3b82f6',
+                background: '#1e293b',
+                color: '#fff'
+            });
+        };
+
+        // 2. Intercepta o botão voltar físico do celular para evitar fechamento acidental
+        history.pushState(null, null, window.location.pathname);
+        window.addEventListener('popstate', function () {
+            history.pushState(null, null, window.location.pathname);
+            Swal.fire({
+                title: 'Sair do Ares RPG?',
+                text: "Deseja fechar o jogo agora?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3b82f6',
+                cancelButtonColor: '#ef4444',
+                confirmButtonText: 'Sim, Sair',
+                cancelButtonText: 'Continuar Jogando'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    if (navigator.app && navigator.app.exitApp) {
+                        navigator.app.exitApp();
+                    } else {
+                        window.close();
+                    }
+                }
+            });
+        });
+        // --- FIM DA CORREÇÃO ---
     </script>
 </body>
 </html>
-
