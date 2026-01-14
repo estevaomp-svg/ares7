@@ -387,15 +387,19 @@
                 </div>
 
                 <div id="lista-missoes-pessoais" style="margin-bottom:15px"></div>
-                
-                <input type="text" id="missao-input" placeholder="Nova missão ou item...">
-                <select id="cat-input">
-                    <option value="30">🚀 Prioridade (+30 XP)</option>
-                    <option value="15">⚙️ Comum (+15 XP)</option>
-                    <option value="5">🛒 Lista de Compras (+5 XP)</option>
-                    <option value="-500">⚠️ Hábito Sombrio (-500 XP)</option>
-                </select>
-                <button onclick="addMissao()" style="background:#3b82f6; width:100%">Registar</button>
+    
+<input type="text" id="missao-input" placeholder="Nova missão ou item..." class="input-modern">
+<div style="display: flex; gap: 5px; margin-bottom: 8px;">
+    <input type="date" id="missao-data" style="flex: 2; background:#334155; color:white; border:none; border-radius:8px; padding:10px;">
+    <input type="time" id="missao-hora" style="flex: 1; background:#334155; color:white; border:none; border-radius:8px; padding:10px;">
+</div>
+<select id="cat-input" class="input-modern">
+    <option value="30">🚀 Prioridade (+30 XP)</option>
+    <option value="15">⚙️ Comum (+15 XP)</option>
+    <option value="5">🛒 Lista de Compras (+5 XP)</option>
+    <option value="-500">⚠️ Hábito Sombrio (-500 XP)</option>
+</select>
+<button onclick="addMissao()" class="btn btn-primary" style="width:100%">Registrar</button>
             </div>
         </div>
 
@@ -430,6 +434,45 @@
         let jogadorAtual = "", dadosGerais = {}, vitoriasVelha = {}, dadosOnline = {};
         
         let filtroAtivo = 'tudo';
+
+        const somNotificacao = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+
+        if (Notification.permission !== "granted") {
+            Notification.requestPermission();
+        }
+
+        function dispararNotificacao(titulo, corpo) {
+            somNotificacao.play().catch(e => console.log("Áudio aguardando clique"));
+            if (Notification.permission === "granted") {
+                new Notification(titulo, { body: corpo, icon: "https://i.ibb.co/X3vDgg/image.png" });
+            }
+            Swal.fire({
+                title: titulo, text: corpo, icon: 'info', toast: true, position: 'top-end',
+                showConfirmButton: false, timer: 5000, background: '#1e293b', color: '#fff'
+            });
+        }
+
+        setInterval(() => {
+            if (jogadorAtual && dadosGerais[jogadorAtual]) {
+                const agora = new Date();
+                const p = dadosGerais[jogadorAtual];
+                if (p.missoes) {
+                    p.missoes.forEach(m => {
+                        if (m.dataAgendada && !m.concluida) {
+                            const agendado = new Date(m.dataAgendada);
+                            const diffMinutos = Math.floor((agora - agendado) / 60000);
+                            if (diffMinutos >= 0 && diffMinutos % 15 === 0) {
+                                dispararNotificacao("⚔️ Hora da Missão!", m.nome);
+                            }
+                        }
+                    });
+                }
+            }
+        }, 60000);
+
+        // === FIM DO CÓDIGO DE NOTIFICAÇÃO ===
+
+        function abrirModalRanking(id) { document.getElementById(id).style.display = 'flex'; }
 
         function abrirModalRanking(id) { document.getElementById(id).style.display = 'flex'; }
         function fecharModalRanking(id) { document.getElementById(id).style.display = 'none'; }
@@ -809,7 +852,34 @@
         }
         function removerMissao(id) { const ms = (dadosGerais[jogadorAtual].missoes || []).filter(m => m.id !== id); db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms); }
         function aplicarPenalidade() { const q = parseInt(document.getElementById('input-penalidade').value), p = dadosGerais[jogadorAtual]; if(q) db.ref('rpg_data/'+jogadorAtual).update({ xp: Math.max(0, (p.xp||0) - (q*300)) }); }
-        function addMissao() { const n = document.getElementById('missao-input').value, v = parseInt(document.getElementById('cat-input').value); const ms = dadosGerais[jogadorAtual].missoes || []; ms.push({ id:'m-'+Date.now(), nome:n, valor:v, concluida:false }); db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms); document.getElementById('missao-input').value = ""; }
+        function addMissao() {
+    const n = document.getElementById('missao-input').value;
+    const v = parseInt(document.getElementById('cat-input').value);
+    const dataStr = document.getElementById('missao-data').value;
+    const horaStr = document.getElementById('missao-hora').value;
+
+    if (!n) { Swal.fire('Atenção', 'Digite o nome da missão!', 'warning'); return; }
+
+    let dataAgendada = null;
+    if (dataStr && horaStr) {
+        dataAgendada = new Date(`${dataStr}T${horaStr}`).toISOString();
+    }
+
+    const ms = dadosGerais[jogadorAtual].missoes || [];
+    ms.push({ 
+        id: 'm-' + Date.now(), 
+        nome: n, 
+        valor: v, 
+        concluida: false,
+        dataAgendada: dataAgendada 
+    });
+
+    db.ref('rpg_data/' + jogadorAtual + '/missoes').set(ms).then(() => {
+        document.getElementById('missao-input').value = "";
+        document.getElementById('missao-data').value = "";
+        document.getElementById('missao-hora').value = "";
+    });
+}
         function comprar(pr, n) { const p = dadosGerais[jogadorAtual]; if(p.coins >= pr) { db.ref('rpg_data/'+jogadorAtual).update({coins:p.coins-pr}); alert("Resgatado!"); } }
         function salvarPerfil() { db.ref('rpg_data/'+jogadorAtual).update({ nick: document.getElementById('edit-nick').value, photo: document.getElementById('edit-photo').value.trim() }).then(() => mudarAba('home')); }
         function logout() { auth.signOut(); }
@@ -884,6 +954,7 @@ aplicarBloqueioDeRecuo();
     </script>
 </body>
 </html>
+
 
 
 
