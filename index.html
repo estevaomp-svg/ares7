@@ -423,7 +423,7 @@
     </div>
 
     <script>
-        // 1. Configuração Oficial
+        // 1. Configurações Originais (Copiadas do seu arquivo que funcionava)
         const firebaseConfig = {
             apiKey: "AIzaSyAs-SU-0X8vB-k_vXU2uP7U",
             authDomain: "ares-rpg-oficial.firebaseapp.com",
@@ -434,20 +434,23 @@
             appId: "1:338917887550:web:8075726207f6e437c35639"
         };
 
-        // 2. Inicialização Segura
+        // 2. Inicialização (Garantindo que não inicialize duas vezes)
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
         const db = firebase.database();
         const auth = firebase.auth();
 
-        // 3. Variáveis Globais (Definidas apenas uma vez para não travar o login)
-        let jogadorAtual = "", dadosGerais = {}, vitoriasVelha = {}, dadosOnline = {};
+        // 3. Variáveis Globais (APENAS UMA VEZ CADA)
+        let jogadorAtual = "";
+        let dadosGerais = {};
+        let vitoriasVelha = {};
+        let dadosOnline = {};
         let filtroAtivo = 'tudo';
         let batalhaAtiva = false;
         let statsP = {}, statsE = {};
 
-        // 4. Sistema de Notificação e Som
+        // 4. Sistema de Som e Notificação (Novo)
         const somNotificacao = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
         function dispararNotificacao(titulo, corpo) {
@@ -461,7 +464,7 @@
             });
         }
 
-        // 5. Verificador de Missões Agendadas
+        // 5. Verificador de Missões (O relógio que você queria)
         setInterval(() => {
             if (jogadorAtual && dadosGerais[jogadorAtual]) {
                 const agora = new Date();
@@ -480,6 +483,7 @@
             }
         }, 60000);
 
+        // 6. Funções de Suporte
         function abrirModalRanking(id) { document.getElementById(id).style.display = 'flex'; }
         function fecharModalRanking(id) { document.getElementById(id).style.display = 'none'; }
 
@@ -969,6 +973,7 @@ aplicarBloqueioDeRecuo();
     </script>
 </body>
 </html>
+
 
 
 
