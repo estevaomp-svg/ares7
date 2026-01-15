@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ares RPG - Investimento </title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #3b82f6; --success: #22c55e; --danger: #ef4444; --bg: #0f172a; --card: #1e293b; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; padding: 15px; margin: 0; }
+        .container { max-width: 800px; margin: auto; }
+        .card { background: var(--card); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #334155; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .stat-box { background: #0f172a; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #475569; }
+        .stat-box strong { font-size: 1.1rem; display: block; margin-top: 5px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:hover { opacity: 0.9; }
+        canvas { background: #0f172a; border-radius: 10px; padding: 10px; margin-top: 10px; }
+        .gain { color: var(--success); }
+        .loss { color: var(--danger); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.85rem; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h2>🚀 Investimento - Ares RPG</h2>
+        <div class="grid-3">
+            <div class="stat-box">
+                <small>Meta (10%)</small>
+                <strong id="meta-valor" class="gain">R$ 0,00</strong>
+            </div>
+            <div class="stat-box">
+                <small>Contratos</small>
+                <strong id="contratos-qtd" style="color: #fbbf24;">0</strong>
+            </div>
+            <div class="stat-box">
+                <small>Loss Mês (50%)</small>
+                <strong id="loss-limite" class="loss">R$ 0,00</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>📈 Evolução do Capital</h3>
+        <canvas id="graficoEvolucao" height="150"></canvas>
+    </div>
+
+    <div class="card">
+        <h3>⚙️ Lançamento Diário</h3>
+        <label>Capital Atual (R$):</label>
+        <input type="number" id="capital-input" placeholder="Seu capital total hoje" oninput="atualizarCalculos()">
+        
+        <label>Resultado Financeiro (R$):</label>
+        <input type="number" id="resultado-input" placeholder="Ex: 100 ou -50">
+        <button onclick="salvarOperacao()">REGISTRAR RESULTADO</button>
+    </div>
+
+    <div class="card">
+        <h3>📊 Histórico de Performance</h3>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Resultado</th>
+                        <th>Banca Final</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-corpo"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBanevR51ejaTE0ccqlmlU6VRh7Qg4EETs",
+        databaseURL: "https://aresrpg-7daf4-default-rtdb.firebaseio.com",
+        projectId: "aresrpg-7daf4",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    
+    let userPath = "jogador_investidor"; 
+    let chartInstance = null;
+
+    function atualizarCalculos() {
+        const capital = parseFloat(document.getElementById('capital-input').value) || 0;
+        
+        const contratos = Math.floor(capital / 1000); 
+        const meta = capital * 0.10;                  
+        const lossMensal = capital * 0.50; // Ajustado para 50%
+
+        document.getElementById('contratos-qtd').innerText = contratos;
+        document.getElementById('meta-valor').innerText = `R$ ${meta.toFixed(2)}`;
+        document.getElementById('loss-limite').innerText = `R$ ${lossMensal.toFixed(2)}`;
+    }
+
+    function salvarOperacao() {
+        const capital = parseFloat(document.getElementById('capital-input').value);
+        const resultado = parseFloat(document.getElementById('resultado-input').value);
+
+        if (!capital || isNaN(resultado)) {
+            return Swal.fire("Erro", "Preencha os valores corretamente!", "error");
+        }
+
+        const novoSaldo = capital + resultado;
+        
+        db.ref(`investimentos/${userPath}/historico`).push({
+            data: new Date().toLocaleDateString('pt-BR'),
+            resultado: resultado,
+            saldoFinal: novoSaldo,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        }).then(() => {
+            document.getElementById('capital-input').value = novoSaldo;
+            document.getElementById('resultado-input').value = "";
+            atualizarCalculos();
+            Swal.fire("Sucesso!", "Resultado registrado.", "success");
+        });
+    }
+
+    function inicializarGrafico(dados, labels) {
+        const ctx = document.getElementById('graficoEvolucao').getContext('2d');
+        if (chartInstance) chartInstance.destroy();
+
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Capital (R$)',
+                    data: dados,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#3b82f6'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                }
+            }
+        });
+    }
+
+    function carregarDados() {
+        db.ref(`investimentos/${userPath}/historico`).orderByChild('timestamp').limitToLast(20).on('value', snapshot => {
+            const tbody = document.getElementById('tabela-corpo');
+            tbody.innerHTML = "";
+            
+            let saldos = [];
+            let datas = [];
+
+            snapshot.forEach(doc => {
+                const item = doc.val();
+                const cor = item.resultado >= 0 ? "gain" : "loss";
+                
+                saldos.push(item.saldoFinal);
+                datas.push(item.data.slice(0, 5));
+
+                tbody.insertAdjacentHTML('afterbegin', `
+                    <tr>
+                        <td>${item.data}</td>
+                        <td class="${cor}">R$ ${item.resultado.toFixed(2)}</td>
+                        <td>R$ ${item.saldoFinal.toFixed(2)}</td>
+                    </tr>
+                `);
+            });
+
+            if(saldos.length > 0) inicializarGrafico(saldos, datas);
+        });
+    }
+
+    window.onload = carregarDados;
+</script>
+
+</body>
+</html>
