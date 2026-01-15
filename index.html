@@ -425,23 +425,89 @@
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBanevR51ejaTE0ccqlmlU6VRh7Qg4EETs",
-            authDomain: "aresrpg-7daf4.firebaseapp.com",
-            databaseURL: "https://aresrpg-7daf4-default-rtdb.firebaseio.com",
-            projectId: "aresrpg-7daf4",
-            storageBucket: "aresrpg-7daf4.firebasestorage.app",
-            messagingSenderId: "153757603214",
-            appId: "1:153757603214:web:fb572985353c8fad7f80df"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database(), auth = firebase.auth();
-        let jogadorAtual = "", dadosGerais = {}, vitoriasVelha = {}, dadosOnline = {};
-        
-        let filtroAtivo = 'tudo';
+    const firebaseConfig = {
+        apiKey: "AIzaSyBanevR51ejaTE0ccqlmlU6VRh7Qg4EETs",
+        authDomain: "aresrpg-7daf4.firebaseapp.com",
+        databaseURL: "https://aresrpg-7daf4-default-rtdb.firebaseio.com",
+        projectId: "aresrpg-7daf4",
+        storageBucket: "aresrpg-7daf4.firebasestorage.app",
+        messagingSenderId: "153757603214",
+        appId: "1:153757603214:web:fb572985353c8fad7f80df"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database(), auth = firebase.auth();
+    let jogadorAtual = "", dadosGerais = {}, vitoriasVelha = {}, dadosOnline = {};
+    
+    let filtroAtivo = 'tudo';
 
-        function abrirModalRanking(id) { document.getElementById(id).style.display = 'flex'; }
-        function fecharModalRanking(id) { document.getElementById(id).style.display = 'none'; }
+    // --- INÍCIO DO SISTEMA DE NOTIFICAÇÕES ---
+    if ("Notification" in window) {
+        Notification.requestPermission();
+    }
+
+    let ultimosAlertas = {};
+
+    function verificarMissoesAtrasadas() {
+        if (!jogadorAtual || !dadosGerais[jogadorAtual]) return;
+        const p = dadosGerais[jogadorAtual];
+        if (!p.missoes) return;
+
+        const agora = new Date();
+        let nomesAtrasados = [];
+
+        p.missoes.forEach(m => {
+            // Verifica se tem deadline, se não está concluída e se o tempo passou
+            if (m.deadline && !m.concluida) {
+                const dataLimite = new Date(m.deadline);
+                
+                if (agora > dataLimite) {
+                    const tempoDesdeUltimoAlerta = ultimosAlertas[m.id] ? (agora - ultimosAlertas[m.id]) : Infinity;
+                    
+                    // 900000 ms = 15 minutos
+                    if (tempoDesdeUltimoAlerta >= 900000) {
+                        nomesAtrasados.push(m.nome);
+                        ultimosAlertas[m.id] = agora;
+                    }
+                }
+            }
+        });
+
+        if (nomesAtrasados.length > 0) {
+            dispararAlerta(nomesAtrasados);
+        }
+    }
+
+    function dispararAlerta(nomes) {
+        const mensagem = `Missões atrasadas: ${nomes.join(", ")}`;
+
+        // Notificação de Sistema (Estilo E-mail)
+        if (Notification.permission === "granted") {
+            new Notification("Ares RPG: Alerta de Atraso!", {
+                body: mensagem,
+                icon: "https://i.ibb.co/X3vDgg/image.png"
+            });
+        }
+
+        // Alerta visual dentro do site
+        Swal.fire({
+            title: '⚠️ MISSÃO ATRASADA!',
+            text: mensagem,
+            icon: 'warning',
+            toast: true,
+            position: 'top-end',
+            timer: 10000,
+            showConfirmButton: false,
+            background: '#1e293b',
+            color: '#f87171'
+        });
+    }
+
+    // Verifica a cada 1 minuto se algo atrasou
+    setInterval(verificarMissoesAtrasadas, 60000);
+    // --- FIM DO SISTEMA DE NOTIFICAÇÕES ---
+
+    function abrirModalRanking(id) { document.getElementById(id).style.display = 'flex'; }
+    function fecharModalRanking(id) { document.getElementById(id).style.display = 'none'; }
 
         const NPCs = [
             { id: "npc_ares", nick: "MiguelK1", xp: 15326, photo: "https://i.ibb.co/X3vDgg/image.png", vitorias: 18 },
@@ -922,3 +988,4 @@ aplicarBloqueioDeRecuo();
     </script>
 </body>
 </html>
+
