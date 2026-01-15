@@ -387,19 +387,22 @@
                 </div>
 
                 <div id="lista-missoes-pessoais" style="margin-bottom:15px"></div>
-    
-<input type="text" id="missao-input" placeholder="Nova missão ou item..." class="input-modern">
+
+<input type="text" id="missao-input" placeholder="Nova missão ou item..." style="width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; background: #334155; color: white; box-sizing: border-box;">
+
 <div style="display: flex; gap: 5px; margin-bottom: 8px;">
-    <input type="date" id="missao-data" style="flex: 2; background:#334155; color:white; border:none; border-radius:8px; padding:10px;">
-    <input type="time" id="missao-hora" style="flex: 1; background:#334155; color:white; border:none; border-radius:8px; padding:10px;">
+    <input type="date" id="missao-data" style="flex: 2; background:#334155; color:white; border:none; border-radius:8px; padding:10px; font-family: inherit;">
+    <input type="time" id="missao-hora" style="flex: 1; background:#334155; color:white; border:none; border-radius:8px; padding:10px; font-family: inherit;">
 </div>
-<select id="cat-input" class="input-modern">
+
+<select id="cat-input" style="width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; background: #334155; color: white; box-sizing: border-box;">
     <option value="30">🚀 Prioridade (+30 XP)</option>
     <option value="15">⚙️ Comum (+15 XP)</option>
     <option value="5">🛒 Lista de Compras (+5 XP)</option>
     <option value="-500">⚠️ Hábito Sombrio (-500 XP)</option>
 </select>
-<button onclick="addMissao()" class="btn btn-primary" style="width:100%">Registrar</button>
+
+<button onclick="addMissao()" style="width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; background: #3b82f6; color: white; font-weight: bold; cursor: pointer;">Registrar</button>
             </div>
         </div>
 
@@ -831,9 +834,19 @@
                     else if (m.valor == 30) corFundo = "rgba(251, 191, 36, 0.3)"; 
                     else if (m.valor == 5) corFundo = "rgba(34, 197, 94, 0.2)";
                 }
+                // --- CÁLCULO DA DATA (ADICIONADO) ---
+                let infoData = "";
+                if (m.dataAgendada) {
+                    const d = new Date(m.dataAgendada);
+                    const dataFormatada = d.toLocaleDateString('pt-BR');
+                    const horaFormatada = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                    infoData = `<br><small style="color:#fbbf24; font-weight: bold;">⏰ ${dataFormatada} às ${horaFormatada}</small>`;
+                }
+
+                // --- HTML DA MISSÃO (ATUALIZADO COM INFO DATA) ---
                 dP.innerHTML += `
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:${corFundo}; padding:10px; border-radius:8px; border: 1px solid ${m.concluida ? 'transparent' : 'rgba(255,255,255,0.1)'};">
-                        <span>${m.nome} <small>(${m.valor} XP)</small></span>
+                        <span>${m.nome} <small>(${m.valor} XP)</small>${infoData}</span>
                         <div>
                             <button class="${m.concluida?'btn-done':'btn-check'}" onclick="concluirMissao('${m.id}', ${m.valor})" ${m.concluida?'disabled':''}>✔</button>
                             <button class="btn-del" onclick="removerMissao('${m.id}')">🗑️</button>
@@ -843,7 +856,6 @@
 
             const tL = document.querySelector('#tabela-loja tbody'); if(tL) { tL.innerHTML = ""; [{n:'Passear',p:19000},{n:'Auto Presente',p:15000},{n:'Lanche (dia do lixo)',p:14000}].forEach(i => { tL.innerHTML += `<tr><td>${i.n}</td><td>💰${i.p}</td><td><button class="btn-buy" onclick="comprar(${i.p},'${i.n}')">Resgatar</button></td></tr>`; }); }
         }
-
         function concluirMissao(id, v, d=false) {
             const p = dadosGerais[jogadorAtual], ms = p.missoes || [];
             let m = ms.find(x => x.id === id);
@@ -954,6 +966,7 @@ aplicarBloqueioDeRecuo();
     </script>
 </body>
 </html>
+
 
 
 
