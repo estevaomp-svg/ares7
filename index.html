@@ -30,7 +30,6 @@
             margin-bottom: 15px; border: 1px solid rgba(51, 65, 85, 0.5); 
         }
 
-        /* Estilo para abas de filtro de missões */
         .filter-container {
             display: flex;
             gap: 8px;
@@ -76,9 +75,7 @@
             transition: 0.2s;
             margin-left: 10px;
         }
-        .btn-fechar-aba:hover {
-            background: rgba(0, 0, 0, 0.6);
-        }
+        .btn-fechar-aba:hover { background: rgba(0, 0, 0, 0.6); }
 
         .btn-ranking-toggle {
             width: 100%;
@@ -306,6 +303,11 @@
 
     <div id="game-content" class="hidden">
         <div id="tab-home">
+            <div class="card" style="text-align: center; background: rgba(15, 23, 42, 0.6);">
+                <div id="relogio-digital" style="font-size: 28px; font-weight: 900; color: var(--primary); text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);">00:00:00</div>
+                <div id="data-atual" style="font-size: 14px; color: #94a3b8; margin-top: 5px;">--/--/----</div>
+            </div>
+
             <div class="card header">
                 <div style="display:flex; justify-content:space-between; align-items:center">
                     <div style="display:flex; align-items:center; gap:10px">
@@ -395,6 +397,7 @@
                     <option value="5">🛒 Lista de Compras (+5 XP)</option>
                     <option value="-500">⚠️ Hábito Sombrio (-500 XP)</option>
                 </select>
+                <input type="datetime-local" id="missao-data" style="margin-bottom: 10px;">
                 <button onclick="addMissao()" style="background:#3b82f6; width:100%">Registar</button>
             </div>
         </div>
@@ -427,8 +430,50 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database(), auth = firebase.auth();
-        let jogadorAtual = "", dadosGerais = {}, vitoriasVelha = {}, dadosOnline = {};
+
+        // --- SISTEMA DE ALARME E RELÓGIO ADICIONADO ---
+        const somAlarme = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
         
+        function atualizarRelogio() {
+            const agora = new Date();
+            if(document.getElementById('relogio-digital')) {
+                document.getElementById('relogio-digital').innerText = agora.toLocaleTimeString('pt-BR');
+                document.getElementById('data-atual').innerText = agora.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            }
+
+            // Verifica alarmes a cada minuto
+            if (agora.getSeconds() === 0 && jogadorAtual && dadosGerais[jogadorAtual]) {
+                const missoes = dadosGerais[jogadorAtual].missoes || [];
+                missoes.forEach(m => {
+                    if (m.dataAgendada && !m.concluida) {
+                        const agendada = new Date(m.dataAgendada);
+                        if (agora.getHours() === agendada.getHours() && agora.getMinutes() === agendada.getMinutes()) {
+                            tocarAlarme(m.nome);
+                        }
+                    }
+                });
+            }
+        }
+        setInterval(atualizarRelogio, 1000);
+
+        function tocarAlarme(nomeMissao) {
+            somAlarme.play().catch(() => console.log("Aguardando interação para som"));
+            Swal.fire({
+                title: '🔔 HORA DA MISSÃO!',
+                text: nomeMissao,
+                icon: 'info',
+                confirmButtonText: 'Entendido',
+                background: '#1e293b',
+                color: '#fff'
+            });
+            if (Notification.permission === "granted") {
+                new Notification("Ares RPG: " + nomeMissao);
+            }
+        }
+        if (Notification.permission !== "granted") { Notification.requestPermission(); }
+        // ----------------------------------------------
+
+        let jogadorAtual = "", dadosGerais = {}, vitoriasVelha = {}, dadosOnline = {};
         let filtroAtivo = 'tudo';
 
         function abrirModalRanking(id) { document.getElementById(id).style.display = 'flex'; }
@@ -444,13 +489,11 @@
             { id: "npc_afrodite", nick: "Afonsoxx", xp: 2869, photo: "https://cdn-icons-png.flaticon.com/512/149/149071.png", vitorias: 0 },
             { id: "npc_poseidon", nick: "Rafael", xp: 5399, photo: "https://cdn-icons-png.flaticon.com/512/3663/3663345.png", vitorias: 2 }
         ];
+
         let jogandoContraNPC = false, aguardandoNPC = false, npcIdAtual = null;
 
         const missoesSorte = [
-            "Você ganhou o poder da coragem! Saiba que a coragem não é a ausência do medo, mas o julgamento de que algo é mais importante que ele. O que você deseja está logo após o seu maior receio.", "Você ganhou o poder da persistência! Lembre-se de que a gota d'água fura a pedra não pela força, mas pela persistência. O seu quase está prestes a se tornar o seu consegui.", "Você ganhou o poder do recomeço! Não importa o que aconteceu ontem; o que importa é que ninguém pode voltar atrás e fazer um novo começo, mas qualquer um pode começar agora e fazer um novo fim.", "Você ganhou o poder da visão! Onde muitos veem obstáculos, você agora vê degraus. Acredite que você já venceu na mente, e a realidade não terá escolha a não ser se curvar ao seu sonho.", "Você ganhou o poder da autoconfiança! Se você ouvisse uma voz dizendo que você não pode pintar, pinte com toda a alma e essa voz será silenciada para sempre. Você é o seu maior aliado.",
-            "Você ganhou o poder da decisão! Saiba que é nos momentos de decisão que o seu destino é traçado. Uma única escolha hoje separa a pessoa que você é daquela que você nasceu para ser.", "Você ganhou o poder da fé! A fé é dar o primeiro passo mesmo quando você não vê a escada inteira. Sinta o chão firme sob seus pés, pois o universo sustenta quem ousa caminhar.", "Você ganhou o poder do foco! Pare de olhar para os lados e olhe para frente. O sol só queima o papel quando os raios estão concentrados; concentre sua energia e você incendiará o mundo.", "Você ganhou o poder da resiliência! Você é como o bambu: enverga com a tempestade, mas não quebra. O que não te destruiu, te deu a força necessária para governar o seu amãnhã.", "Você ganhou o poder da paciência! Não apresse o rio, ele corre sozinho. As coisas mais bonitas da vida levam tempo para florescer, e a sua colheita será a mais farta que você já viu.",
-            "Você ganhou o poder do amor-próprio! Você, tanto quanto qualquer pessoa em todo o universo, merece o seu amor e afeição. Quando você se cura, o mundo ao seu redor se transforma.", "Você ganhou o poder da ação! O sucesso é a soma de pequenos esforços repetidos dia após dia. Não espere pelas condições perfeitas; use o que você tem e faça o que pode agora.", "Você ganhou o poder da gratidão! Quando você agradece pelo que tem, o que você tem se multiplica. A gratidão é a memória do coração e a chave que abre as portas da abundância.", "Você ganhou o poder da superação! Olhe para trás apenas para ver o quanto você já caminhou. Você sobreviveu a 100% dos seus dias difíceis, e este também será apenas mais uma vitória.",
-            "Você ganhou o poder da autenticidade! Seja você mesmo, todos os outros já existem. A sua luz única é o que o mundo está esperando para se iluminar.", "Você ganhou o poder da ousadia! A sorte favorece os audazes. O risco de falhar é pequeno perto do risco de nunca ter tentado viver a vida que você sempre imaginou.", "Você ganhou o poder da paz interior! Nada pode lhe trazer paz senão você mesmo. No centro do furacão da vida, você é o silêncio que observa e a força que tudo vence.", "Você ganhou o poder da esperança! Mesmo na noite mais escura, as estrelas brilham. A esperança é o sonho de quem está acordado; mantenha seus olhos abertos para o milagre que está vindo.", "Você ganhou Diversão por 30 minutos", "Você ganhou o poder da disciplina! A disciplina é o fogo que transforma o talento em habilidade e o sonho em realidade. Ela é a ponte entre onde você está e onde quer chegar.", "Você ganhou o poder do perdão! Perdoar não é esquecer, é libertar um prisioneiro e descobrir que o prisioneiro era você. Caminhe leve, deixe o peso do passado para trás."
+            "Você ganhou o poder da coragem!", "Você ganhou o poder da persistência!", "Você ganhou o poder do recomeço!", "Você ganhou o poder da visão!", "Você ganhou o poder da autoconfiança!", "Você ganhou o poder da decisão!", "Você ganhou o poder da fé!", "Você ganhou o poder do foco!", "Você ganhou o poder da resiliência!", "Você ganhou o poder da paciência!", "Você ganhou o poder do amor-próprio!", "Você ganhou o poder da ação!", "Você ganhou o poder da gratidão!", "Você ganhou o poder da superação!", "Você ganhou o poder da autenticidade!", "Você ganhou o poder da ousadia!", "Você ganhou o poder da paz interior!", "Você ganhou o poder da esperança!", "Você ganhou Diversão por 30 minutos", "Você ganhou o poder da disciplina!", "Você ganhou o poder do perdão!"
         ];
 
         function abrirBau() {
@@ -481,9 +524,7 @@
 
         function iniciarVelhaNPC(idNpc) {
             fecharModalRanking('modal-ranking-honra'); 
-            jogandoContraNPC = true;
-            aguardandoNPC = false;
-            npcIdAtual = idNpc;
+            jogandoContraNPC = true; aguardandoNPC = false; npcIdAtual = idNpc;
             document.getElementById('arena-velha').style.display = 'flex';
             document.getElementById('velha-info').innerText = "Sua vez!";
             document.querySelectorAll('.velha-cell').forEach(c => c.innerText = "");
@@ -553,21 +594,13 @@
                 let msg = v === "X" ? "GANHOU!" : (v === "O" ? "PERDEU!" : "EMPATE!");
                 const r = document.getElementById('res-velha-msg');
                 r.innerText = msg; r.className = "show " + (v === "X" ? "msg-win" : "msg-lose");
-                
                 if(v === "X") {
                     db.ref('rpg_data/'+jogadorAtual).update({xp:(dadosGerais[jogadorAtual].xp||0)+10, coins:(dadosGerais[jogadorAtual].coins||0)+10});
                     db.ref('vitorias_velha/'+jogadorAtual).transaction(c => (c||0) + 1);
                 } else if(v === "O" && npcIdAtual) {
                     db.ref('vitorias_velha/'+npcIdAtual).transaction(c => (c||0) + 1);
                 }
-                
-                setTimeout(() => { 
-                    r.className = ""; 
-                    document.getElementById('arena-velha').style.display = 'none'; 
-                    jogandoContraNPC = false; 
-                    aguardandoNPC = false;
-                    npcIdAtual = null;
-                }, 2000);
+                setTimeout(() => { r.className = ""; document.getElementById('arena-velha').style.display = 'none'; jogandoContraNPC = false; aguardandoNPC = false; npcIdAtual = null; }, 2000);
                 return true;
             }
             return false;
@@ -601,8 +634,7 @@
         function aceitarVelha() { if(!salaV) return; db.ref('velha_online/'+salaV).update({status:"jogando"}).then(() => { document.getElementById('convite-velha').style.display='none'; document.getElementById('arena-velha').style.display='flex'; ouvirVelha(); }); }
         function recusarVelha() { if(salaV) db.ref('velha_online/'+salaV).remove(); document.getElementById('convite-velha').style.display='none'; }
         function sairVelha() { 
-            document.getElementById('arena-velha').style.display='none'; 
-            document.getElementById('convite-velha').style.display='none'; 
+            document.getElementById('arena-velha').style.display='none'; document.getElementById('convite-velha').style.display='none'; 
             jogandoContraNPC = false; aguardandoNPC = false; npcIdAtual = null;
             if(salaV){ db.ref('velha_online/'+salaV).off(); db.ref('velha_online/'+salaV).remove(); salaV=null; }
         }
@@ -668,35 +700,18 @@
         function fazerLogin() { 
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-pass').value;
-            if (!email || !pass) { alert("Por favor, preencha todos os campos para entrar."); return; }
-            auth.signInWithEmailAndPassword(email, pass)
-                .catch(error => {
-                    console.error(error.code);
-                    if (error.code === 'auth/invalid-login-credentials' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') { alert("E-mail ou senha incorretos."); } 
-                    else if (error.code === 'auth/invalid-email') { alert("O formato do e-mail digitado é inválido."); } 
-                    else { alert("Ocorreu um erro ao tentar entrar. Tente novamente."); }
-                });
+            if (!email || !pass) { alert("Por favor, preencha todos os campos."); return; }
+            auth.signInWithEmailAndPassword(email, pass).catch(error => alert("Erro ao entrar. Verifique seus dados."));
         }
 
         function fazerCadastro() {
             const nick = document.getElementById('reg-nick').value;
             const e = document.getElementById('reg-email').value;
             const p = document.getElementById('reg-pass').value;
-            if (!nick || !e || !p) { alert("Preencha todos os campos para criar sua conta."); return; }
-            auth.createUserWithEmailAndPassword(e, p)
-                .then(() => { 
-                    db.ref('rpg_data/' + limparNome(e)).set({ nick: nick, xp: 0, coins: 0 }); 
-                    alert("Conta criada com sucesso! Bem-vindo, " + nick);
-                })
-                .catch(error => {
-                    console.error(error.code);
-                    switch (error.code) {
-                        case 'auth/email-already-in-use': alert("Já existe uma conta com este e-mail."); break;
-                        case 'auth/weak-password': alert("A senha deve ter no mínimo 6 caracteres."); break;
-                        case 'auth/invalid-email': alert("E-mail inválido."); break;
-                        default: alert("Erro ao cadastrar: " + error.message);
-                    }
-                });
+            if (!nick || !e || !p) { alert("Preencha todos os campos."); return; }
+            auth.createUserWithEmailAndPassword(e, p).then(() => { 
+                db.ref('rpg_data/' + limparNome(e)).set({ nick: nick, xp: 0, coins: 0 }); alert("Bem-vindo!");
+            }).catch(error => alert("Erro ao cadastrar."));
         }
 
         auth.onAuthStateChanged(u => {
@@ -741,8 +756,7 @@
         function filtrarMissoes(valor) {
             filtroAtivo = valor;
             document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
-            const btnId = 'btn-f-' + valor;
-            const btnAtivo = document.getElementById(btnId);
+            const btnAtivo = document.getElementById('btn-f-' + valor);
             if(btnAtivo) btnAtivo.classList.add('active');
             atualizarTela();
         }
@@ -780,7 +794,7 @@
             });
 
             const dP = document.getElementById('lista-missoes-pessoais'); dP.innerHTML = "";
-            (p.missoes || []).filter(m => m.id.startsWith('m-')).forEach(m => {
+            (p.missoes || []).filter(m => m.id.toString().startsWith('m-') || typeof m.id === 'number').forEach(m => {
                 if (filtroAtivo !== 'tudo' && m.valor.toString() !== filtroAtivo) return;
                 let corFundo = "rgba(255,255,255,0.05)"; 
                 if (!m.concluida) { 
@@ -790,7 +804,10 @@
                 }
                 dP.innerHTML += `
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:${corFundo}; padding:10px; border-radius:8px; border: 1px solid ${m.concluida ? 'transparent' : 'rgba(255,255,255,0.1)'};">
-                        <span>${m.nome} <small>(${m.valor} XP)</small></span>
+                        <div>
+                            <span>${m.nome} <small>(${m.valor} XP)</small></span><br>
+                            <small style="color:#94a3b8">${m.dataAgendada ? '⏰ ' + new Date(m.dataAgendada).toLocaleString() : ''}</small>
+                        </div>
                         <div>
                             <button class="${m.concluida?'btn-done':'btn-check'}" onclick="concluirMissao('${m.id}', ${m.valor})" ${m.concluida?'disabled':''}>✔</button>
                             <button class="btn-del" onclick="removerMissao('${m.id}')">🗑️</button>
@@ -803,13 +820,26 @@
 
         function concluirMissao(id, v, d=false) {
             const p = dadosGerais[jogadorAtual], ms = p.missoes || [];
-            let m = ms.find(x => x.id === id);
+            let m = ms.find(x => x.id.toString() === id.toString());
             if(!m && d) { ms.push({id, nome:id.split('-')[1], valor:10, concluida:true}); db.ref('rpg_data/'+jogadorAtual).update({xp:(p.xp||0)+10, coins:(p.coins||0)+10, missoes:ms}); }
             else if(m && !m.concluida) { m.concluida = true; db.ref('rpg_data/'+jogadorAtual).update({xp:(p.xp||0)+v, coins:(p.coins||0)+(v>0?v:0), missoes:ms}); }
         }
-        function removerMissao(id) { const ms = (dadosGerais[jogadorAtual].missoes || []).filter(m => m.id !== id); db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms); }
+        function removerMissao(id) { const ms = (dadosGerais[jogadorAtual].missoes || []).filter(m => m.id.toString() !== id.toString()); db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms); }
         function aplicarPenalidade() { const q = parseInt(document.getElementById('input-penalidade').value), p = dadosGerais[jogadorAtual]; if(q) db.ref('rpg_data/'+jogadorAtual).update({ xp: Math.max(0, (p.xp||0) - (q*300)) }); }
-        function addMissao() { const n = document.getElementById('missao-input').value, v = parseInt(document.getElementById('cat-input').value); const ms = dadosGerais[jogadorAtual].missoes || []; ms.push({ id:'m-'+Date.now(), nome:n, valor:v, concluida:false }); db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms); document.getElementById('missao-input').value = ""; }
+        
+        // FUNÇÃO ADD MISSAO ATUALIZADA
+        function addMissao() { 
+            const n = document.getElementById('missao-input').value;
+            const v = parseInt(document.getElementById('cat-input').value);
+            const data = document.getElementById('missao-data').value;
+            if(!n) return;
+            const ms = dadosGerais[jogadorAtual].missoes || []; 
+            ms.push({ id: 'm-' + Date.now(), nome: n, valor: v, concluida: false, dataAgendada: data }); 
+            db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms); 
+            document.getElementById('missao-input').value = "";
+            document.getElementById('missao-data').value = "";
+        }
+
         function comprar(pr, n) { const p = dadosGerais[jogadorAtual]; if(p.coins >= pr) { db.ref('rpg_data/'+jogadorAtual).update({coins:p.coins-pr}); alert("Resgatado!"); } }
         function salvarPerfil() { db.ref('rpg_data/'+jogadorAtual).update({ nick: document.getElementById('edit-nick').value, photo: document.getElementById('edit-photo').value.trim() }).then(() => mudarAba('home')); }
         function logout() { auth.signOut(); }
@@ -829,63 +859,28 @@
             });
         }
 
-        // --- CORREÇÃO DEFINITIVA E ANTI-INSISTÊNCIA DO BOTÃO VOLTAR ---
+        // --- BLOQUEIO DE RECUO ---
+        window.alert = function(txt) {
+            Swal.fire({ text: txt, confirmButtonColor: '#3b82f6', background: '#1e293b', color: '#fff' });
+        };
 
-// 1. Mata o alert nativo do sistema para não mostrar e-mail em nenhuma hipótese
-window.alert = function(txt) {
-    Swal.fire({
-        text: txt,
-        confirmButtonColor: '#3b82f6',
-        background: '#1e293b',
-        color: '#fff'
-    });
-};
-
-// 2. Função para criar o bloqueio de saída
-function aplicarBloqueioDeRecuo() {
-    // Adiciona estados ao histórico para o botão voltar não encontrar a saída do app
-    for (let i = 0; i < 5; i++) {
-        history.pushState(null, null, window.location.pathname);
-    }
-
-    window.addEventListener('popstate', function (event) {
-        // Toda vez que ele tenta voltar, empurramos ele para frente de novo
-        history.pushState(null, null, window.location.pathname);
-
-        // Dispara o SweetAlert personalizado (que não mostra e-mail)
-        Swal.fire({
-            title: 'Sair do Ares RPG?',
-            text: "Deseja fechar o jogo agora?",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3b82f6',
-            cancelButtonColor: '#ef4444',
-            confirmButtonText: 'Sim, Sair',
-            cancelButtonText: 'Continuar Jogando',
-            background: '#1e293b',
-            color: '#fff'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Tenta fechar o app de forma limpa
-                if (navigator.app && navigator.app.exitApp) {
-                    navigator.app.exitApp();
-                } else {
-                    // Se estiver no navegador, manda para uma página em branco e fecha
-                    window.location.replace("about:blank");
-                    window.close();
-                }
-            }
-        });
-    });
-}
-
-// Executa a proteção imediatamente
-aplicarBloqueioDeRecuo();
+        function aplicarBloqueioDeRecuo() {
+            for (let i = 0; i < 5; i++) { history.pushState(null, null, window.location.pathname); }
+            window.addEventListener('popstate', function (event) {
+                history.pushState(null, null, window.location.pathname);
+                Swal.fire({
+                    title: 'Sair do Ares RPG?', text: "Deseja fechar o jogo agora?", icon: 'warning',
+                    showCancelButton: true, confirmButtonColor: '#3b82f6', cancelButtonColor: '#ef4444',
+                    confirmButtonText: 'Sim, Sair', cancelButtonText: 'Continuar', background: '#1e293b', color: '#fff'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        if (navigator.app && navigator.app.exitApp) { navigator.app.exitApp(); } 
+                        else { window.location.replace("about:blank"); window.close(); }
+                    }
+                });
+            });
+        }
+        aplicarBloqueioDeRecuo();
     </script>
 </body>
 </html>
-
-
-
-
-
