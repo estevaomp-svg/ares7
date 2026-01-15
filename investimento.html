@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ares RPG - Investimento </title>
+    <title>Ares RPG - Investimento</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -24,11 +26,14 @@
         .loss { color: var(--danger); }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.85rem; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; }
+        .user-info { text-align: right; font-size: 0.8rem; margin-bottom: 10px; color: #94a3b8; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <div id="user-display" class="user-info">Identificando jogador...</div>
+    
     <div class="card">
         <h2>🚀 Investimento - Ares RPG</h2>
         <div class="grid-3">
@@ -80,6 +85,7 @@
 </div>
 
 <script>
+    // Configurações idênticas ao seu index.html
     const firebaseConfig = {
         apiKey: "AIzaSyBanevR51ejaTE0ccqlmlU6VRh7Qg4EETs",
         databaseURL: "https://aresrpg-7daf4-default-rtdb.firebaseio.com",
@@ -87,16 +93,35 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    const auth = firebase.auth();
     
-    let userPath = "jogador_investidor"; 
+    let userPath = null; 
     let chartInstance = null;
+
+    // --- LOGICA DE IDENTIFICAÇÃO DO USUÁRIO ---
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            // O userPath será o UID único do jogador (seguro e privado)
+            userPath = user.uid;
+            document.getElementById('user-display').innerText = `Jogador: ${user.email}`;
+            carregarDados(); 
+        } else {
+            Swal.fire({
+                title: 'Acesso Restrito',
+                text: "Faça login no Ares RPG primeiro!",
+                icon: 'warning',
+                confirmButtonText: 'Ir para Login'
+            }).then(() => {
+                window.location.href = "index.html";
+            });
+        }
+    });
 
     function atualizarCalculos() {
         const capital = parseFloat(document.getElementById('capital-input').value) || 0;
-        
         const contratos = Math.floor(capital / 1000); 
         const meta = capital * 0.10;                  
-        const lossMensal = capital * 0.50; // Ajustado para 50%
+        const lossMensal = capital * 0.50;
 
         document.getElementById('contratos-qtd').innerText = contratos;
         document.getElementById('meta-valor').innerText = `R$ ${meta.toFixed(2)}`;
@@ -104,6 +129,8 @@
     }
 
     function salvarOperacao() {
+        if (!userPath) return;
+
         const capital = parseFloat(document.getElementById('capital-input').value);
         const resultado = parseFloat(document.getElementById('resultado-input').value);
 
@@ -113,6 +140,7 @@
 
         const novoSaldo = capital + resultado;
         
+        // Salva na pasta individual do usuário logado
         db.ref(`investimentos/${userPath}/historico`).push({
             data: new Date().toLocaleDateString('pt-BR'),
             resultado: resultado,
@@ -123,6 +151,8 @@
             document.getElementById('resultado-input').value = "";
             atualizarCalculos();
             Swal.fire("Sucesso!", "Resultado registrado.", "success");
+        }).catch(e => {
+            Swal.fire("Erro de Permissão", "Verifique as regras do seu Firebase Database.", "error");
         });
     }
 
@@ -156,6 +186,8 @@
     }
 
     function carregarDados() {
+        if (!userPath) return;
+
         db.ref(`investimentos/${userPath}/historico`).orderByChild('timestamp').limitToLast(20).on('value', snapshot => {
             const tbody = document.getElementById('tabela-corpo');
             tbody.innerHTML = "";
@@ -179,11 +211,14 @@
                 `);
             });
 
-            if(saldos.length > 0) inicializarGrafico(saldos, datas);
+            if(saldos.length > 0) {
+                // Preenche o capital inicial com o último saldo salvo para facilitar o próximo lançamento
+                document.getElementById('capital-input').value = saldos[saldos.length - 1];
+                atualizarCalculos();
+                inicializarGrafico(saldos, datas);
+            }
         });
     }
-
-    window.onload = carregarDados;
 </script>
 
 </body>
