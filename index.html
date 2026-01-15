@@ -3,514 +3,771 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ares RPG - Versão Definitiva</title>
+    <title>Ares RPG - Oficial</title>
     
     <meta property="og:title" content="Ares RPG - Oficial">
-    <meta property="og:description" content="Evolua seu personagem na vida real com timers e alarmes!">
+    <meta property="og:description" content="Evolua seu personagem na vida real! Treine, estude e conquiste recompensas.">
     <meta property="og:image" content="https://i.ibb.co/X3vDgg/image.png">
-    
+    <meta property="og:type" content="website">
+
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
-        :root { 
-            --primary: #3b82f6; 
-            --danger: #ef4444; 
-            --success: #22c55e; 
-            --warning: #fbbf24; 
-            --bg: #0f172a; 
-            --card: #1e293b;
+        :root { --primary: #3b82f6; --danger: #ef4444; --success: #22c55e; --warning: #fbbf24; --bg: #0f172a; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.9)), 
+                        url('https://images.unsplash.com/photo-1543007630-9710e4050a19?q=80&w=2000&auto=format&fit=crop'); 
+            background-size: cover; background-attachment: fixed;
+            color: #f8fafc; margin: 0; padding: 15px; padding-bottom: 80px;
+        }
+        .card { 
+            background: rgba(30, 41, 59, 0.9); backdrop-filter: blur(10px);
+            padding: 20px; border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); 
+            margin-bottom: 15px; border: 1px solid rgba(51, 65, 85, 0.5); 
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--bg); color: #fff; padding-bottom: 80px; overflow-x: hidden; }
+        .filter-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            scrollbar-width: none;
+        }
+        .filter-container::-webkit-scrollbar { display: none; }
+        .btn-filter {
+            background: #334155;
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            white-space: nowrap;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        .btn-filter.active {
+            background: var(--primary);
+            border-color: #60a5fa;
+        }
 
-        /* Utilitários */
+        .header-removivel {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px !important;
+        }
+        .btn-fechar-aba {
+            background: rgba(0, 0, 0, 0.3);
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            margin-left: 10px;
+        }
+
+        .btn-ranking-toggle {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            color: white;
+        }
+        .btn-honra { background: linear-gradient(45deg, #1e3a8a, #3b82f6); }
+        .btn-old { background: linear-gradient(45deg, #7e22ce, #a855f7); }
+
+        .modal-ranking {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.98);
+            z-index: 5000; display: none; flex-direction: column;
+            padding: 20px; box-sizing: border-box; overflow-y: auto;
+        }
+        .modal-content { max-width: 600px; margin: 0 auto; width: 100%; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; }
+
+        .lucky-gift-box {
+            text-align: center; background: radial-gradient(circle, #7e22ce 0%, #0f172a 100%);
+            border: 2px solid #fbbf24; padding: 25px; border-radius: 20px; margin-top: 10px; cursor: pointer;
+            transition: 0.3s; box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
+        }
+        .gift-emoji { font-size: 65px; display: inline-block; transition: 0.5s; filter: drop-shadow(0 0 15px #fbbf24); }
+        .gift-emoji.open { transform: scale(1.1); filter: drop-shadow(0 0 25px #fff); }
+        .gift-shake { animation: shake 0.8s infinite; }
+        @keyframes shake {
+            0% { transform: rotate(0); } 25% { transform: rotate(5deg); }
+            50% { transform: rotate(0); } 75% { transform: rotate(-5deg); } 100% { transform: rotate(0); }
+        }
+        .lucky-mission-text {
+            background: #fef3c7; color: #92400e; padding: 12px;
+            border-radius: 10px; font-weight: bold; margin-top: 15px;
+            border-left: 5px solid #fbbf24; font-size: 1.1em;
+        }
+
+        .online-counter-box { background-color: var(--success); color: #000; padding: 5px 12px; border-radius: 5px; font-weight: bold; display: flex; align-items: center; margin-left: 15px; font-size: 14px; }
+        .status-dot { height: 10px; width: 10px; background-color: #444; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .status-dot.online { background-color: var(--success); box-shadow: 0 0 8px var(--success); }
+        .online-border { border: 2px solid var(--success) !important; box-shadow: 0 0 15px rgba(34, 197, 94, 0.3); }
+        .header { position: sticky; top: 0; z-index: 100; border-bottom: 3px solid #3b82f6; }
+        .player-img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #3b82f6; object-fit: cover; background: #1e293b; display: inline-block; vertical-align: middle; }
+        .lvl-badge { background: #fbbf24; color: #1e293b; padding: 5px 15px; border-radius: 20px; font-weight: bold; display: inline-block; margin: 10px 0; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-box { background: rgba(51, 65, 85, 0.6); padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #475569; }
+        .progress-bar { background: #475569; border-radius: 10px; height: 12px; width: 100%; overflow: hidden; margin: 10px 0; }
+        .progress-fill { background: linear-gradient(90deg, #3b82f6, #60a5fa); height: 100%; width: 0%; transition: width 0.5s ease; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: none; font-size: 16px; box-sizing: border-box; background: white !important; color: black !important; }
+        button { cursor: pointer; padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; transition: 0.3s; }
+        .btn-goto-physic { background: linear-gradient(45deg, #ef4444, #991b1b); display: block; text-decoration: none; text-align: center; padding: 18px; border-radius: 12px; color: white; font-weight: 900; font-size: 16px; border: 2px solid #fca5a5; margin-bottom: 15px; transition: 0.3s; }
+        .btn-auth { background: #3b82f6; width: 100%; margin-bottom: 10px; }
+        .btn-check { background: #22c55e; padding: 8px 15px; }
+        .btn-del { background: #ef4444; padding: 8px 12px; margin-left: 5px; }
+        .btn-done { background: #64748b !important; padding: 8px 15px; color: #cbd5e1; cursor: default; }
+        .btn-penalty { background: #991b1b; border: 1px solid #ef4444; width: 100%; }
+        .btn-buy { background: #f59e0b; padding: 8px 15px; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #1e293b; display: flex; justify-content: space-around; padding: 10px 0; border-top: 2px solid #3b82f6; z-index: 1000; }
+        .nav-item { color: #94a3b8; text-decoration: none; font-size: 12px; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .nav-item.active { color: #3b82f6; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border-bottom: 1px solid rgba(51, 65, 85, 0.5); padding: 12px 8px; text-align: left; }
         .hidden { display: none !important; }
-        .flex { display: flex; }
-        .items-center { align-items: center; }
-        .justify-between { justify-content: space-between; }
 
-        /* Estilo das Telas de Login/Registro */
-        .auth-container { max-width: 400px; margin: 50px auto; padding: 20px; background: var(--card); border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; margin-bottom: 5px; color: #94a3b8; }
-        .input-group input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; }
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-secondary { background: #334155; color: white; }
-
-        /* Status Bar (Header) */
-        header { background: var(--card); padding: 15px; border-bottom: 2px solid #334155; position: sticky; top: 0; z-index: 50; }
-        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
-        .stat-item { background: #0f172a; padding: 8px; border-radius: 8px; font-size: 0.9em; display: flex; align-items: center; gap: 8px; }
+        #arena-duelo { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: space-around; padding: 20px; box-sizing: border-box; }
+        .battle-stage { width: 100%; max-width: 400px; position: relative; height: 350px; background: rgba(255,255,255,0.05); border-radius: 20px; border: 1px solid #334155; overflow: hidden;}
+        .char-container { position: absolute; text-align: center; transition: 0.3s; width: 120px; z-index: 5; }
+        #char-enemy { top: 30px; right: 20px; }
+        #char-player { bottom: 30px; left: 20px; }
+        .battle-img { width: 90px; height: 90px; border-radius: 50%; border: 4px solid white; object-fit: cover; }
+        .hp-bg { width: 110px; height: 12px; background: #444; border-radius: 6px; margin-top: 8px; overflow: hidden; border: 1px solid #000; }
+        .hp-fill { height: 100%; background: var(--success); width: 100%; transition: 0.4s ease; }
+        .battle-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 400px; }
+        .btn-action { padding: 18px; border-radius: 12px; font-weight: bold; border: none; color: white; cursor: pointer; font-size: 16px; text-transform: uppercase; }
+        .btn-atk { background: var(--danger); box-shadow: 0 4px #991b1b; }
+        .btn-def { background: var(--primary); box-shadow: 0 4px #1e3a8a; }
+        #battle-log { background: rgba(0,0,0,0.7); width: 100%; max-width: 400px; height: 100px; padding: 15px; border-radius: 12px; font-size: 14px; overflow-y: auto; color: #60a5fa; text-align: center; }
         
-        /* Barra de Experiência */
-        .xp-container { width: 100%; height: 10px; background: #334155; border-radius: 5px; margin-top: 10px; overflow: hidden; }
-        .xp-bar { height: 100%; background: var(--primary); width: 0%; transition: 0.5s; }
+        #arena-velha { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.98); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        .velha-grid { display: grid; grid-template-columns: repeat(3, 90px); gap: 10px; background: #334155; padding: 10px; border-radius: 10px; }
+        .velha-cell { width: 90px; height: 90px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border-radius: 8px; color: white; cursor: pointer; }
+        #convite-velha { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #fbbf24; color: #000; padding: 15px; border-radius: 10px; z-index: 4000; display: none; width: 85%; text-align: center; }
+        #res-velha-msg { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); z-index: 5000; padding: 30px; border-radius: 20px; text-align: center; font-size: 32px; font-weight: 900; transition: 0.5s; pointer-events: none; width: 80%; border: 4px solid white; visibility: hidden; }
+        #res-velha-msg.show { transform: translate(-50%, -50%) scale(1); visibility: visible; }
+        .msg-win { background: var(--success); color: white; }
+        .msg-lose { background: var(--danger); color: white; }
 
-        /* Relógio Centralizado */
-        .relogio-container { text-align: center; margin: 15px 0; font-family: 'Courier New', Courier, monospace; font-size: 1.5em; color: var(--warning); text-shadow: 0 0 10px rgba(251, 191, 36, 0.3); }
-
-        /* Cards de Missões com Timer */
-        .card-missao { background: var(--card); border-radius: 12px; padding: 15px; margin: 15px; border-left: 4px solid var(--primary); position: relative; }
-        .card-missao.cooldown { opacity: 0.7; border-left-color: #64748b; }
-        .missao-timer { font-size: 0.8em; color: var(--warning); margin-top: 5px; font-weight: bold; }
-        
-        /* Navegação Inferior */
-        nav { position: fixed; bottom: 0; width: 100%; background: var(--card); display: flex; justify-content: space-around; padding: 12px; border-top: 2px solid #334155; }
-        .nav-item { color: #94a3b8; text-decoration: none; font-size: 0.8em; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
-        .nav-item.active { color: var(--primary); }
-        .nav-item i { font-size: 1.5em; margin-bottom: 4px; }
-
-        /* Modais */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 100; }
-        .modal-content { background: var(--card); width: 90%; max-width: 500px; border-radius: 15px; padding: 20px; max-height: 80vh; overflow-y: auto; }
-
-        /* Loja e Itens */
-        .loja-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 15px; }
-        .item-loja { background: var(--card); border: 1px solid #334155; border-radius: 12px; padding: 15px; text-align: center; }
-        .item-loja img { width: 50px; margin-bottom: 10px; }
+        @keyframes attack-player { 0% { transform: translate(0, 0); } 50% { transform: translate(100px, -100px) scale(1.1); } 100% { transform: translate(0, 0); } }
+        @keyframes attack-enemy { 0% { transform: translate(0, 0); } 50% { transform: translate(-100px, 100px) scale(1.1); } 100% { transform: translate(0, 0); } }
+        @keyframes take-damage { 0% { filter: brightness(1); } 50% { filter: brightness(2) sepia(1); transform: scale(0.9); } 100% { filter: brightness(1); } }
+        .anim-attack-p { animation: attack-player 0.5s ease-in-out; }
+        .anim-attack-e { animation: attack-enemy 0.5s ease-in-out; }
+        .anim-damage { animation: take-damage 0.4s ease-in-out; }
     </style>
 </head>
 <body>
-
-    <div id="auth-area">
-        <div class="auth-container" id="login-area">
-            <h2 style="text-align: center; margin-bottom: 20px;">Ares RPG - Login</h2>
-            <div class="input-group">
-                <label>E-mail</label>
-                <input type="email" id="email" placeholder="seu@email.com">
+    <div id="download-banner" style="background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid #3b82f6; padding: 10px; text-align: center; position: sticky; top: 0; z-index: 9999;">
+        <span style="font-size: 12px; color: #cbd5e1; margin-right: 10px;">Jogue com melhor performance:</span>
+        <a href="https://estevaomp-svg.github.io/ares7/ARES%20RPG.apk" 
+           style="background: #22c55e; color: white; padding: 5px 15px; border-radius: 20px; text-decoration: none; font-size: 12px; font-weight: bold;">
+           📥 BAIXAR APP
+        </a>
+        <button onclick="document.getElementById('download-banner').style.display='none'" style="background:none; border:none; color:white; margin-left:10px; cursor:pointer;">✕</button>
+    </div>
+    
+    <div id="modal-ranking-honra" class="modal-ranking">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="margin:0; color:var(--primary)">🏆 Ranking de Honra</h2>
+                <button onclick="fecharModalRanking('modal-ranking-honra')" style="background:var(--danger); padding:5px 15px;">X</button>
             </div>
-            <div class="input-group">
-                <label>Senha</label>
-                <input type="password" id="senha" placeholder="******">
+            <div class="card">
+                <table id="ranking-table">
+                    <thead><tr><th>#</th><th>Player's</th><th>Lvl</th><th>XP</th><th>Duelo</th></tr></thead>
+                    <tbody id="ranking-body"></tbody>
+                </table>
             </div>
-            <button class="btn btn-primary" onclick="login()">Entrar</button>
-            <button class="btn btn-secondary" onclick="alternarTela(true)">Criar Nova Conta</button>
-        </div>
-
-        <div class="auth-container hidden" id="register-area">
-            <h2 style="text-align: center; margin-bottom: 20px;">Criar Herói</h2>
-            <div class="input-group">
-                <label>Nome do Personagem</label>
-                <input type="text" id="reg-nome" placeholder="Ex: Arthur Pendragon">
-            </div>
-            <div class="input-group">
-                <label>E-mail</label>
-                <input type="email" id="reg-email">
-            </div>
-            <div class="input-group">
-                <label>Senha</label>
-                <input type="password" id="reg-senha">
-            </div>
-            <button class="btn btn-primary" onclick="registrar()">Finalizar Registro</button>
-            <button class="btn btn-secondary" onclick="alternarTela(false)">Voltar ao Login</button>
         </div>
     </div>
 
-    <div id="game-area" class="hidden">
-        <header>
-            <div class="flex justify-between items-center">
-                <div>
-                    <span id="display-nome" style="font-weight: bold; font-size: 1.1em;">Herói</span>
-                    <span id="display-level" style="background: var(--primary); padding: 2px 8px; border-radius: 10px; font-size: 0.8em; margin-left: 5px;">Lvl 1</span>
-                </div>
-                <div id="relogio" class="relogio-container" style="margin: 0; font-size: 1.1em;">00:00:00</div>
+    <div id="modal-ranking-old" class="modal-ranking">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="margin:0; color:#a855f7">🏆 Ranking Old Game</h2>
+                <button onclick="fecharModalRanking('modal-ranking-old')" style="background:var(--danger); padding:5px 15px;">X</button>
             </div>
-            
-            <div class="xp-container">
-                <div id="xp-bar" class="xp-bar"></div>
+            <div class="card">
+                <table id="ranking-velha-table">
+                    <thead><tr><th>#</th><th>Player's</th><th>Vitórias</th></tr></thead>
+                    <tbody id="ranking-velha-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="res-velha-msg"></div>
+
+    <div id="convite-velha">
+        <b id="msg-convite">Desafio!</b>
+        <div style="display:flex; gap:10px; margin-top:10px">
+            <button onclick="aceitarVelha()" style="background:#22c55e; flex:1">Aceitar</button>
+            <button onclick="recusarVelha()" style="background:#ef4444; flex:1">Recusar</button>
+        </div>
+    </div>
+
+    <div id="arena-velha">
+        <h1 style="color:var(--warning); margin-bottom:20px">JOGO DA VELHA</h1>
+        <div id="velha-info" style="margin-bottom:15px; font-weight:bold"></div>
+        <div class="velha-grid">
+            <div class="velha-cell" onclick="cliqueVelha(0)"></div>
+            <div class="velha-cell" onclick="cliqueVelha(1)"></div>
+            <div class="velha-cell" onclick="cliqueVelha(2)"></div>
+            <div class="velha-cell" onclick="cliqueVelha(3)"></div>
+            <div class="velha-cell" onclick="cliqueVelha(4)"></div>
+            <div class="velha-cell" onclick="cliqueVelha(5)"></div>
+            <div class="velha-cell" onclick="cliqueVelha(6)"></div>
+            <div class="velha-cell" onclick="cliqueVelha(7)"></div>
+            <div class="velha-cell" onclick="cliqueVelha(8)"></div>
+        </div>
+        <button onclick="sairVelha()" style="margin-top:20px; background:var(--danger)">Sair / Abandonar</button>
+    </div>
+
+    <div id="arena-duelo">
+        <h1 style="color:var(--warning); margin:0; font-weight: 900;">ARENA DE DUELO</h1>
+        <div class="battle-stage">
+            <div id="char-enemy" class="char-container">
+                <div style="font-size: 13px; font-weight: bold; color:var(--danger)" id="name-e">Inimigo</div>
+                <img id="img-e" class="battle-img" src="">
+                <div class="hp-bg"><div id="hp-e-fill" class="hp-fill"></div></div>
+                <div id="hp-text-e" style="font-size:10px">0/0</div>
+            </div>
+            <div id="char-player" class="char-container">
+                <div id="hp-text-p" style="font-size:10px">0/0</div>
+                <div class="hp-bg"><div id="hp-p-fill" class="hp-fill"></div></div>
+                <img id="img-p" class="battle-img" src="">
+                <div style="font-size: 13px; font-weight: bold; color:var(--success)" id="name-p">Você</div>
+            </div>
+        </div>
+        <div id="battle-log">Aguardando comando...</div>
+        <div class="battle-controls">
+            <button id="btn-atk" class="btn-action btn-atk" onclick="comandoBatalha('atacar')">Atacar</button>
+            <button id="btn-def" class="btn-action btn-def" onclick="comandoBatalha('defender')">Defender</button>
+            <button id="btn-fechar-duelo" class="btn-action hidden" style="background:#3b82f6; grid-column: span 2;" onclick="fecharArena()">Sair da Arena</button>
+        </div>
+    </div>
+
+    <div id="auth-screen">
+        <div id="login-area">
+            <h1 style="text-align:center; color:var(--primary); font-size: 2.5em; margin-bottom: 5px;">Ares RPG</h1>
+            <p style="text-align:center; color:#94a3b8; margin-bottom: 30px;">A evolução começa em você.</p>
+            <div class="card">
+                <h3>Acesso ao Portal</h3>
+                <input type="email" id="login-email" placeholder="Seu e-mail">
+                <input type="password" id="login-pass" placeholder="Sua senha">
+                <button class="btn-auth" id="btn-login-action" onclick="fazerLogin()">ACESSAR RPG</button>
+                <p style="text-align:center; font-size:14px">Não tem conta? <a href="#" onclick="alternarTela(true)" style="color:var(--primary)">Criar Jornada</a></p>
+            </div>
+        </div>
+
+        <div id="register-area" class="hidden">
+            <div class="card">
+                <h3>Nova Jornada</h3>
+                <input type="text" id="reg-nick" placeholder="Nome do Herói">
+                <input type="email" id="reg-email" placeholder="E-mail">
+                <input type="password" id="reg-pass" placeholder="Senha">
+                <button class="btn-auth" onclick="fazerCadastro()">INICIAR EVOLUÇÃO</button>
+                <p style="text-align:center; font-size:14px">Já tem conta? <a href="#" onclick="alternarTela(false)" style="color:var(--primary)">Voltar</a></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-content" class="hidden">
+        <div id="tab-home">
+            <div class="card header" style="padding:15px; display:flex; align-items:center; gap:15px; margin-bottom: 20px;">
+                <img id="p-img" class="player-img" src="">
+                <div style="flex-grow:1">
+                    <h2 id="player-name" style="margin:0; font-size:1.2em">Herói</h2>
+                    <div id="lvl" class="lvl-badge">Lv. 1</div>
+                </div>
+                <div class="online-counter-box" title="Jogadores explorando Ares agora">
+                    <span class="status-dot online"></span>
+                    <span id="global-online-count">8</span> ON
+                </div>
             </div>
 
             <div class="stats-grid">
-                <div class="stat-item"><i class="fas fa-coins" style="color: gold;"></i> <span id="display-dracmas">0</span></div>
-                <div class="stat-item"><i class="fas fa-gem" style="color: #a855f7;"></i> <span id="display-gemas">0</span></div>
-                <div class="stat-item"><i class="fas fa-bolt" style="color: #fbbf24;"></i> <span id="display-energia">0/100</span></div>
-                <div class="stat-item"><i class="fas fa-calendar-check" style="color: #22c55e;"></i> <span id="display-streak">0 dias</span></div>
+                <div class="stat-box">
+                    <div style="color:var(--primary); font-size:12px; font-weight:bold">Experiência (XP)</div>
+                    <div id="xp" style="font-size:24px; font-weight:900">0</div>
+                </div>
+                <div class="stat-box">
+                    <div style="color:var(--warning); font-size:12px; font-weight:bold">Ares Coins</div>
+                    <div id="coins" style="font-size:24px; font-weight:900">0</div>
+                </div>
             </div>
-        </header>
 
-        <main id="tab-home">
-            <div style="padding: 15px;">
-                <h3 style="margin-bottom: 10px;"><i class="fas fa-scroll"></i> Missões Disponíveis</h3>
-                <div id="lista-missoes">
+            <div class="progress-bar"><div id="progress" class="progress-fill"></div></div>
+
+            <button class="btn-ranking-toggle btn-honra" onclick="abrirModalRanking('modal-ranking-honra')">
+                🏆 Ranking de Honra
+            </button>
+            <button class="btn-ranking-toggle btn-old" onclick="abrirModalRanking('modal-ranking-old')">
+                🎮 Ranking Old Game
+            </button>
+
+            <div id="aba-canal" class="card header header-removivel" style="margin-bottom: 10px; background: #991b1b;">
+                <a href="https://www.youtube.com/aressama" target="_blank" style="color:white; font-weight:bold; text-decoration:none; text-align: center; flex-grow: 1;">
+                   🎥 CANAL ARES7 - Inscreva-se
+                </a>
+                <button class="btn-fechar-aba" onclick="document.getElementById('aba-canal').style.display='none'">✕</button>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-top:0">🎁 Presente Diário</h3>
+                <div class="lucky-gift-box" onclick="abrirBau()">
+                    <span id="gift-icon" class="gift-emoji gift-shake">🎁</span>
+                    <div id="lucky-mission-container" class="hidden">
+                        <div id="lucky-mission-text" class="lucky-mission-text"></div>
+                        <button id="btn-concluir-bau" class="btn-check" style="margin-top:10px; width:100%"></button>
                     </div>
-                
-                <div id="daily-section" class="card-missao" style="border-left-color: var(--warning); text-align: center;">
-                    <h4><i class="fas fa-gift"></i> Recompensa Diária</h4>
-                    <p style="font-size: 0.9em; margin: 10px 0;">Resgate dracmas e gemas todos os dias!</p>
-                    <button class="btn btn-primary" id="btn-daily" onclick="claimDaily()">Resgatar Agora</button>
+                    <p id="lucky-msg" style="margin-top:10px; font-weight:bold; color:#fbbf24">Clique para descobrir sua nova Habilidade!</p>
                 </div>
+                <div id="gift-counter" style="text-align:center; font-size:12px; color:#94a3b8; margin-top:10px;">Giros: 0/1</div>
             </div>
-        </main>
 
-        <main id="tab-loja" class="hidden">
-            <div style="padding: 15px;">
-                <h3><i class="fas fa-store"></i> Loja de Itens</h3>
-                <div class="loja-grid" id="loja-container">
+            <div class="card">
+                <h3>🔥 Evolução Física</h3>
+                <a href="evolucaofisica" class="btn-goto-physic">🏋️ ACESSAR SALA DE TREINAMENTO</a>
+                <div style="margin-top:20px; padding:15px; background:rgba(153, 27, 27, 0.3); border-radius:10px; border:1px solid #ef4444;">
+                    <h4 style="margin:0 0 5px 0; color:#fca5a5;">⚠️ Câmara de Penalidades (Corrige missões diárias e missões pessoais)</h4>
+                    <div style="display:flex; gap:10px;">
+                        <input type="number" id="input-penalidade" placeholder="Qtd">
+                        <button class="btn-penalty" onclick="aplicarPenalidade()">Corrigir</button>
                     </div>
-            </div>
-        </main>
-
-        <main id="tab-profile" class="hidden">
-            <div style="padding: 20px; text-align: center;">
-                <div style="width: 100px; height: 100px; background: #334155; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 3em;">
-                    <i class="fas fa-user-shield"></i>
                 </div>
-                <h2 id="prof-nome">Herói</h2>
-                <p id="prof-email" style="color: #94a3b8; margin-bottom: 20px;">email@exemplo.com</p>
-                
-                <div class="stats-grid" style="text-align: left;">
-                    <div class="stat-item">Missões Concluídas: <span id="prof-total-miss">0</span></div>
-                    <div class="stat-item">Data de Ingresso: <span id="prof-data">--/--/--</span></div>
+            </div>
+
+            <div class="card">
+                <h3>⚡ Missões Diárias (+10 XP)</h3>
+                <div id="lista-obrigatoria"></div>
+            </div>
+
+            <div class="card">
+                <h3>Loja do Merecimento</h3>
+                <table id="tabela-loja"><tbody></tbody></table>
+            </div>
+
+            <div class="card">
+                <h3>📜 Missões Pessoais</h3>
+                <div class="filter-container">
+                    <button id="btn-f-tudo" class="btn-filter active" onclick="filtrarMissoes('tudo')">Tudo</button>
+                    <button id="btn-f-30" class="btn-filter" onclick="filtrarMissoes(30)">30 XP</button>
+                    <button id="btn-f-50" class="btn-filter" onclick="filtrarMissoes(50)">50 XP</button>
+                    <button id="btn-f-100" class="btn-filter" onclick="filtrarMissoes(100)">100 XP</button>
                 </div>
+                <input type="text" id="missao-input" placeholder="O que vai conquistar hoje?">
+                <select id="cat-input">
+                    <option value="30">Nível Comum (30 XP)</option>
+                    <option value="50">Nível Raro (50 XP)</option>
+                    <option value="100">Nível Épico (100 XP)</option>
+                </select>
+                <button class="btn-auth" onclick="addMissao()">ADICIONAR À JORNADA</button>
+                <div id="lista-pessoais" style="margin-top:20px"></div>
+            </div>
+        </div>
 
-                <button class="btn btn-secondary" onclick="abrirModal('modal-inventario')" style="margin-top: 20px;">
-                    <i class="fas fa-box-open"></i> Ver Meu Inventário
-                </button>
-                
-                <button class="btn btn-danger" onclick="logout()" style="margin-top: 40px;">Sair da Conta</button>
+        <div id="tab-profile" class="hidden">
+            <div class="card">
+                <h3>Herói em Evolução</h3>
+                <p>Aqui você poderá ver suas conquistas e personalizar seu avatar em breve!</p>
+                <button class="btn-del" style="width:100%; margin:0" onclick="auth.signOut()">ABANDONAR JORNADA (SAIR)</button>
             </div>
-        </main>
+        </div>
 
-        <nav>
-            <div class="nav-item active" id="nav-home" onclick="mudarAba('home')">
-                <i class="fas fa-home"></i>
-                <span>Início</span>
-            </div>
-            <div class="nav-item" id="nav-loja" onclick="mudarAba('loja')">
-                <i class="fas fa-shopping-cart"></i>
-                <span>Loja</span>
-            </div>
-            <div class="nav-item" id="nav-rank" onclick="abrirModal('modal-ranking')">
-                <i class="fas fa-trophy"></i>
-                <span>Ranking</span>
-            </div>
-            <div class="nav-item" id="nav-profile" onclick="mudarAba('profile')">
-                <i class="fas fa-user"></i>
-                <span>Perfil</span>
-            </div>
+        <nav class="bottom-nav">
+            <div id="nav-home" class="nav-item active" onclick="mudarAba('home')">🏠 Início</div>
+            <div id="nav-profile" class="nav-item" onclick="mudarAba('profile')">👤 Perfil</div>
         </nav>
     </div>
 
-    <div id="modal-ranking" class="modal">
-        <div class="modal-content">
-            <div class="flex justify-between items-center" style="margin-bottom: 20px;">
-                <h3><i class="fas fa-crown text-warning"></i> Melhores Heróis</h3>
-                <i class="fas fa-times" onclick="fecharModal('modal-ranking')" style="cursor: pointer;"></i>
-            </div>
-            <div id="ranking-lista">Carregando...</div>
-        </div>
-    </div>
-
-    <div id="modal-inventario" class="modal">
-        <div class="modal-content">
-            <div class="flex justify-between items-center" style="margin-bottom: 20px;">
-                <h3><i class="fas fa-box-open"></i> Meu Inventário</h3>
-                <i class="fas fa-times" onclick="fecharModal('modal-inventario')" style="cursor: pointer;"></i>
-            </div>
-            <div id="lista-inventario" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-                </div>
-        </div>
-    </div>
-
     <script>
-        // --- CONFIGURAÇÃO FIREBASE (SUBSTITUA PELOS SEUS DADOS) ---
+        // CONFIGURAÇÃO FIREBASE
         const firebaseConfig = {
-            apiKey: "AIzaSy...",
-            authDomain: "seu-app.firebaseapp.com",
-            databaseURL: "https://seu-app-default-rtdb.firebaseio.com",
-            projectId: "seu-app",
-            storageBucket: "seu-app.appspot.com",
-            messagingSenderId: "...",
-            appId: "..."
+            apiKey: "AIzaSyAsm8_P8K0-Y8Z7N2y0L8G6U6_2K0-Y8",
+            authDomain: "aresrpg-oficial.firebaseapp.com",
+            databaseURL: "https://aresrpg-oficial-default-rtdb.firebaseio.com",
+            projectId: "aresrpg-oficial",
+            storageBucket: "aresrpg-oficial.appspot.com"
         };
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
+        const auth = firebase.auth(), db = firebase.database();
 
-        // --- VARIÁVEIS DE ESTADO ---
-        let user = null;
-        const missoesConfig = [
-            { id: 1, titulo: "Treino de Força", desc: "Faça 20 flexões", xp: 50, coins: 20, energia: 20, cooldown: 3600 }, // 1 hora
-            { id: 2, titulo: "Mestre do Foco", desc: "Estude por 30 minutos", xp: 80, coins: 40, energia: 30, cooldown: 7200 },
-            { id: 3, titulo: "Meditação Oculta", desc: "10 min de meditação", xp: 30, coins: 15, energia: 10, cooldown: 1800 }
+        let jogadorAtual = null, dadosGerais = {}, vitoriasVelha = {}, filtroAtivo = 'tudo';
+
+        const NPCs = [
+            { id: "npc_01", nick: "Guardian Aris", xp: 5000, photo: "https://i.ibb.co/X3vDgg/image.png" },
+            { id: "npc_02", nick: "Sombra do Caos", xp: 12000, photo: "https://cdn-icons-png.flaticon.com/512/1458/1458510.png" }
+        ];
+
+        const NPCsVelha = [
+            { id: "npc_v1", nick: "Mestre da Velha", photo: "https://cdn-icons-png.flaticon.com/512/3663/3663345.png", vitorias: 2 }
+        ];
+
+        let jogandoContraNPC = false, aguardandoNPC = false, npcIdAtual = null;
+
+        const missoesSorte = [
+            "Você ganhou o poder da coragem! Saiba que a coragem não é a ausência do medo, mas o julgamento de que algo é mais importante que ele. O que você deseja está logo após o seu maior receio.",
+            "Você ganhou o poder da persistência! Lembre-se de que a gota d'água fura a pedra não pela força, mas pela persistência. O seu quase está prestes a se tornar o seu consegui.",
+            "Você ganhou o poder do recomeço! Não importa o que aconteceu ontem; o que importa é que ninguém pode voltar atrás e fazer um novo começo, mas qualquer um pode começar agora e fazer um novo fim.",
+            "Você ganhou o poder da visão! Onde muitos veem obstáculos, você agora vê oportunidades ocultas. O horizonte se expande para quem tem a audácia de olhar além do óbvio.",
+            "Você ganhou o poder do foco! Lembre-se: o sol só queima quando seus raios estão concentrados. Foque em uma meta de cada vez e veja o impossível se tornar realidade.",
+            "Você ganhou o poder do silêncio! A maior sabedoria muitas vezes reside em ouvir. No silêncio da sua mente, você encontrará as respostas que o barulho do mundo tentou esconder.",
+            "Você ganhou o poder da resiliência! Como o bambu, você se curva na tempestade, mas nunca quebra. Cada dificuldade é apenas o seu treinamento para algo grandioso.",
+            "Você ganhou o poder da gratidão! Quando você agradece pelo que tem, o que você tem se multiplica. A gratidão é a memória do coração e a chave que abre as portas da abundância.",
+            "Você ganhou o poder da ação! O sucesso é a soma de pequenos esforços repetidos dia após dia. Não espere pelas condições perfeitas; use o que você tem e faça o que pode agora.",
+            "Você ganhou o poder da paz interior! Nada pode lhe trazer paz senão você mesmo. No centro do caos, você agora é o olho calmo do furacão."
+        ];
+
+        const missoesObrigatorias = [
+            { id: "d-1", nome: "Treino Físico (10-30 min)", valor: 10 },
+            { id: "d-2", nome: "Beber 2L de Água", valor: 10 },
+            { id: "d-3", nome: "30 min de Estudos", valor: 10 }
         ];
 
         const itensLoja = [
-            { id: 'pocao_e', nome: 'Poção Energia', preco: 100, tipo: 'dracmas', icon: '🧪', desc: '+50 Energia' },
-            { id: 'espada_r', nome: 'Espada Rara', preco: 50, tipo: 'gemas', icon: '⚔️', desc: 'Item cosmético' }
+            { id: "item_01", nome: "Energético RPG (+10 XP)", preco: 50, xp: 10 },
+            { id: "item_02", nome: "Amuleto de Ares (+50 XP)", preco: 200, xp: 50 },
+            { id: "item_03", nome: "Pergaminho Sagrado (+100 XP)", preco: 400, xp: 100 }
         ];
 
-        // --- RELÓGIO ATUALIZÁVEL (DO INDEX2) ---
-        function atualizarRelogio() {
-            const agora = new Date();
-            document.getElementById('relogio').innerText = agora.toLocaleTimeString('pt-BR');
-            
-            // Verifica cooldowns de missões
-            if(user) renderizarMissoes();
-        }
-        setInterval(atualizarRelogio, 1000);
+        function limparNome(e) { return e.split('@')[0].replace(/[.#$[\]]/g, "_"); }
 
-        // --- SISTEMA DE LOGIN / REGISTRO ---
+        function fazerLogin() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            const btn = document.getElementById('btn-login-action');
+            if (!email || !pass) return;
+
+            btn.innerText = "Carregando...";
+            btn.disabled = true;
+
+            // --- INJEÇÃO INDEX2: PERSISTÊNCIA ---
+            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+                .then(() => {
+                    return auth.signInWithEmailAndPassword(email, pass);
+                })
+                .catch(error => {
+                    btn.innerText = "ACESSAR RPG";
+                    btn.disabled = false;
+                    Swal.fire({
+                        title: 'Erro',
+                        text: "E-mail ou senha incorretos.",
+                        icon: 'error',
+                        background: '#1e293b',
+                        color: '#fff'
+                    });
+                });
+        }
+
+        function fazerCadastro() {
+            const nick = document.getElementById('reg-nick').value;
+            const email = document.getElementById('reg-email').value;
+            const pass = document.getElementById('reg-pass').value;
+            if(!nick || !email || !pass) return;
+
+            auth.createUserWithEmailAndPassword(email, pass).then(u => {
+                const uid = limparNome(email);
+                db.ref('rpg_data/' + uid).set({ nick: nick, xp: 0, coins: 0, missoes: [] });
+            }).catch(e => Swal.fire('Erro', 'Tente outro e-mail.', 'error'));
+        }
+
+        auth.onAuthStateChanged(u => {
+            if(u) {
+                jogadorAtual = limparNome(u.email);
+                gerenciarPresenca(jogadorAtual);
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('game-content').classList.remove('hidden');
+                
+                db.ref('rpg_data').on('value', s => {
+                    dadosGerais = s.val() || {};
+                    atualizarTela();
+                    atualizarRanking();
+                });
+
+                db.ref('vitorias_velha').on('value', s => {
+                    vitoriasVelha = s.val() || {};
+                    atualizarRankingVelha();
+                });
+            } else {
+                document.getElementById('auth-screen').classList.remove('hidden');
+                document.getElementById('game-content').classList.add('hidden');
+            }
+        });
+
+        function gerenciarPresenca(uid) {
+            const statusRef = db.ref('status/' + uid);
+            statusRef.set({ online: true });
+            statusRef.onDisconnect().set({ online: false });
+
+            db.ref('status').on('value', s => {
+                let ativos = 0;
+                s.forEach(child => { if(child.val().online) ativos++; });
+                document.getElementById('global-online-count').innerText = 8 + ativos;
+            });
+        }
+
+        function atualizarTela() {
+            const p = dadosGerais[jogadorAtual] || {xp:0, coins:0, missoes:[]};
+            document.getElementById('player-name').innerText = p.nick || jogadorAtual;
+            document.getElementById('xp').innerText = p.xp || 0;
+            document.getElementById('coins').innerText = p.coins || 0;
+            document.getElementById('lvl').innerText = "Lv. " + (Math.floor((p.xp || 0)/1000)+1);
+            document.getElementById('progress').style.width = ((p.xp || 0)%1000)/10 + "%";
+            document.getElementById('p-img').src = p.photo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+
+            const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
+            const contagem = (p.missaoBau && p.missaoBau.data === hoje) ? (p.missaoBau.contagem || 0) : 0;
+            document.getElementById('gift-counter').innerText = `Giros: ${contagem}/1`;
+
+            const gIcon = document.getElementById('gift-icon');
+            if (p.missaoBau && p.missaoBau.data === hoje && !p.missaoBau.concluida) {
+                document.getElementById('lucky-mission-container').classList.remove('hidden');
+                document.getElementById('lucky-msg').classList.add('hidden');
+                gIcon.innerText = "✨";
+                gIcon.classList.remove('gift-shake');
+                document.getElementById('lucky-mission-text').innerText = p.missaoBau.nome;
+                const btn = document.getElementById('btn-concluir-bau');
+                btn.innerText = "HABILIDADE ATIVADA (+100 XP)";
+                btn.onclick = () => concluirBau();
+            } else {
+                document.getElementById('lucky-mission-container').classList.add('hidden');
+                document.getElementById('lucky-msg').classList.remove('hidden');
+                gIcon.innerText = "🎁";
+                gIcon.classList.add('gift-shake');
+                gIcon.classList.remove('open');
+            }
+
+            // Missões Diárias
+            const listaD = document.getElementById('lista-obrigatoria');
+            listaD.innerHTML = '';
+            missoesObrigatorias.forEach(m => {
+                const feita = p.missoes && p.missoes.find(x => x.id === m.id && x.data === hoje);
+                listaD.innerHTML += `
+                    <div class="card" style="padding:10px; display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.1)">
+                        <span style="${feita ? 'text-decoration:line-through; color:gray;' : ''}">${m.nome}</span>
+                        <button onclick="concluirMissao('${m.id}', ${m.valor}, true)" class="${feita ? 'btn-done' : 'btn-check'}" ${feita ? 'disabled' : ''}>
+                            ${feita ? 'Ok' : '✔'}
+                        </button>
+                    </div>`;
+            });
+
+            // Missões Pessoais
+            const listaP = document.getElementById('lista-pessoais');
+            listaP.innerHTML = '';
+            (p.missoes || []).forEach(m => {
+                if (filtroAtivo !== 'tudo' && m.valor !== filtroAtivo) return;
+                if (m.id && m.id.toString().startsWith('d-')) return;
+                listaP.innerHTML += `
+                    <div class="card" style="padding:10px; display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.2)">
+                        <div><b>${m.nome}</b><br><small>${m.valor} XP</small></div>
+                        <div>
+                            <button onclick="concluirMissao('${m.id}', ${m.valor})" class="btn-check">✔</button>
+                            <button onclick="removerMissao('${m.id}')" class="btn-del">🗑️</button>
+                        </div>
+                    </div>`;
+            });
+
+            // Loja
+            const tabelaLoja = document.getElementById('tabela-loja').getElementsByTagName('tbody')[0];
+            tabelaLoja.innerHTML = '';
+            itensLoja.forEach(item => {
+                tabelaLoja.innerHTML += `
+                    <tr>
+                        <td>${item.nome}</td>
+                        <td>💰 ${item.preco}</td>
+                        <td><button class="btn-buy" onclick="comprarItem('${item.id}', ${item.preco}, ${item.xp})">Comprar</button></td>
+                    </tr>`;
+            });
+        }
+
+        function abrirBau() {
+            const p = dadosGerais[jogadorAtual];
+            const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
+            const girosHoje = (p.missaoBau && p.missaoBau.data === hoje) ? (p.missaoBau.contagem || 0) : 0;
+
+            if (girosHoje >= 1) {
+                Swal.fire('Aviso', 'Você já usao seu presente de hoje!', 'info');
+                return;
+            }
+
+            const icon = document.getElementById('gift-icon');
+            icon.classList.remove('gift-shake');
+            icon.classList.add('open');
+
+            setTimeout(() => {
+                const sorteada = missoesSorte[Math.floor(Math.random() * missoesSorte.length)];
+                db.ref('rpg_data/' + jogadorAtual + '/missaoBau').update({
+                    nome: sorteada,
+                    concluida: false,
+                    data: hoje,
+                    contagem: girosHoje + 1
+                });
+            }, 600);
+        }
+
+        function concluirBau() {
+            const p = dadosGerais[jogadorAtual];
+            db.ref('rpg_data/' + jogadorAtual).update({
+                xp: (p.xp || 0) + 100,
+                'missaoBau/concluida': true
+            });
+            Swal.fire('Evolução!', 'Habilidade absorvida: +100 XP!', 'success');
+        }
+
+        function addMissao() {
+            const n = document.getElementById('missao-input').value, v = parseInt(document.getElementById('cat-input').value);
+            if(!n) return;
+            const ms = dadosGerais[jogadorAtual].missoes || [];
+            ms.push({ id: Date.now(), nome: n, valor: v });
+            db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms);
+            document.getElementById('missao-input').value = '';
+        }
+
+        function concluirMissao(id, valor, diaria = false) {
+            const p = dadosGerais[jogadorAtual], ms = p.missoes || [];
+            if(diaria) {
+                const hoje = new Date().toLocaleDateString().replace(/\//g, '-');
+                ms.push({ id: id, data: hoje, valor: valor });
+                db.ref('rpg_data/'+jogadorAtual).update({ xp: (p.xp||0)+valor, coins: (p.coins||0)+valor, missoes: ms });
+            } else {
+                const novas = ms.filter(m => m.id != id);
+                db.ref('rpg_data/'+jogadorAtual).update({ xp: (p.xp||0)+valor, coins: (p.coins||0)+valor, missoes: novas });
+            }
+        }
+
+        function removerMissao(id) {
+            const ms = (dadosGerais[jogadorAtual].missoes || []).filter(m => m.id != id);
+            db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms);
+        }
+
+        function filtrarMissoes(v) {
+            filtroAtivo = v;
+            document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-f-' + v).classList.add('active');
+            atualizarTela();
+        }
+
+        function comprarItem(id, preco, xp) {
+            const p = dadosGerais[jogadorAtual];
+            if((p.coins||0) >= preco) {
+                db.ref('rpg_data/'+jogadorAtual).update({ coins: p.coins - preco, xp: (p.xp||0) + xp });
+                Swal.fire('Sucesso!', 'Item utilizado!', 'success');
+            } else {
+                Swal.fire('Erro', 'Moedas insuficientes!', 'error');
+            }
+        }
+
+        function aplicarPenalidade() {
+            const q = parseInt(document.getElementById('input-penalidade').value), p = dadosGerais[jogadorAtual];
+            if(q) {
+                db.ref('rpg_data/'+jogadorAtual).update({ xp: Math.max(0, (p.xp||0) - (q*300)) });
+                document.getElementById('input-penalidade').value = '';
+                Swal.fire('Penalidade Aplicada', `Você perdeu ${q*300} XP para compensar as falhas.`, 'warning');
+            }
+        }
+
+        // --- RANKING E MODAIS ---
+        function abrirModalRanking(id) { document.getElementById(id).style.display = 'flex'; }
+        function fecharModalRanking(id) { document.getElementById(id).style.display = 'none'; }
+        
+        function atualizarRanking() {
+            const lista = Object.entries(dadosGerais).concat(NPCs.map(n => [n.id, n]));
+            lista.sort((a,b) => (b[1].xp||0) - (a[1].xp||0));
+            const body = document.getElementById('ranking-body');
+            body.innerHTML = '';
+            lista.slice(0, 10).forEach((item, i) => {
+                const p = item[1], id = item[0];
+                const online = dadosOnline[id] && dadosOnline[id].online;
+                body.innerHTML += `
+                    <tr>
+                        <td>${i+1}º</td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:5px">
+                                <span class="status-dot ${online ? 'online' : ''}"></span>
+                                <b>${p.nick || id}</b>
+                            </div>
+                        </td>
+                        <td>${Math.floor((p.xp||0)/1000)+1}</td>
+                        <td>${p.xp||0}</td>
+                        <td><button onclick="iniciarDuelo('${id}', '${p.nick||id}')" style="background:var(--danger); padding:4px 8px; font-size:10px">DUELAR</button></td>
+                    </tr>`;
+            });
+        }
+
+        function atualizarRankingVelha() {
+            const lista = Object.entries(vitoriasVelha).concat(NPCsVelha.map(n => [n.id, n.vitorias]));
+            lista.sort((a,b) => b[1] - a[1]);
+            const body = document.getElementById('ranking-velha-body');
+            body.innerHTML = '';
+            lista.forEach((item, i) => {
+                body.innerHTML += `<tr><td>${i+1}º</td><td>${dadosGerais[item[0]]?.nick || NPCsVelha.find(n=>n.id==item[0])?.nick || item[0]}</td><td>${item[1]} Vitórias</td></tr>`;
+            });
+        }
+
+        function mudarAba(aba) {
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.getElementById('nav-'+aba).classList.add('active');
+            document.getElementById('tab-home').classList.toggle('hidden', aba !== 'home');
+            document.getElementById('tab-profile').classList.toggle('hidden', aba !== 'profile');
+        }
+
         function alternarTela(reg) {
             document.getElementById('login-area').classList.toggle('hidden', reg);
             document.getElementById('register-area').classList.toggle('hidden', !reg);
         }
 
-        async function registrar() {
-            const nome = document.getElementById('reg-nome').value;
-            const email = document.getElementById('reg-email').value;
-            const senha = document.getElementById('reg-senha').value;
-
-            if(!nome || !email || senha.length < 6) return Swal.fire('Erro', 'Preencha todos os campos corretamente.', 'error');
-
-            try {
-                const res = await auth.createUserWithEmailAndPassword(email, senha);
-                const novoUser = {
-                    uid: res.user.uid,
-                    nome: nome,
-                    email: email,
-                    level: 1, xp: 0, dracmas: 100, gemas: 0, energia: 100,
-                    streak: 0, lastDaily: 0,
-                    missoesConcluidas: {},
-                    inventario: [],
-                    criadoEm: new Date().toLocaleDateString()
-                };
-                await db.ref('users/' + res.user.uid).set(novoUser);
-                location.reload();
-            } catch(e) { Swal.fire('Erro', e.message, 'error'); }
-        }
-
-        async function login() {
-            const email = document.getElementById('email').value;
-            const senha = document.getElementById('senha').value;
-            try {
-                await auth.signInWithEmailAndPassword(email, senha);
-            } catch(e) { Swal.fire('Erro', 'Usuário ou senha inválidos', 'error'); }
-        }
-
-        function logout() { auth.signOut(); location.reload(); }
-
-        // --- CORE DO JOGO ---
-        auth.onAuthStateChanged(u => {
-            if(u) {
-                db.ref('users/' + u.uid).on('value', snapshot => {
-                    user = snapshot.val();
-                    if(user) {
-                        document.getElementById('auth-area').classList.add('hidden');
-                        document.getElementById('game-area').classList.remove('hidden');
-                        updateUI();
-                    }
-                });
-            }
-        });
-
-        function updateUI() {
-            // Stats
-            document.getElementById('display-nome').innerText = user.nome;
-            document.getElementById('display-level').innerText = 'Lvl ' + user.level;
-            document.getElementById('display-dracmas').innerText = user.dracmas;
-            document.getElementById('display-gemas').innerText = user.gemas;
-            document.getElementById('display-energia').innerText = user.energia + '/100';
-            document.getElementById('display-streak').innerText = (user.streak || 0) + ' dias';
-            
-            // Barra XP
-            const xpProxLevel = user.level * 100;
-            const percXP = (user.xp / xpProxLevel) * 100;
-            document.getElementById('xp-bar').style.width = percXP + '%';
-
-            // Perfil
-            document.getElementById('prof-nome').innerText = user.nome;
-            document.getElementById('prof-email').innerText = user.email;
-            document.getElementById('prof-total-miss').innerText = Object.keys(user.missoesConcluidas || {}).length;
-            document.getElementById('prof-data').innerText = user.criadoEm;
-
-            renderizarMissoes();
-            renderizarLoja();
-        }
-
-        function renderizarMissoes() {
-            const container = document.getElementById('lista-missoes');
-            container.innerHTML = '';
-            const agora = Date.now();
-
-            missoesConfig.forEach(m => {
-                const ultimaVez = user.missoesConcluidas && user.missoesConcluidas[m.id] ? user.missoesConcluidas[m.id] : 0;
-                const tempoPassado = (agora - ultimaVez) / 1000;
-                const emCooldown = tempoPassado < m.cooldown;
-                
-                let btnHtml = '';
-                let timerHtml = '';
-
-                if(emCooldown) {
-                    const resta = Math.ceil(m.cooldown - tempoPassado);
-                    const min = Math.floor(resta / 60);
-                    const seg = resta % 60;
-                    timerHtml = `<div class="missao-timer"><i class="fas fa-clock"></i> Disponível em: ${min}m ${seg}s</div>`;
-                    btnHtml = `<button class="btn btn-secondary" disabled>Aguarde...</button>`;
-                } else {
-                    btnHtml = `<button class="btn btn-primary" onclick="completarMissao(${m.id})">Concluir Missão</button>`;
-                }
-
-                container.innerHTML += `
-                    <div class="card-missao ${emCooldown ? 'cooldown' : ''}">
-                        <div class="flex justify-between">
-                            <strong>${m.titulo}</strong>
-                            <span style="color: var(--success)">+${m.xp} XP</span>
-                        </div>
-                        <p style="font-size: 0.85em; color: #94a3b8; margin: 5px 0;">${m.desc}</p>
-                        <div style="font-size: 0.8em; color: gold;">Premiação: ${m.coins} dracmas | Gasto: ${m.energia} Eng</div>
-                        ${timerHtml}
-                        ${btnHtml}
-                    </div>
-                `;
-            });
-        }
-
-        async function completarMissao(id) {
-            const missao = missoesConfig.find(m => m.id === id);
-            if(user.energia < missao.energia) return Swal.fire('Cansaço', 'Você não tem energia suficiente!', 'warning');
-
-            let novoXp = user.xp + missao.xp;
-            let novoLvl = user.level;
-            const xpNecessario = user.level * 100;
-
-            if(novoXp >= xpNecessario) {
-                novoXp -= xpNecessario;
-                novoLvl++;
-                Swal.fire('LEVEL UP!', `Parabéns! Você alcançou o nível ${novoLvl}`, 'success');
-            }
-
-            const updates = {
-                xp: novoXp,
-                level: novoLvl,
-                dracmas: user.dracmas + missao.coins,
-                energia: user.energia - missao.energia,
-                [`missoesConcluidas/${id}`]: Date.now()
-            };
-
-            await db.ref('users/' + user.uid).update(updates);
-            // Som de sucesso (opcional)
-            try { new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3').play(); } catch(e){}
-        }
-
-        // --- SISTEMA DE LOJA ---
-        function renderizarLoja() {
-            const container = document.getElementById('loja-container');
-            if(!container) return;
-            container.innerHTML = '';
-            itensLoja.forEach(item => {
-                container.innerHTML += `
-                    <div class="item-loja">
-                        <div style="font-size: 2em;">${item.icon}</div>
-                        <strong>${item.nome}</strong>
-                        <p style="font-size: 0.7em; margin: 5px 0;">${item.desc}</p>
-                        <button class="btn btn-primary" style="font-size: 0.8em;" onclick="comprarItem('${item.id}')">
-                            ${item.preco} ${item.tipo === 'dracmas' ? 'Dr.' : 'Gemas'}
-                        </button>
-                    </div>
-                `;
-            });
-        }
-
-        async function comprarItem(itemId) {
-            const item = itensLoja.find(i => i.id === itemId);
-            if(item.tipo === 'dracmas' && user.dracmas < item.preco) return Swal.fire('Erro', 'Dracmas insuficientes', 'error');
-            if(item.tipo === 'gemas' && user.gemas < item.preco) return Swal.fire('Erro', 'Gemas insuficientes', 'error');
-
-            let updates = {};
-            if(item.tipo === 'dracmas') updates.dracmas = user.dracmas - item.preco;
-            else updates.gemas = user.gemas - item.preco;
-
-            // Lógica especial de itens (Ex: Poção)
-            if(itemId === 'pocao_e') {
-                updates.energia = Math.min(100, (user.energia || 0) + 50);
-                Swal.fire('Usado!', 'Sua energia foi restaurada!', 'success');
-            } else {
-                const novoInv = user.inventario || [];
-                novoInv.push({ ...item, dataCompra: Date.now() });
-                updates.inventario = novoInv;
-                Swal.fire('Comprado!', `${item.nome} adicionado ao inventário`, 'success');
-            }
-
-            await db.ref('users/' + user.uid).update(updates);
-        }
-
-        // --- RECOMPENSA DIÁRIA ---
-        async function claimDaily() {
-            const hoje = new Date().toLocaleDateString();
-            if(user.lastDaily === hoje) return Swal.fire('Aguarde', 'Você já resgatou sua recompensa hoje!', 'info');
-
-            const updates = {
-                dracmas: user.dracmas + 50,
-                gemas: user.gemas + 5,
-                streak: (user.streak || 0) + 1,
-                lastDaily: hoje
-            };
-            await db.ref('users/' + user.uid).update(updates);
-            Swal.fire('Resgatado!', 'Você ganhou 50 Dracmas e 5 Gemas!', 'success');
-        }
-
-        // --- NAVEGAÇÃO E MODAIS ---
-        function mudarAba(aba) {
-            document.querySelectorAll('main').forEach(m => m.classList.add('hidden'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            
-            document.getElementById('tab-' + aba).classList.remove('hidden');
-            document.getElementById('nav-' + aba).classList.add('active');
-        }
-
-        function abrirModal(id) {
-            document.getElementById(id).style.display = 'flex';
-            if(id === 'modal-ranking') carregarRanking();
-            if(id === 'modal-inventario') carregarInventario();
-        }
-
-        function fecharModal(id) { document.getElementById(id).style.display = 'none'; }
-
-        async function carregarRanking() {
-            const snap = await db.ref('users').orderByChild('xp').limitToLast(10).once('value');
-            const lista = document.getElementById('ranking-lista');
-            lista.innerHTML = '';
-            let usersArr = [];
-            snap.forEach(u => { usersArr.push(u.val()); });
-            usersArr.reverse().forEach((u, i) => {
-                lista.innerHTML += `
-                    <div class="stat-item" style="margin-bottom: 5px; justify-content: space-between;">
-                        <span>#${i+1} ${u.nome}</span>
-                        <span>Lvl ${u.level}</span>
-                    </div>
-                `;
-            });
-        }
-
-        function carregarInventario() {
-            const inv = user.inventario || [];
-            const container = document.getElementById('lista-inventario');
-            container.innerHTML = inv.length ? '' : '<p style="grid-column: span 3; text-align: center;">Vazio</p>';
-            inv.forEach(item => {
-                container.innerHTML += `<div class="item-loja" style="padding: 5px;">${item.icon}<br><small>${item.nome}</small></div>`;
-            });
-        }
-
-        // --- BLOQUEIO BOTÃO VOLTAR ANDROID ---
+        // --- BLOQUEIO DE VOLTAR NO ANDROID (REFINADO INDEX2) ---
         try {
             for (let i = 0; i < 5; i++) { history.pushState(null, null, window.location.pathname); }
             window.addEventListener('popstate', function () {
                 history.pushState(null, null, window.location.pathname);
                 Swal.fire({
                     title: 'Sair do Ares RPG?',
-                    text: "Deseja fechar o jogo?",
-                    icon: 'question',
+                    text: "Deseja fechar o jogo agora?",
+                    icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonText: 'Sair',
-                    cancelButtonText: 'Continuar'
-                }).then(r => { if(r.isConfirmed) window.close(); });
+                    confirmButtonColor: '#3b82f6',
+                    cancelButtonColor: '#ef4444',
+                    confirmButtonText: 'Sim, Sair',
+                    cancelButtonText: 'Continuar Jogando',
+                    background: '#1e293b',
+                    color: '#fff'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        if (navigator.app && navigator.app.exitApp) {
+                            navigator.app.exitApp();
+                        } else {
+                            window.location.replace("about:blank");
+                            window.close();
+                        }
+                    }
+                });
             });
         } catch(e) {}
 
