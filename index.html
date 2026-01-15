@@ -288,7 +288,7 @@
             <h2 style="text-align:center">Entrar no RPG</h2>
             <input type="email" id="login-email" placeholder="Seu E-mail">
             <input type="password" id="login-pass" placeholder="Sua Senha">
-            <button class="btn-auth" onclick="fazerLogin()">Aceder</button>
+            <button id="btn-login-action" class="btn-auth" onclick="fazerLogin()">Aceder</button>
             <p style="text-align:center; font-size:14px">Novo? <a href="#" onclick="alternarTela(true)" style="color:#60a5fa">Criar Conta</a></p>
         </div>
         <div id="register-area" class="hidden">
@@ -296,7 +296,7 @@
             <input type="text" id="reg-nick" placeholder="Nick do Personagem">
             <input type="email" id="reg-email" placeholder="E-mail">
             <input type="password" id="reg-pass" placeholder="Senha">
-            <button class="btn-auth" style="background:#22c55e" onclick="fazerCadastro()">Começar Jornada</button>
+            <button id="btn-reg-action" class="btn-auth" style="background:#22c55e" onclick="fazerCadastro()">Começar Jornada</button>
             <p style="text-align:center; font-size:14px">Já joga? <a href="#" onclick="alternarTela(false)" style="color:#60a5fa">Login</a></p>
         </div>
     </div>
@@ -697,22 +697,68 @@
         function limparNome(e) { return e.split('@')[0].replace(/[.#$[\]]/g, "_"); }
         function alternarTela(c) { document.getElementById('login-area').className = c?'hidden':''; document.getElementById('register-area').className = c?'':'hidden'; }
         
+        // --- FUNÇÕES DE LOGIN/CADASTRO CORRIGIDAS PARA WEBVIEW/APK ---
         function fazerLogin() { 
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-pass').value;
-            if (!email || !pass) { alert("Por favor, preencha todos os campos."); return; }
-            auth.signInWithEmailAndPassword(email, pass).catch(error => alert("Erro ao entrar. Verifique seus dados."));
+            const btn = document.getElementById('btn-login-action');
+
+            if (!email || !pass) { 
+                Swal.fire({title: 'Ops!', text: "Preencha e-mail e senha.", icon: 'warning', background: '#1e293b', color: '#fff'}); 
+                return; 
+            }
+            
+            btn.innerText = "Carregando...";
+            
+            // Força persistência LOCAL para funcionar em WebIntoApp/WebView
+            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+            .then(() => {
+                return auth.signInWithEmailAndPassword(email, pass);
+            })
+            .catch(error => {
+                btn.innerText = "Aceder";
+                let msg = "Erro desconhecido";
+                if(error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') msg = "E-mail ou senha incorretos.";
+                else if(error.code === 'auth/invalid-email') msg = "E-mail inválido.";
+                else if(error.code === 'auth/network-request-failed') msg = "Erro de conexão. Verifique sua internet.";
+                else msg = error.message;
+                
+                Swal.fire({title: 'Erro no Login', text: msg, icon: 'error', background: '#1e293b', color: '#fff'});
+            });
         }
 
         function fazerCadastro() {
             const nick = document.getElementById('reg-nick').value;
             const e = document.getElementById('reg-email').value;
             const p = document.getElementById('reg-pass').value;
-            if (!nick || !e || !p) { alert("Preencha todos os campos."); return; }
-            auth.createUserWithEmailAndPassword(e, p).then(() => { 
-                db.ref('rpg_data/' + limparNome(e)).set({ nick: nick, xp: 0, coins: 0 }); alert("Bem-vindo!");
-            }).catch(error => alert("Erro ao cadastrar."));
+            const btn = document.getElementById('btn-reg-action');
+
+            if (!nick || !e || !p) { 
+                Swal.fire({title: 'Ops!', text: "Preencha todos os campos.", icon: 'warning', background: '#1e293b', color: '#fff'}); 
+                return; 
+            }
+
+            btn.innerText = "Criando...";
+
+            // Força persistência LOCAL
+            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+            .then(() => {
+                return auth.createUserWithEmailAndPassword(e, p);
+            })
+            .then(() => { 
+                db.ref('rpg_data/' + limparNome(e)).set({ nick: nick, xp: 0, coins: 0 }); 
+                Swal.fire({title: 'Sucesso!', text: "Bem-vindo ao Ares RPG!", icon: 'success', background: '#1e293b', color: '#fff'});
+            })
+            .catch(error => {
+                btn.innerText = "Começar Jornada";
+                let msg = error.message;
+                if(error.code === 'auth/email-already-in-use') msg = "Este e-mail já está em uso.";
+                else if(error.code === 'auth/weak-password') msg = "A senha deve ter pelo menos 6 caracteres.";
+                
+                Swal.fire({title: 'Erro no Cadastro', text: msg, icon: 'error', background: '#1e293b', color: '#fff'});
+            });
         }
+        // -----------------------------------------------------------
 
         auth.onAuthStateChanged(u => {
             if(u) {
