@@ -7,7 +7,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -19,8 +18,11 @@
         .stat-box { background: #0f172a; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #475569; }
         .stat-box strong { font-size: 1.1rem; display: block; margin-top: 5px; }
         input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:hover { opacity: 0.9; }
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; color: white; }
+        .btn-main { background: var(--primary); }
+        .btn-danger { background: var(--danger); }
+        button:hover { opacity: 0.8; }
         canvas { background: #0f172a; border-radius: 10px; padding: 10px; margin-top: 10px; }
         .gain { color: var(--success); }
         .loss { color: var(--danger); }
@@ -60,11 +62,15 @@
     <div class="card">
         <h3>⚙️ Lançamento Diário</h3>
         <label>Capital Atual (R$):</label>
-        <input type="number" id="capital-input" placeholder="Seu capital total hoje" oninput="atualizarCalculos()">
+        <input type="number" id="capital-input" placeholder="Seu capital antes da operação" oninput="atualizarCalculos()">
         
         <label>Resultado Financeiro (R$):</label>
         <input type="number" id="resultado-input" placeholder="Ex: 100 ou -50">
-        <button onclick="salvarOperacao()">REGISTRAR RESULTADO</button>
+        
+        <div class="btn-group">
+            <button class="btn-main" onclick="salvarOperacao()">REGISTRAR RESULTADO</button>
+            <button class="btn-danger" onclick="apagarUltimo()">CORRIGIR ÚLTIMO</button>
+        </div>
     </div>
 
     <div class="card">
@@ -85,7 +91,6 @@
 </div>
 
 <script>
-    // Configurações idênticas ao seu index.html
     const firebaseConfig = {
         apiKey: "AIzaSyBanevR51ejaTE0ccqlmlU6VRh7Qg4EETs",
         databaseURL: "https://aresrpg-7daf4-default-rtdb.firebaseio.com",
@@ -97,28 +102,20 @@
     
     let userPath = null; 
     let chartInstance = null;
+    let ultimoID = null;
 
-    // --- LOGICA DE IDENTIFICAÇÃO DO USUÁRIO ---
     auth.onAuthStateChanged((user) => {
         if (user) {
-            // O userPath será o UID único do jogador (seguro e privado)
             userPath = user.uid;
             document.getElementById('user-display').innerText = `Jogador: ${user.email}`;
             carregarDados(); 
         } else {
-            Swal.fire({
-                title: 'Acesso Restrito',
-                text: "Faça login no Ares RPG primeiro!",
-                icon: 'warning',
-                confirmButtonText: 'Ir para Login'
-            }).then(() => {
-                window.location.href = "index.html";
-            });
+            window.location.href = "index.html";
         }
     });
 
     function atualizarCalculos() {
-        const capital = parseFloat(document.getElementById('capital-input').value) || 0;
+        const capital = Number(document.getElementById('capital-input').value) || 0;
         const contratos = Math.floor(capital / 1000); 
         const meta = capital * 0.10;                  
         const lossMensal = capital * 0.50;
@@ -131,28 +128,42 @@
     function salvarOperacao() {
         if (!userPath) return;
 
-        const capital = parseFloat(document.getElementById('capital-input').value);
-        const resultado = parseFloat(document.getElementById('resultado-input').value);
+        // Forçar conversão para número para evitar erros de soma de texto
+        const capitalAnterior = Number(document.getElementById('capital-input').value);
+        const resultado = Number(document.getElementById('resultado-input').value);
 
-        if (!capital || isNaN(resultado)) {
+        if (isNaN(capitalAnterior) || isNaN(resultado)) {
             return Swal.fire("Erro", "Preencha os valores corretamente!", "error");
         }
 
-        const novoSaldo = capital + resultado;
-        
-        // Salva na pasta individual do usuário logado
+        const novoSaldo = capitalAnterior + resultado;
+
         db.ref(`investimentos/${userPath}/historico`).push({
             data: new Date().toLocaleDateString('pt-BR'),
             resultado: resultado,
             saldoFinal: novoSaldo,
             timestamp: firebase.database.ServerValue.TIMESTAMP
         }).then(() => {
-            document.getElementById('capital-input').value = novoSaldo;
             document.getElementById('resultado-input').value = "";
-            atualizarCalculos();
             Swal.fire("Sucesso!", "Resultado registrado.", "success");
-        }).catch(e => {
-            Swal.fire("Erro de Permissão", "Verifique as regras do seu Firebase Database.", "error");
+        });
+    }
+
+    function apagarUltimo() {
+        if (!ultimoID) return Swal.fire("Aviso", "Não há registros recentes para apagar.", "info");
+
+        Swal.fire({
+            title: 'Corrigir erro?',
+            text: "O último registro será excluído permanentemente!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sim, apagar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                db.ref(`investimentos/${userPath}/historico/${ultimoID}`).remove()
+                .then(() => Swal.fire("Apagado!", "Registro removido com sucesso.", "success"));
+            }
         });
     }
 
@@ -186,18 +197,21 @@
     }
 
     function carregarDados() {
-        if (!userPath) return;
-
+        // Escuta em tempo real os últimos 20 registros
         db.ref(`investimentos/${userPath}/historico`).orderByChild('timestamp').limitToLast(20).on('value', snapshot => {
             const tbody = document.getElementById('tabela-corpo');
             tbody.innerHTML = "";
             
             let saldos = [];
             let datas = [];
+            ultimoID = null;
 
             snapshot.forEach(doc => {
                 const item = doc.val();
+                ultimoID = doc.key; // Guarda o ID do último item para o botão de apagar
+                
                 const cor = item.resultado >= 0 ? "gain" : "loss";
+                const sinal = item.resultado >= 0 ? "+" : "";
                 
                 saldos.push(item.saldoFinal);
                 datas.push(item.data.slice(0, 5));
@@ -205,15 +219,16 @@
                 tbody.insertAdjacentHTML('afterbegin', `
                     <tr>
                         <td>${item.data}</td>
-                        <td class="${cor}">R$ ${item.resultado.toFixed(2)}</td>
+                        <td class="${cor}">${sinal} R$ ${item.resultado.toFixed(2)}</td>
                         <td>R$ ${item.saldoFinal.toFixed(2)}</td>
                     </tr>
                 `);
             });
 
             if(saldos.length > 0) {
-                // Preenche o capital inicial com o último saldo salvo para facilitar o próximo lançamento
-                document.getElementById('capital-input').value = saldos[saldos.length - 1];
+                // Atualiza o input com o saldo mais recente disponível
+                const ultimoSaldo = saldos[saldos.length - 1];
+                document.getElementById('capital-input').value = ultimoSaldo.toFixed(2);
                 atualizarCalculos();
                 inicializarGrafico(saldos, datas);
             }
