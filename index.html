@@ -387,22 +387,15 @@
                 </div>
 
                 <div id="lista-missoes-pessoais" style="margin-bottom:15px"></div>
-
-<input type="text" id="missao-input" placeholder="Nova missão ou item..." style="width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; background: #334155; color: white; box-sizing: border-box;">
-
-<div style="display: flex; gap: 5px; margin-bottom: 8px;">
-    <input type="date" id="missao-data" style="flex: 2; background:#334155; color:white; border:none; border-radius:8px; padding:10px; font-family: inherit;">
-    <input type="time" id="missao-hora" style="flex: 1; background:#334155; color:white; border:none; border-radius:8px; padding:10px; font-family: inherit;">
-</div>
-
-<select id="cat-input" style="width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; background: #334155; color: white; box-sizing: border-box;">
-    <option value="30">🚀 Prioridade (+30 XP)</option>
-    <option value="15">⚙️ Comum (+15 XP)</option>
-    <option value="5">🛒 Lista de Compras (+5 XP)</option>
-    <option value="-500">⚠️ Hábito Sombrio (-500 XP)</option>
-</select>
-
-<button onclick="addMissao()" style="width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; background: #3b82f6; color: white; font-weight: bold; cursor: pointer;">Registrar</button>
+                
+                <input type="text" id="missao-input" placeholder="Nova missão ou item...">
+                <select id="cat-input">
+                    <option value="30">🚀 Prioridade (+30 XP)</option>
+                    <option value="15">⚙️ Comum (+15 XP)</option>
+                    <option value="5">🛒 Lista de Compras (+5 XP)</option>
+                    <option value="-500">⚠️ Hábito Sombrio (-500 XP)</option>
+                </select>
+                <button onclick="addMissao()" style="background:#3b82f6; width:100%">Registar</button>
             </div>
         </div>
 
@@ -423,67 +416,21 @@
     </div>
 
     <script>
-        // 1. Configurações Originais (Copiadas do seu arquivo que funcionava)
         const firebaseConfig = {
-            apiKey: "AIzaSyAs-SU-0X8vB-k_vXU2uP7U",
-            authDomain: "ares-rpg-oficial.firebaseapp.com",
-            databaseURL: "https://ares-rpg-oficial-default-rtdb.firebaseio.com",
-            projectId: "ares-rpg-oficial",
-            storageBucket: "ares-rpg-oficial.appspot.com",
-            messagingSenderId: "338917887550",
-            appId: "1:338917887550:web:8075726207f6e437c35639"
+            apiKey: "AIzaSyBanevR51ejaTE0ccqlmlU6VRh7Qg4EETs",
+            authDomain: "aresrpg-7daf4.firebaseapp.com",
+            databaseURL: "https://aresrpg-7daf4-default-rtdb.firebaseio.com",
+            projectId: "aresrpg-7daf4",
+            storageBucket: "aresrpg-7daf4.firebasestorage.app",
+            messagingSenderId: "153757603214",
+            appId: "1:153757603214:web:fb572985353c8fad7f80df"
         };
-
-        // 2. Inicialização (Garantindo que não inicialize duas vezes)
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const db = firebase.database();
-        const auth = firebase.auth();
-
-        // 3. Variáveis Globais (APENAS UMA VEZ CADA)
-        let jogadorAtual = "";
-        let dadosGerais = {};
-        let vitoriasVelha = {};
-        let dadosOnline = {};
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database(), auth = firebase.auth();
+        let jogadorAtual = "", dadosGerais = {}, vitoriasVelha = {}, dadosOnline = {};
+        
         let filtroAtivo = 'tudo';
-        let batalhaAtiva = false;
-        let statsP = {}, statsE = {};
 
-        // 4. Sistema de Som e Notificação (Novo)
-        const somNotificacao = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-
-        function dispararNotificacao(titulo, corpo) {
-            somNotificacao.play().catch(() => {});
-            if (Notification.permission === "granted") {
-                new Notification(titulo, { body: corpo, icon: "https://i.ibb.co/X3vDgg/image.png" });
-            }
-            Swal.fire({
-                title: titulo, text: corpo, icon: 'info', toast: true, position: 'top-end',
-                showConfirmButton: false, timer: 5000, background: '#1e293b', color: '#fff'
-            });
-        }
-
-        // 5. Verificador de Missões (O relógio que você queria)
-        setInterval(() => {
-            if (jogadorAtual && dadosGerais[jogadorAtual]) {
-                const agora = new Date();
-                const p = dadosGerais[jogadorAtual];
-                if (p.missoes) {
-                    p.missoes.forEach(m => {
-                        if (m.dataAgendada && !m.concluida) {
-                            const agendado = new Date(m.dataAgendada);
-                            const diffMinutos = Math.floor((agora - agendado) / 60000);
-                            if (diffMinutos >= 0 && diffMinutos % 15 === 0) {
-                                dispararNotificacao("⚔️ Hora da Missão!", m.nome);
-                            }
-                        }
-                    });
-                }
-            }
-        }, 60000);
-
-        // 6. Funções de Suporte
         function abrirModalRanking(id) { document.getElementById(id).style.display = 'flex'; }
         function fecharModalRanking(id) { document.getElementById(id).style.display = 'none'; }
 
@@ -841,19 +788,9 @@
                     else if (m.valor == 30) corFundo = "rgba(251, 191, 36, 0.3)"; 
                     else if (m.valor == 5) corFundo = "rgba(34, 197, 94, 0.2)";
                 }
-                // --- CÁLCULO DA DATA (ADICIONADO) ---
-                let infoData = "";
-                if (m.dataAgendada) {
-                    const d = new Date(m.dataAgendada);
-                    const dataFormatada = d.toLocaleDateString('pt-BR');
-                    const horaFormatada = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                    infoData = `<br><small style="color:#fbbf24; font-weight: bold;">⏰ ${dataFormatada} às ${horaFormatada}</small>`;
-                }
-
-                // --- HTML DA MISSÃO (ATUALIZADO COM INFO DATA) ---
                 dP.innerHTML += `
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; background:${corFundo}; padding:10px; border-radius:8px; border: 1px solid ${m.concluida ? 'transparent' : 'rgba(255,255,255,0.1)'};">
-                        <span>${m.nome} <small>(${m.valor} XP)</small>${infoData}</span>
+                        <span>${m.nome} <small>(${m.valor} XP)</small></span>
                         <div>
                             <button class="${m.concluida?'btn-done':'btn-check'}" onclick="concluirMissao('${m.id}', ${m.valor})" ${m.concluida?'disabled':''}>✔</button>
                             <button class="btn-del" onclick="removerMissao('${m.id}')">🗑️</button>
@@ -863,6 +800,7 @@
 
             const tL = document.querySelector('#tabela-loja tbody'); if(tL) { tL.innerHTML = ""; [{n:'Passear',p:19000},{n:'Auto Presente',p:15000},{n:'Lanche (dia do lixo)',p:14000}].forEach(i => { tL.innerHTML += `<tr><td>${i.n}</td><td>💰${i.p}</td><td><button class="btn-buy" onclick="comprar(${i.p},'${i.n}')">Resgatar</button></td></tr>`; }); }
         }
+
         function concluirMissao(id, v, d=false) {
             const p = dadosGerais[jogadorAtual], ms = p.missoes || [];
             let m = ms.find(x => x.id === id);
@@ -871,34 +809,7 @@
         }
         function removerMissao(id) { const ms = (dadosGerais[jogadorAtual].missoes || []).filter(m => m.id !== id); db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms); }
         function aplicarPenalidade() { const q = parseInt(document.getElementById('input-penalidade').value), p = dadosGerais[jogadorAtual]; if(q) db.ref('rpg_data/'+jogadorAtual).update({ xp: Math.max(0, (p.xp||0) - (q*300)) }); }
-        function addMissao() {
-    const n = document.getElementById('missao-input').value;
-    const v = parseInt(document.getElementById('cat-input').value);
-    const dataStr = document.getElementById('missao-data').value;
-    const horaStr = document.getElementById('missao-hora').value;
-
-    if (!n) { Swal.fire('Atenção', 'Digite o nome da missão!', 'warning'); return; }
-
-    let dataAgendada = null;
-    if (dataStr && horaStr) {
-        dataAgendada = new Date(`${dataStr}T${horaStr}`).toISOString();
-    }
-
-    const ms = dadosGerais[jogadorAtual].missoes || [];
-    ms.push({ 
-        id: 'm-' + Date.now(), 
-        nome: n, 
-        valor: v, 
-        concluida: false,
-        dataAgendada: dataAgendada 
-    });
-
-    db.ref('rpg_data/' + jogadorAtual + '/missoes').set(ms).then(() => {
-        document.getElementById('missao-input').value = "";
-        document.getElementById('missao-data').value = "";
-        document.getElementById('missao-hora').value = "";
-    });
-}
+        function addMissao() { const n = document.getElementById('missao-input').value, v = parseInt(document.getElementById('cat-input').value); const ms = dadosGerais[jogadorAtual].missoes || []; ms.push({ id:'m-'+Date.now(), nome:n, valor:v, concluida:false }); db.ref('rpg_data/'+jogadorAtual+'/missoes').set(ms); document.getElementById('missao-input').value = ""; }
         function comprar(pr, n) { const p = dadosGerais[jogadorAtual]; if(p.coins >= pr) { db.ref('rpg_data/'+jogadorAtual).update({coins:p.coins-pr}); alert("Resgatado!"); } }
         function salvarPerfil() { db.ref('rpg_data/'+jogadorAtual).update({ nick: document.getElementById('edit-nick').value, photo: document.getElementById('edit-photo').value.trim() }).then(() => mudarAba('home')); }
         function logout() { auth.signOut(); }
@@ -973,11 +884,6 @@ aplicarBloqueioDeRecuo();
     </script>
 </body>
 </html>
-
-
-
-
-
 
 
 
