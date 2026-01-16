@@ -114,14 +114,27 @@
     let ultimoID = null;
 
     auth.onAuthStateChanged((user) => {
-        if (user) {
-            userPath = user.uid;
-            document.getElementById('user-display').innerText = `Jogador: ${user.email}`;
-            carregarDados(); 
-        } else {
-            window.location.href = "index.html";
-        }
-    });
+    if (user) {
+        userPath = user.uid;
+        // Primeiro, mostramos o e-mail como "carregando"
+        document.getElementById('user-display').innerText = `Carregando perfil...`;
+        
+        // Agora buscamos o Nick real no banco de dados
+        db.ref(`users/${userPath}/nick`).once('value', snapshot => {
+            const nick = snapshot.val();
+            if (nick) {
+                document.getElementById('user-display').innerText = `Jogador: ${nick}`;
+            } else {
+                // Caso não tenha nick, mostra o e-mail sem o @...
+                document.getElementById('user-display').innerText = `Jogador: ${user.email.split('@')[0]}`;
+            }
+        });
+
+        carregarDados(); 
+    } else {
+        window.location.href = "index.html";
+    }
+});
 
     function atualizarCalculos() {
     // Pega o capital e a porcentagem definida pelo usuário
@@ -256,6 +269,7 @@
 
 </body>
 </html>
+
 
 
 
