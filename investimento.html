@@ -19,9 +19,10 @@
         .stat-box strong { font-size: 1.1rem; display: block; margin-top: 5px; }
         input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; }
         .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; }
+        button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; }
         .btn-main { background: var(--primary); }
         .btn-danger { background: var(--danger); }
+        button:hover { opacity: 0.8; }
         .gain { color: var(--success); }
         .loss { color: var(--danger); }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.85rem; }
@@ -73,7 +74,7 @@
         <input type="number" id="porcentagem-meta" value="10" oninput="atualizarCalculos()">
 
         <label>Capital Atual (R$):</label>
-        <input type="number" id="capital-input" placeholder="Capital antes da operação" oninput="atualizarCalculos()">
+        <input type="number" id="capital-input" placeholder="Capital ANTES da operação" oninput="atualizarCalculos()">
         
         <label>Resultado Financeiro (R$):</label>
         <input type="number" id="resultado-input" placeholder="Ex: 100 ou -50">
@@ -85,7 +86,7 @@
     </div>
 
     <div class="card">
-        <h3>📊 Histórico</h3>
+        <h3>📊 Histórico de Performance</h3>
         <div style="overflow-x:auto;">
             <table>
                 <thead>
@@ -116,9 +117,14 @@
             userPath = user.uid;
             document.getElementById('data-operacao').valueAsDate = new Date();
             
-            db.ref(`usuarios/${userPath}/perfil/nick`).on('value', (snapshot) => {
-                const nick = snapshot.val();
-                document.getElementById('user-display').innerText = `Jogador: ${nick || user.email.split('@')[0]}`;
+            // BUSCA NICK IGUAL NA EVOLUÇÃO FÍSICA (Tentativa de correção de caminho)
+            db.ref(`usuarios/${userPath}/perfil`).on('value', (snapshot) => {
+                const perfil = snapshot.val();
+                if(perfil && perfil.nick) {
+                    document.getElementById('user-display').innerText = `Jogador: ${perfil.nick}`;
+                } else {
+                    document.getElementById('user-display').innerText = `Jogador: ${user.email.split('@')[0]}`;
+                }
             });
 
             carregarDados(); 
@@ -153,10 +159,11 @@
         if (dataInput) {
             const partes = dataInput.split('-');
             dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
+            // Criar data ao meio-dia para evitar problemas de fuso horário
             timestampBase = new Date(dataInput + "T12:00:00").getTime();
         } else {
             dataFormatada = new Date().toLocaleDateString('pt-BR');
-            timestampBase = firebase.database.ServerValue.TIMESTAMP;
+            timestampBase = Date.now();
         }
 
         db.ref(`investimentos/${userPath}/historico`).push({
@@ -166,7 +173,7 @@
             timestamp: timestampBase
         }).then(() => {
             document.getElementById('resultado-input').value = "";
-            Swal.fire("Sucesso!", "Registrado.", "success");
+            Swal.fire("Sucesso!", "Registro adicionado.", "success");
         });
     }
 
@@ -174,40 +181,42 @@
         if (!ultimoID) return Swal.fire("Aviso", "Nenhum registro para apagar.", "info");
         
         Swal.fire({
-            title: 'Corrigir?',
-            text: "Apagar o último registro lançado?",
+            title: 'Corrigir Erro?',
+            text: "O último registro feito por você será excluído!",
             icon: 'warning',
             showCancelButton: true,
+            confirmButtonColor: '#ef4444',
             confirmButtonText: 'Sim, apagar',
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                db.ref(`investimentos/${userPath}/historico/${ultimoID}`).remove();
+                db.ref(`investimentos/${userPath}/historico/${ultimoID}`).remove()
+                .then(() => Swal.fire("Apagado!", "Registro removido.", "success"));
             }
         });
     }
 
     function carregarDados() {
-        // Ordenamos pelo timestamp para o gráfico e histórico
-        db.ref(`investimentos/${userPath}/historico`).orderByChild('timestamp').limitToLast(20).on('value', snapshot => {
+        // Ordenamos SEMPRE pelo timestamp para garantir a lógica temporal
+        db.ref(`investimentos/${userPath}/historico`).orderByChild('timestamp').limitToLast(30).on('value', snapshot => {
             const tbody = document.getElementById('tabela-corpo');
             tbody.innerHTML = "";
+            
             let saldos = []; 
             let datas = [];
             
-            //snapshot.forEach percorre na ordem cronológica (do antigo para o novo)
+            // O Firebase já entrega os dados ordenados do antigo para o novo no forEach
             snapshot.forEach(doc => {
                 const item = doc.val();
-                ultimoID = doc.key;
+                ultimoID = doc.key; // O último do loop será o registro mais recente no tempo
                 
-                // Dados para o gráfico (ordem correta: antigo -> novo)
                 saldos.push(item.saldoFinal);
                 datas.push(item.data.slice(0, 5));
 
                 const cor = item.resultado >= 0 ? "gain" : "loss";
                 const sinal = item.resultado >= 0 ? "+" : "";
                 
-                // Tabela (usamos afterbegin para o mais novo aparecer no topo)
+                // Na tabela, mostramos o mais novo no topo (usando afterbegin)
                 tbody.insertAdjacentHTML('afterbegin', `
                     <tr>
                         <td>${item.data}</td>
@@ -218,6 +227,7 @@
             });
 
             if(saldos.length > 0) {
+                // Atualiza o capital input com o saldo do registro cronologicamente mais recente
                 document.getElementById('capital-input').value = saldos[saldos.length-1].toFixed(2);
                 atualizarCalculos();
                 renderizarGrafico(saldos, datas);
@@ -228,18 +238,21 @@
     function renderizarGrafico(saldos, datas) {
         const ctx = document.getElementById('graficoEvolucao').getContext('2d');
         if (chartInstance) chartInstance.destroy();
+        
         chartInstance = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: datas,
                 datasets: [{
+                    label: 'Capital Final',
                     data: saldos,
                     borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
                     borderWidth: 3,
-                    pointRadius: 4,
                     tension: 0.3,
                     fill: true,
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)'
+                    pointRadius: 4,
+                    pointBackgroundColor: '#3b82f6'
                 }]
             },
             options: { 
@@ -247,8 +260,8 @@
                 maintainAspectRatio: false, 
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: { grid: { color: 'rgba(255,255,255,0.05)' } },
-                    x: { grid: { display: false } }
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
                 }
             }
         });
