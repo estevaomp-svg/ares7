@@ -66,30 +66,33 @@
     </div>
 
     <div class="card">
-        <h3>⚙️ Lançamento Diário / Histórico</h3>
+        <h3>⚙️ Registro de Operação</h3>
         <label>Data da Operação:</label>
         <input type="date" id="data-operacao"> 
         
         <label>Porcentagem de Meta/Loss Diário (%):</label>
         <input type="number" id="porcentagem-meta" value="10" oninput="atualizarCalculos()">
 
-        <label>Resultado Financeiro (R$):</label>
+        <label id="label-resultado">Resultado Financeiro (R$):</label>
         <input type="number" id="resultado-input" placeholder="Ex: 100 ou -50">
         
         <input type="hidden" id="capital-input">
 
         <div class="btn-group">
-            <button class="btn-main" onclick="salvarOperacao()">REGISTRAR RESULTADO</button>
+            <button class="btn-main" id="btn-salvar" onclick="salvarOperacao()">REGISTRAR</button>
             <button class="btn-danger" onclick="apagarUltimo()">CORRIGIR ÚLTIMO</button>
         </div>
+        <p id="aviso-inicial" style="font-size: 0.8rem; color: #94a3b8; margin-top: 10px; display: none;">
+            ℹ️ Como você não tem histórico, o primeiro registro será seu <strong>Capital Inicial</strong>.
+        </p>
     </div>
 
     <div class="card">
-        <h3>📊 Histórico de Performance</h3>
+        <h3>📊 Histórico</h3>
         <div style="overflow-x:auto;">
             <table>
                 <thead>
-                    <tr><th>Data</th><th>Resultado</th><th>Capital Final</th></tr>
+                    <tr><th>Data</th><th>Resultado</th><th>Capital Acumulado</th></tr>
                 </thead>
                 <tbody id="tabela-corpo"></tbody>
             </table>
@@ -110,13 +113,13 @@
     let userPath = null; 
     let chartInstance = null;
     let ultimoID = null;
+    let temHistorico = false;
 
     auth.onAuthStateChanged((user) => {
         if (user) {
             userPath = user.uid;
             document.getElementById('data-operacao').valueAsDate = new Date();
             
-            // Busca o nick do jogador
             db.ref(`usuarios/${userPath}/perfil`).on('value', (snapshot) => {
                 const perfil = snapshot.val();
                 document.getElementById('user-display').innerText = `Jogador: ${perfil?.nick || user.email.split('@')[0]}`;
@@ -145,8 +148,8 @@
         const res = Number(document.getElementById('resultado-input').value);
         const dataInput = document.getElementById('data-operacao').value;
 
-        if (isNaN(res) || document.getElementById('resultado-input').value === "") {
-            return Swal.fire("Erro", "Preencha o resultado financeiro!", "error");
+        if (document.getElementById('resultado-input').value === "") {
+            return Swal.fire("Erro", "Preencha o valor!", "error");
         }
 
         let dataFormatada;
@@ -161,26 +164,26 @@
             timestampBase = Date.now();
         }
 
-        // SALVAMOS APENAS O RESULTADO E A DATA
         db.ref(`investimentos/${userPath}/historico`).push({
             data: dataFormatada,
             resultado: res,
-            timestamp: timestampBase
+            timestamp: timestampBase,
+            tipo: temHistorico ? "operacao" : "inicial" // Marca se é o primeiro depósito
         }).then(() => {
             document.getElementById('resultado-input').value = "";
-            Swal.fire("Sucesso!", "Resultado registrado e saldo recalculado.", "success");
+            Swal.fire("Sucesso!", "Dados atualizados!", "success");
         });
     }
 
     function apagarUltimo() {
-        if (!ultimoID) return Swal.fire("Aviso", "Nenhum registro para apagar.", "info");
+        if (!ultimoID) return Swal.fire("Aviso", "Nada para apagar.", "info");
         Swal.fire({
-            title: 'Apagar registro?',
-            text: "O saldo de todos os dias será recalculado.",
+            title: 'Remover registro?',
+            text: "O saldo será recalculado automaticamente.",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Sim, apagar',
-            cancelButtonText: 'Cancelar'
+            confirmButtonText: 'Sim',
+            cancelButtonText: 'Não'
         }).then((result) => {
             if (result.isConfirmed) {
                 db.ref(`investimentos/${userPath}/historico/${ultimoID}`).remove();
@@ -189,7 +192,6 @@
     }
 
     function carregarDados() {
-        // Buscamos tudo ordenado por data (timestamp)
         db.ref(`investimentos/${userPath}/historico`).orderByChild('timestamp').on('value', snapshot => {
             const tbody = document.getElementById('tabela-corpo');
             tbody.innerHTML = "";
@@ -197,17 +199,21 @@
             let saldosProgresso = []; 
             let datasGrafico = [];
             let acumulado = 0;
-            let listaTemporaria = [];
+            temHistorico = snapshot.exists();
 
-            // Primeiro guardamos em uma lista para processar o acumulado
+            // Ajusta interface se for o primeiro uso
+            if(!temHistorico) {
+                document.getElementById('label-resultado').innerText = "Capital Inicial (R$):";
+                document.getElementById('aviso-inicial').style.display = "block";
+            } else {
+                document.getElementById('label-resultado').innerText = "Resultado Financeiro (R$):";
+                document.getElementById('aviso-inicial').style.display = "none";
+            }
+
             snapshot.forEach(doc => {
-                listaTemporaria.push({ id: doc.key, ...doc.val() });
-            });
-
-            // Processamos a soma acumulada na ordem cronológica correta
-            listaTemporaria.forEach(item => {
-                ultimoID = item.id;
-                acumulado += item.resultado; // Soma o dia atual ao que já tinha
+                const item = doc.val();
+                ultimoID = doc.key;
+                acumulado += item.resultado;
                 
                 saldosProgresso.push(acumulado);
                 datasGrafico.push(item.data.slice(0, 5));
@@ -215,17 +221,15 @@
                 const cor = item.resultado >= 0 ? "gain" : "loss";
                 const sinal = item.resultado >= 0 ? "+" : "";
                 
-                // Na tabela mostramos o mais recente no topo, mas com o cálculo correto
                 tbody.insertAdjacentHTML('afterbegin', `
                     <tr>
                         <td>${item.data}</td>
-                        <td class="${cor}">${sinal} R$ ${item.resultado.toFixed(2)}</td>
+                        <td class="${cor}">${item.tipo === 'inicial' ? '' : sinal} R$ ${item.resultado.toFixed(2)}</td>
                         <td>R$ ${acumulado.toFixed(2)}</td>
                     </tr>
                 `);
             });
 
-            // Atualiza o display do capital total
             document.getElementById('capital-input').value = acumulado.toFixed(2);
             atualizarCalculos();
             renderizarGrafico(saldosProgresso, datasGrafico);
@@ -235,7 +239,6 @@
     function renderizarGrafico(saldos, datas) {
         const ctx = document.getElementById('graficoEvolucao').getContext('2d');
         if (chartInstance) chartInstance.destroy();
-        
         chartInstance = new Chart(ctx, {
             type: 'line',
             data: {
@@ -244,21 +247,11 @@
                     data: saldos,
                     borderColor: '#3b82f6',
                     backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    borderWidth: 3,
-                    tension: 0.3,
                     fill: true,
-                    pointRadius: 4
+                    tension: 0.3
                 }]
             },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { grid: { color: 'rgba(255,255,255,0.05)' } },
-                    x: { grid: { display: false } }
-                }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
         });
     }
 </script>
