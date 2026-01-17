@@ -13,39 +13,37 @@
         :root { --primary: #3b82f6; --success: #22c55e; --danger: #ef4444; --bg: #0f172a; --card: #1e293b; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; padding: 15px; margin: 0; }
         .container { max-width: 800px; margin: auto; }
-        .card { background: var(--card); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #334155; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .card { background: var(--card); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #334155; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .stat-box { background: #0f172a; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #475569; }
         .stat-box strong { font-size: 1.1rem; display: block; margin-top: 5px; }
         input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; }
         .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; color: white; }
+        button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; }
         .btn-main { background: var(--primary); }
         .btn-danger { background: var(--danger); }
-        button:hover { opacity: 0.8; }
-        canvas { background: #0f172a; border-radius: 10px; padding: 10px; margin-top: 10px; }
         .gain { color: var(--success); }
         .loss { color: var(--danger); }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.85rem; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; }
-        .user-info { text-align: right; font-size: 0.8rem; margin-bottom: 10px; color: #94a3b8; }
+        .user-info { text-align: right; font-size: 0.9rem; margin-bottom: 10px; color: #fbbf24; font-weight: bold; }
+        #grafico-container { position: relative; height: 200px; width: 100%; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <button onclick="window.location.href='./'" 
-        style="background: #475569; width: auto; padding: 10px 20px; margin-bottom: 15px; border-radius: 8px; color: white; border: none; cursor: pointer; display: block;">
-    ⬅ Voltar para o Ares RPG
+    <button onclick="window.location.href='./'" style="background: #475569; width: auto; padding: 10px 20px; margin-bottom: 15px; border-radius: 8px; border: none; cursor: pointer; display: block; color: white;">
+        ⬅ Voltar para o Ares RPG
     </button>
     
-    <div id="user-display" class="user-info">Identificando jogador...</div>
+    <div id="user-display" class="user-info">Carregando...</div>
     
     <div class="card">
         <h2>🚀 Investimento Trade GR</h2>
         <div class="grid-3">
             <div class="stat-box">
-                <small>Meta </small>
+                <small id="label-meta">Meta (10%)</small>
                 <strong id="meta-valor" class="gain">R$ 0,00</strong>
             </div>
             <div class="stat-box">
@@ -53,7 +51,7 @@
                 <strong id="contratos-qtd" style="color: #fbbf24;">0</strong>
             </div>
             <div class="stat-box">
-                <small>Loss Diário </small>
+                <small id="label-loss">Loss Diário (10%)</small>
                 <strong id="loss-limite" class="loss">R$ 0,00</strong>
             </div>
         </div>
@@ -61,37 +59,34 @@
 
     <div class="card">
         <h3>📈 Evolução do Capital</h3>
-        <canvas id="graficoEvolucao" height="150"></canvas>
+        <div id="grafico-container">
+            <canvas id="graficoEvolucao"></canvas>
+        </div>
     </div>
 
     <div class="card">
-    <h3>⚙️ Lançamento Diário</h3>
-    
-    <label>Porcentagem de Meta/Loss Diário (%):</label>
-    <input type="number" id="porcentagem-meta" value="10" oninput="atualizarCalculos()" placeholder="Ex: 5">
+        <h3>⚙️ Lançamento Diário</h3>
+        <label>Porcentagem de Meta/Loss Diário (%):</label>
+        <input type="number" id="porcentagem-meta" value="10" oninput="atualizarCalculos()">
 
-    <label>Capital Atual (R$):</label>
-    <input type="number" id="capital-input" placeholder="Seu capital antes da operação" oninput="atualizarCalculos()">
-    
-    <label>Resultado Financeiro (R$):</label>
-    <input type="number" id="resultado-input" placeholder="Ex: 100 ou -50">
-    
-    <div class="btn-group">
-        <button class="btn-main" onclick="salvarOperacao()">REGISTRAR RESULTADO</button>
-        <button class="btn-danger" onclick="apagarUltimo()">CORRIGIR ÚLTIMO</button>
+        <label>Capital Atual (R$):</label>
+        <input type="number" id="capital-input" placeholder="Capital antes da operação" oninput="atualizarCalculos()">
+        
+        <label>Resultado Financeiro (R$):</label>
+        <input type="number" id="resultado-input" placeholder="Ex: 100 ou -50">
+        
+        <div class="btn-group">
+            <button class="btn-main" onclick="salvarOperacao()">REGISTRAR RESULTADO</button>
+            <button class="btn-danger" onclick="apagarUltimo()">CORRIGIR ÚLTIMO</button>
+        </div>
     </div>
-</div>
 
     <div class="card">
-        <h3>📊 Histórico de Performance</h3>
+        <h3>📊 Histórico</h3>
         <div style="overflow-x:auto;">
             <table>
                 <thead>
-                    <tr>
-                        <th>Data</th>
-                        <th>Resultado</th>
-                        <th>Capital Final</th>
-                    </tr>
+                    <tr><th>Data</th><th>Resultado</th><th>Capital Final</th></tr>
                 </thead>
                 <tbody id="tabela-corpo"></tbody>
             </table>
@@ -114,164 +109,96 @@
     let ultimoID = null;
 
     auth.onAuthStateChanged((user) => {
-    if (user) {
-        userPath = user.uid;
-        
-        // Buscando o nick conforme a estrutura da Evolução Física
-        db.ref(`usuarios/${userPath}/perfil`).once('value', (snapshot) => {
-            const perfil = snapshot.val();
-            if (perfil && perfil.nick) {
-                document.getElementById('user-display').innerText = `Jogador: ${perfil.nick}`;
-            } else {
-                // Caso não encontre o nick, usa o nome antes do @ do email
-                const nickFallback = user.email.split('@')[0];
-                document.getElementById('user-display').innerText = `Jogador: ${nickFallback}`;
-            }
-        });
+        if (user) {
+            userPath = user.uid;
+            
+            // BUSCA NICK IGUAL NA EVOLUÇÃO FÍSICA
+            db.ref(`usuarios/${userPath}/perfil/nick`).on('value', (snapshot) => {
+                const nick = snapshot.val();
+                document.getElementById('user-display').innerText = `Jogador: ${nick || user.email.split('@')[0]}`;
+            });
 
-        carregarDados(); 
-    } else {
-        window.location.href = "index.html";
-    }
-});
+            carregarDados(); 
+        } else {
+            window.location.href = "index.html";
+        }
+    });
 
     function atualizarCalculos() {
-    // Pega o capital e a porcentagem definida pelo usuário
-    const capital = Number(document.getElementById('capital-input').value) || 0;
-    const porcentagemUser = Number(document.getElementById('porcentagem-meta').value) || 0;
+        const capital = Number(document.getElementById('capital-input').value) || 0;
+        const porcento = Number(document.getElementById('porcentagem-meta').value) || 0;
+        const valor = capital * (porcento / 100);
 
-    // Cálculos dinâmicos
-    const contratos = Math.floor(capital / 1000); 
-    const metaValor = capital * (porcentagemUser / 100); 
-    const lossValor = capital * (porcentagemUser / 100); // Loss igual à Meta
-
-    // Atualiza os valores na tela
-    document.getElementById('contratos-qtd').innerText = contratos;
-    document.getElementById('meta-valor').innerText = `R$ ${metaValor.toFixed(2)}`;
-    document.getElementById('loss-limite').innerText = `R$ ${lossValor.toFixed(2)}`;
-
-    // Atualiza os textos pequenos (Small) para mostrar a porcentagem atual
-    document.getElementById('label-meta').innerText = `Meta (${porcentagemUser}%)`;
-    document.getElementById('label-loss').innerText = `Loss Diário (${porcentagemUser}%)`;
-}
+        document.getElementById('contratos-qtd').innerText = Math.floor(capital / 1000);
+        document.getElementById('meta-valor').innerText = `R$ ${valor.toFixed(2)}`;
+        document.getElementById('loss-limite').innerText = `R$ ${valor.toFixed(2)}`;
+        document.getElementById('label-meta').innerText = `Meta (${porcento}%)`;
+        document.getElementById('label-loss').innerText = `Loss Diário (${porcento}%)`;
+    }
 
     function salvarOperacao() {
         if (!userPath) return;
-
-        // Forçar conversão para número para evitar erros de soma de texto
-        const capitalAnterior = Number(document.getElementById('capital-input').value);
-        const resultado = Number(document.getElementById('resultado-input').value);
-
-        if (isNaN(capitalAnterior) || isNaN(resultado)) {
-            return Swal.fire("Erro", "Preencha os valores corretamente!", "error");
-        }
-
-        const novoSaldo = capitalAnterior + resultado;
+        const cap = Number(document.getElementById('capital-input').value);
+        const res = Number(document.getElementById('resultado-input').value);
+        if (isNaN(cap) || isNaN(res)) return Swal.fire("Erro", "Preencha os valores!", "error");
 
         db.ref(`investimentos/${userPath}/historico`).push({
             data: new Date().toLocaleDateString('pt-BR'),
-            resultado: resultado,
-            saldoFinal: novoSaldo,
+            resultado: res,
+            saldoFinal: cap + res,
             timestamp: firebase.database.ServerValue.TIMESTAMP
         }).then(() => {
             document.getElementById('resultado-input').value = "";
-            Swal.fire("Sucesso!", "Resultado registrado.", "success");
+            Swal.fire("Sucesso!", "Registrado.", "success");
         });
     }
 
     function apagarUltimo() {
-        if (!ultimoID) return Swal.fire("Aviso", "Não há registros recentes para apagar.", "info");
-
-        Swal.fire({
-            title: 'Corrigir erro?',
-            text: "O último registro será excluído permanentemente!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Sim, apagar',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                db.ref(`investimentos/${userPath}/historico/${ultimoID}`).remove()
-                .then(() => Swal.fire("Apagado!", "Registro removido com sucesso.", "success"));
-            }
-        });
-    }
-
-    function inicializarGrafico(dados, labels) {
-        const ctx = document.getElementById('graficoEvolucao').getContext('2d');
-        if (chartInstance) chartInstance.destroy();
-
-        chartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Capital (R$)',
-                    data: dados,
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    fill: true,
-                    tension: 0.3,
-                    pointBackgroundColor: '#3b82f6'
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
-                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
-                }
-            }
-        });
+        if (!ultimoID) return;
+        db.ref(`investimentos/${userPath}/historico/${ultimoID}`).remove();
     }
 
     function carregarDados() {
-        // Escuta em tempo real os últimos 20 registros
         db.ref(`investimentos/${userPath}/historico`).orderByChild('timestamp').limitToLast(20).on('value', snapshot => {
             const tbody = document.getElementById('tabela-corpo');
             tbody.innerHTML = "";
+            let saldos = []; let datas = [];
             
-            let saldos = [];
-            let datas = [];
-            ultimoID = null;
-
             snapshot.forEach(doc => {
                 const item = doc.val();
-                ultimoID = doc.key; // Guarda o ID do último item para o botão de apagar
-                
-                const cor = item.resultado >= 0 ? "gain" : "loss";
-                const sinal = item.resultado >= 0 ? "+" : "";
-                
+                ultimoID = doc.key;
                 saldos.push(item.saldoFinal);
                 datas.push(item.data.slice(0, 5));
-
-                tbody.insertAdjacentHTML('afterbegin', `
-                    <tr>
-                        <td>${item.data}</td>
-                        <td class="${cor}">${sinal} R$ ${item.resultado.toFixed(2)}</td>
-                        <td>R$ ${item.saldoFinal.toFixed(2)}</td>
-                    </tr>
-                `);
+                const cor = item.resultado >= 0 ? "gain" : "loss";
+                tbody.insertAdjacentHTML('afterbegin', `<tr><td>${item.data}</td><td class="${cor}">R$ ${item.resultado.toFixed(2)}</td><td>R$ ${item.saldoFinal.toFixed(2)}</td></tr>`);
             });
 
             if(saldos.length > 0) {
-                // Atualiza o input com o saldo mais recente disponível
-                const ultimoSaldo = saldos[saldos.length - 1];
-                document.getElementById('capital-input').value = ultimoSaldo.toFixed(2);
+                document.getElementById('capital-input').value = saldos[saldos.length-1].toFixed(2);
                 atualizarCalculos();
-                inicializarGrafico(saldos, datas);
+                renderizarGrafico(saldos, datas);
             }
         });
     }
-</script>
 
+    function renderizarGrafico(saldos, datas) {
+        const ctx = document.getElementById('graficoEvolucao').getContext('2d');
+        if (chartInstance) chartInstance.destroy();
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: datas,
+                datasets: [{
+                    data: saldos,
+                    borderColor: '#3b82f6',
+                    tension: 0.3,
+                    fill: true,
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)'
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+    }
+</script>
 </body>
 </html>
-
-
-
-
-
-
-
