@@ -146,83 +146,36 @@
     }
 
     function salvarOperacao() {
-    if (!userPath) return;
-    
-    const res = Number(document.getElementById('resultado-input').value);
-    const dataInput = document.getElementById('data-operacao').value;
+        if (!userPath) return;
+        const cap = Number(document.getElementById('capital-input').value);
+        const res = Number(document.getElementById('resultado-input').value);
+        const dataInput = document.getElementById('data-operacao').value;
 
-    if (isNaN(res)) return Swal.fire("Erro", "Preencha o resultado!", "error");
+        if (isNaN(cap) || isNaN(res)) return Swal.fire("Erro", "Preencha os valores!", "error");
 
-    let timestampBase;
-    let dataFormatada;
+        let dataFormatada;
+        let timestampBase;
 
-    if (dataInput) {
-        const partes = dataInput.split('-');
-        dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
-        timestampBase = new Date(dataInput + "T12:00:00").getTime();
-    } else {
-        dataFormatada = new Date().toLocaleDateString('pt-BR');
-        timestampBase = Date.now();
+        if (dataInput) {
+            const partes = dataInput.split('-');
+            dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
+            // Criar data ao meio-dia para evitar problemas de fuso horário
+            timestampBase = new Date(dataInput + "T12:00:00").getTime();
+        } else {
+            dataFormatada = new Date().toLocaleDateString('pt-BR');
+            timestampBase = Date.now();
+        }
+
+        db.ref(`investimentos/${userPath}/historico`).push({
+            data: dataFormatada,
+            resultado: res,
+            saldoFinal: cap + res,
+            timestamp: timestampBase
+        }).then(() => {
+            document.getElementById('resultado-input').value = "";
+            Swal.fire("Sucesso!", "Registro adicionado.", "success");
+        });
     }
-
-    // AGORA SALVAMOS APENAS O RESULTADO. O SALDO É CALCULADO DINAMICAMENTE
-    db.ref(`investimentos/${userPath}/historico`).push({
-        data: dataFormatada,
-        resultado: res,
-        timestamp: timestampBase
-    }).then(() => {
-        document.getElementById('resultado-input').value = "";
-        Swal.fire("Sucesso!", "Registro sincronizado com o histórico.", "success");
-    });
-}
-
-function carregarDados() {
-    // Buscamos os resultados ordenados por data
-    db.ref(`investimentos/${userPath}/historico`).orderByChild('timestamp').on('value', snapshot => {
-        const tbody = document.getElementById('tabela-corpo');
-        tbody.innerHTML = "";
-        
-        let saldosGrafico = []; 
-        let datasGrafico = [];
-        let saldoAcumulado = 0; 
-        
-        // Pegamos o capital inicial (opcional: você pode definir um valor base no banco)
-        // Por enquanto, vamos assumir que começa do zero ou do primeiro lançamento
-        
-        let registrosOrdenados = [];
-        snapshot.forEach(doc => {
-            registrosOrdenados.push({ id: doc.key, ...doc.val() });
-        });
-
-        // Cálculo da linha do tempo
-        registrosOrdenados.forEach(item => {
-            ultimoID = item.id;
-            saldoAcumulado += item.resultado; // Aqui a mágica acontece
-            
-            saldosGrafico.push(saldoAcumulado);
-            datasGrafico.push(item.data.slice(0, 5));
-
-            const cor = item.resultado >= 0 ? "gain" : "loss";
-            const sinal = item.resultado >= 0 ? "+" : "";
-            
-            // Tabela mostra o saldo que ficou NAQUELE dia após a soma
-            tbody.insertAdjacentHTML('afterbegin', `
-                <tr>
-                    <td>${item.data}</td>
-                    <td class="${cor}">${sinal} R$ ${item.resultado.toFixed(2)}</td>
-                    <td>R$ ${saldoAcumulado.toFixed(2)}</td>
-                </tr>
-            `);
-        });
-
-        // Atualiza os displays com o valor real final
-        const capitalInput = document.getElementById('capital-input');
-        capitalInput.value = saldoAcumulado.toFixed(2);
-        
-        atualizarCalculos();
-        renderizarGrafico(saldosGrafico, datasGrafico);
-    });
-}
 
     function apagarUltimo() {
         if (!ultimoID) return Swal.fire("Aviso", "Nenhum registro para apagar.", "info");
@@ -316,4 +269,3 @@ function carregarDados() {
 </script>
 </body>
 </html>
-
