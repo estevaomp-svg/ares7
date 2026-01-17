@@ -65,9 +65,10 @@
     </div>
 
     <div class="card">
-        <h3>⚙️ Lançamento Diário</h3>
-        <label>Porcentagem de Meta/Loss Diário (%):</label>
-        <input type="number" id="porcentagem-meta" value="10" oninput="atualizarCalculos()">
+    <h3>⚙️ Lançamento Diário / Histórico</h3>
+    <label>Data da Operação:</label>
+    <input type="date" id="data-operacao"> <label>Porcentagem de Meta/Loss Diário (%):</label>
+    <input type="number" id="porcentagem-meta" value="10" oninput="atualizarCalculos()">
 
         <label>Capital Atual (R$):</label>
         <input type="number" id="capital-input" placeholder="Capital antes da operação" oninput="atualizarCalculos()">
@@ -137,26 +138,37 @@
     }
 
     function salvarOperacao() {
-        if (!userPath) return;
-        const cap = Number(document.getElementById('capital-input').value);
-        const res = Number(document.getElementById('resultado-input').value);
-        if (isNaN(cap) || isNaN(res)) return Swal.fire("Erro", "Preencha os valores!", "error");
+    if (!userPath) return;
+    
+    const cap = Number(document.getElementById('capital-input').value);
+    const res = Number(document.getElementById('resultado-input').value);
+    const dataInput = document.getElementById('data-operacao').value;
 
-        db.ref(`investimentos/${userPath}/historico`).push({
-            data: new Date().toLocaleDateString('pt-BR'),
-            resultado: res,
-            saldoFinal: cap + res,
-            timestamp: firebase.database.ServerValue.TIMESTAMP
-        }).then(() => {
-            document.getElementById('resultado-input').value = "";
-            Swal.fire("Sucesso!", "Registrado.", "success");
-        });
+    if (isNaN(cap) || isNaN(res)) return Swal.fire("Erro", "Preencha os valores!", "error");
+
+    // Se o usuário não escolher data, usa a de hoje
+    let dataFormatada;
+    let timestampBase;
+
+    if (dataInput) {
+        const partes = dataInput.split('-');
+        dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`; // Formato PT-BR
+        timestampBase = new Date(dataInput + "T12:00:00").getTime(); // Garante o meio do dia para evitar fuso horário
+    } else {
+        dataFormatada = new Date().toLocaleDateString('pt-BR');
+        timestampBase = firebase.database.ServerValue.TIMESTAMP;
     }
 
-    function apagarUltimo() {
-        if (!ultimoID) return;
-        db.ref(`investimentos/${userPath}/historico/${ultimoID}`).remove();
-    }
+    db.ref(`investimentos/${userPath}/historico`).push({
+        data: dataFormatada,
+        resultado: res,
+        saldoFinal: cap + res,
+        timestamp: timestampBase
+    }).then(() => {
+        document.getElementById('resultado-input').value = "";
+        Swal.fire("Sucesso!", "Registro adicionado ao histórico.", "success");
+    });
+}
 
     function carregarDados() {
         db.ref(`investimentos/${userPath}/historico`).orderByChild('timestamp').limitToLast(20).on('value', snapshot => {
@@ -202,3 +214,4 @@
 </script>
 </body>
 </html>
+
