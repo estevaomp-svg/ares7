@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ares RPG - Estudo Concurso</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root { --primary: #3b82f6; --success: #22c55e; --danger: #ef4444; --bg: #0f172a; --card: #1e293b; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #f8fafc; padding: 20px; margin: 0; }
+        .container { max-width: 600px; margin: auto; }
+        h1 { text-align: center; color: var(--primary); margin-bottom: 30px; }
+        .questao { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid rgba(51, 65, 85, 0.5); margin-bottom: 25px; }
+        .pergunta { font-size: 1.1em; margin-bottom: 15px; font-weight: bold; }
+        .opcao { 
+            display: block; width: 100%; padding: 12px; margin: 8px 0; 
+            background: rgba(15, 23, 42, 0.5); border: 1px solid #334155; 
+            border-radius: 8px; color: white; cursor: pointer; text-align: left;
+            transition: 0.3s;
+        }
+        .opcao:hover { background: var(--primary); }
+        .badge { background: var(--primary); padding: 5px 10px; border-radius: 5px; font-size: 0.8em; margin-bottom: 10px; display: inline-block; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎯 Treinamento PRF/MGS</h1>
+
+    <div id="quiz">
+        </div>
+</div>
+
+<script>
+    const questoes = [
+        {
+            categoria: "RACIOCÍNIO LÓGICO",
+            pergunta: "Um lote com 200 caixas chegou ao galpão. O sistema acusa que 10% vieram com erro. Quantas caixas estão com erro?",
+            opcoes: ["10 caixas", "20 caixas", "2 caixas"],
+            correta: 1,
+            explicacao: "Macete: 10% de um número terminado em zero, basta esconder o último zero! 200 vira 20."
+        },
+        {
+            categoria: "INFORMÁTICA",
+            pergunta: "No Microsoft Word em português, qual o comando para SALVAR o documento?",
+            opcoes: ["Ctrl + S", "Ctrl + B", "Ctrl + P"],
+            correta: 1,
+            explicacao: "No Word/Excel em português, o comando é Ctrl + B (de baixar/salvar no disco)."
+        },
+        {
+            categoria: "DIREITO CONSTITUCIONAL",
+            pergunta: "Em qual caso a autoridade PODE entrar na casa de alguém durante a NOITE sem consentimento?",
+            opcoes: ["Cumprir mandado judicial", "Prestar socorro ou flagrante", "Suspeita de crime grave"],
+            correta: 1,
+            explicacao: "Mandado judicial só de dia. Socorro, desastre ou flagrante pode a qualquer hora."
+        },
+        {
+            categoria: "MATEMÁTICA",
+            pergunta: "5 vigilantes fazem a ronda em 40 minutos. Quanto tempo 10 vigilantes levariam para a mesma ronda?",
+            opcoes: ["80 minutos", "40 minutos", "20 minutos"],
+            correta: 2,
+            explicacao: "Proporcionalidade inversa: dobrou o pessoal, o tempo cai pela metade."
+        },
+        {
+            categoria: "ÉTICA / DIREITO",
+            pergunta: "O servidor que recebe vantagem indevida (propina) está sujeito a qual penalidade?",
+            opcoes: ["Advertência", "Suspensão", "Demissão"],
+            correta: 2,
+            explicacao: "Corrupção é falta grave. A punição direta é a demissão."
+        }
+    ];
+
+    function carregarQuiz() {
+        const container = document.getElementById('quiz');
+        questoes.forEach((q, index) => {
+            let html = `
+                <div class="questao">
+                    <span class="badge">${q.categoria}</span>
+                    <div class="pergunta">${index + 1}. ${q.pergunta}</div>
+                    ${q.opcoes.map((opt, i) => `
+                        <button class="opcao" onclick="verificar(${index}, ${i})">${opt}</button>
+                    `).join('')}
+                </div>
+            `;
+            container.innerHTML += html;
+        });
+    }
+
+    function verificar(qIndex, optIndex) {
+        const q = questoes[qIndex];
+        if (optIndex === q.correta) {
+            Swal.fire({
+                title: 'Excelente!',
+                text: q.explicacao,
+                icon: 'success',
+                confirmButtonColor: '#22c55e'
+            });
+        } else {
+            Swal.fire({
+                title: 'Ops, quase!',
+                text: 'A resposta correta era: ' + q.opcoes[q.correta],
+                icon: 'error',
+                confirmButtonColor: '#ef4444'
+            });
+        }
+    }
+
+    carregarQuiz();
+</script>
+
+</body>
+</html>
