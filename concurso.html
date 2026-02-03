@@ -3,32 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ares RPG - Estudo Concurso</title>
+    <title>Ares RPG - Concurso</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root { --primary: #3b82f6; --success: #22c55e; --danger: #ef4444; --bg: #0f172a; --card: #1e293b; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #f8fafc; padding: 20px; margin: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #f8fafc; padding: 15px; margin: 0; }
         .container { max-width: 600px; margin: auto; }
-        h1 { text-align: center; color: var(--primary); margin-bottom: 30px; }
-        .questao { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid rgba(51, 65, 85, 0.5); margin-bottom: 25px; }
-        .pergunta { font-size: 1.1em; margin-bottom: 15px; font-weight: bold; }
+        h1 { text-align: center; color: var(--primary); font-size: 1.5rem; margin: 20px 0; text-transform: uppercase; letter-spacing: 2px; }
+        .questao { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid rgba(51, 65, 85, 0.5); margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .badge { background: var(--primary); color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; margin-bottom: 10px; display: inline-block; }
+        .pergunta { font-size: 1.1rem; line-height: 1.5; margin-bottom: 15px; color: #e2e8f0; }
         .opcao { 
-            display: block; width: 100%; padding: 12px; margin: 8px 0; 
-            background: rgba(15, 23, 42, 0.5); border: 1px solid #334155; 
-            border-radius: 8px; color: white; cursor: pointer; text-align: left;
-            transition: 0.3s;
+            display: block; width: 100%; padding: 14px; margin: 10px 0; 
+            background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; 
+            border-radius: 10px; color: #cbd5e1; cursor: pointer; text-align: left;
+            transition: all 0.2s ease; font-size: 1rem;
         }
-        .opcao:hover { background: var(--primary); }
-        .badge { background: var(--primary); padding: 5px 10px; border-radius: 5px; font-size: 0.8em; margin-bottom: 10px; display: inline-block; }
+        .opcao:hover { background: var(--primary); color: white; border-color: var(--primary); transform: translateX(5px); }
+        .btn-voltar { display: block; text-align: center; margin-top: 20px; color: #94a3b8; text-decoration: none; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🎯 Treinamento PRF/MGS</h1>
+    <h1>🎯 Ares Concursos</h1>
 
     <div id="quiz">
         </div>
+
+    <a href="index.html" class="btn-voltar">← Voltar ao Ares RPG</a>
 </div>
 
 <script>
@@ -38,75 +41,84 @@
             pergunta: "Um lote com 200 caixas chegou ao galpão. O sistema acusa que 10% vieram com erro. Quantas caixas estão com erro?",
             opcoes: ["10 caixas", "20 caixas", "2 caixas"],
             correta: 1,
-            explicacao: "Macete: 10% de um número terminado em zero, basta esconder o último zero! 200 vira 20."
+            expl: "Macete: 10% de qualquer número terminado em zero, basta esconder o último zero! 200 virou 20."
         },
         {
             categoria: "INFORMÁTICA",
-            pergunta: "No Microsoft Word em português, qual o comando para SALVAR o documento?",
+            pergunta: "No Microsoft Word em português, qual o comando de teclado para SALVAR o documento?",
             opcoes: ["Ctrl + S", "Ctrl + B", "Ctrl + P"],
             correta: 1,
-            explicacao: "No Word/Excel em português, o comando é Ctrl + B (de baixar/salvar no disco)."
+            expl: "No Windows/Word em português, o atalho é Ctrl + B. Ctrl + S costuma ser sublinhado ou salvar em inglês."
         },
         {
             categoria: "DIREITO CONSTITUCIONAL",
-            pergunta: "Em qual caso a autoridade PODE entrar na casa de alguém durante a NOITE sem consentimento?",
-            opcoes: ["Cumprir mandado judicial", "Prestar socorro ou flagrante", "Suspeita de crime grave"],
+            pergunta: "Em qual dessas situações a autoridade PODE entrar na casa de alguém durante a NOITE sem consentimento?",
+            opcoes: ["Para cumprir ordem judicial", "Para prestar socorro ou flagrante", "Apenas suspeita de crime grave"],
             correta: 1,
-            explicacao: "Mandado judicial só de dia. Socorro, desastre ou flagrante pode a qualquer hora."
+            expl: "Mandado judicial é só de dia. Socorro, desastre ou flagrante pode a qualquer hora!"
         },
         {
             categoria: "MATEMÁTICA",
-            pergunta: "5 vigilantes fazem a ronda em 40 minutos. Quanto tempo 10 vigilantes levariam para a mesma ronda?",
+            pergunta: "Se 5 vigilantes fazem a ronda em 40 minutos, quanto tempo 10 vigilantes (mesmo ritmo) levariam para a mesma ronda?",
             opcoes: ["80 minutos", "40 minutos", "20 minutos"],
             correta: 2,
-            explicacao: "Proporcionalidade inversa: dobrou o pessoal, o tempo cai pela metade."
+            expl: "Proporcionalidade inversa: Se você dobrou a força de trabalho, o tempo cai pela metade."
         },
         {
             categoria: "ÉTICA / DIREITO",
-            pergunta: "O servidor que recebe vantagem indevida (propina) está sujeito a qual penalidade?",
-            opcoes: ["Advertência", "Suspensão", "Demissão"],
+            pergunta: "Qual a penalidade para o servidor público que aceita vantagem indevida (propina) no exercício da função?",
+            opcoes: ["Advertência por escrito", "Suspensão de 30 dias", "Demissão do cargo"],
             correta: 2,
-            explicacao: "Corrupção é falta grave. A punição direta é a demissão."
+            expl: "Corrupção é falta gravíssima. A lei prevê a demissão imediata do serviço público."
+        },
+        {
+            categoria: "INFORMÁTICA / SEGURANÇA",
+            pergunta: "Como se chama o ataque que usa e-mails falsos para 'pescar' senhas de usuários?",
+            opcoes: ["Firewall", "Phishing", "Spam"],
+            correta: 1,
+            expl: "Phishing vem de 'fishing' (pescar). É a isca digital para roubar dados."
         }
     ];
 
-    function carregarQuiz() {
-        const container = document.getElementById('quiz');
-        questoes.forEach((q, index) => {
-            let html = `
+    function renderizar() {
+        const div = document.getElementById('quiz');
+        questoes.forEach((q, i) => {
+            div.innerHTML += `
                 <div class="questao">
                     <span class="badge">${q.categoria}</span>
-                    <div class="pergunta">${index + 1}. ${q.pergunta}</div>
-                    ${q.opcoes.map((opt, i) => `
-                        <button class="opcao" onclick="verificar(${index}, ${i})">${opt}</button>
+                    <div class="pergunta">${i + 1}. ${q.pergunta}</div>
+                    ${q.opcoes.map((opt, optIdx) => `
+                        <button class="opcao" onclick="verificar(${i}, ${optIdx})">${opt}</button>
                     `).join('')}
                 </div>
             `;
-            container.innerHTML += html;
         });
     }
 
-    function verificar(qIndex, optIndex) {
-        const q = questoes[qIndex];
-        if (optIndex === q.correta) {
+    function verificar(qIdx, optIdx) {
+        const q = questoes[qIdx];
+        if(optIdx === q.correta) {
             Swal.fire({
-                title: 'Excelente!',
-                text: q.explicacao,
+                title: 'ACERTOU!',
+                text: q.expl,
                 icon: 'success',
-                confirmButtonColor: '#22c55e'
+                confirmButtonColor: '#3b82f6',
+                background: '#1e293b',
+                color: '#fff'
             });
         } else {
             Swal.fire({
-                title: 'Ops, quase!',
+                title: 'ERROU!',
                 text: 'A resposta correta era: ' + q.opcoes[q.correta],
                 icon: 'error',
-                confirmButtonColor: '#ef4444'
+                confirmButtonColor: '#ef4444',
+                background: '#1e293b',
+                color: '#fff'
             });
         }
     }
 
-    carregarQuiz();
+    renderizar();
 </script>
-
 </body>
 </html>
