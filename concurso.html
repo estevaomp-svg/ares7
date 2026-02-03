@@ -9,113 +9,96 @@
         :root { --primary: #3b82f6; --success: #22c55e; --danger: #ef4444; --bg: #0f172a; --card: #1e293b; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #f8fafc; padding: 15px; margin: 0; }
         .container { max-width: 600px; margin: auto; }
-        h1 { text-align: center; color: var(--primary); font-size: 1.5rem; margin: 20px 0; text-transform: uppercase; letter-spacing: 2px; }
-        .questao { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid rgba(51, 65, 85, 0.5); margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .badge { background: var(--primary); color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; margin-bottom: 10px; display: inline-block; }
-        .pergunta { font-size: 1.1rem; line-height: 1.5; margin-bottom: 15px; color: #e2e8f0; }
-        .opcao { 
-            display: block; width: 100%; padding: 14px; margin: 10px 0; 
-            background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; 
-            border-radius: 10px; color: #cbd5e1; cursor: pointer; text-align: left;
-            transition: all 0.2s ease; font-size: 1rem;
-        }
-        .opcao:hover { background: var(--primary); color: white; border-color: var(--primary); transform: translateX(5px); }
-        .btn-voltar { display: block; text-align: center; margin-top: 20px; color: #94a3b8; text-decoration: none; font-size: 0.9rem; }
+        .stats-bar { background: var(--card); padding: 15px; border-radius: 12px; display: flex; justify-content: space-around; margin-bottom: 20px; border: 1px solid var(--primary); }
+        .stat-item { text-align: center; }
+        .stat-value { display: block; font-size: 1.2rem; font-weight: bold; color: var(--primary); }
+        .questao { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid rgba(51, 65, 85, 0.5); margin-bottom: 20px; position: relative; }
+        .bloqueado { opacity: 0.5; pointer-events: none; }
+        .timer-msg { color: var(--danger); font-size: 0.8rem; margin-top: 10px; display: none; }
+        .bloqueado .timer-msg { display: block; }
+        .badge { background: var(--primary); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; margin-bottom: 10px; display: inline-block; }
+        .opcao { display: block; width: 100%; padding: 14px; margin: 10px 0; background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; color: #cbd5e1; cursor: pointer; text-align: left; transition: 0.2s; }
+        .opcao:hover { background: var(--primary); color: white; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🎯 Ares Concursos</h1>
+    <div class="stats-bar">
+        <div class="stat-item"><span class="stat-value" id="total-hoje">0</span>Acertos Hoje</div>
+        <div class="stat-item"><span class="stat-value" id="percentual">0%</span>Precisão</div>
+    </div>
 
-    <div id="quiz">
-        </div>
-
-    <a href="index.html" class="btn-voltar">← Voltar ao Ares RPG</a>
+    <div id="quiz"></div>
 </div>
 
 <script>
+    const COOLDOWN_HOURS = 4;
     const questoes = [
-        {
-            categoria: "RACIOCÍNIO LÓGICO",
-            pergunta: "Um lote com 200 caixas chegou ao galpão. O sistema acusa que 10% vieram com erro. Quantas caixas estão com erro?",
-            opcoes: ["10 caixas", "20 caixas", "2 caixas"],
-            correta: 1,
-            expl: "Macete: 10% de qualquer número terminado em zero, basta esconder o último zero! 200 virou 20."
-        },
-        {
-            categoria: "INFORMÁTICA",
-            pergunta: "No Microsoft Word em português, qual o comando de teclado para SALVAR o documento?",
-            opcoes: ["Ctrl + S", "Ctrl + B", "Ctrl + P"],
-            correta: 1,
-            expl: "No Windows/Word em português, o atalho é Ctrl + B. Ctrl + S costuma ser sublinhado ou salvar em inglês."
-        },
-        {
-            categoria: "DIREITO CONSTITUCIONAL",
-            pergunta: "Em qual dessas situações a autoridade PODE entrar na casa de alguém durante a NOITE sem consentimento?",
-            opcoes: ["Para cumprir ordem judicial", "Para prestar socorro ou flagrante", "Apenas suspeita de crime grave"],
-            correta: 1,
-            expl: "Mandado judicial é só de dia. Socorro, desastre ou flagrante pode a qualquer hora!"
-        },
-        {
-            categoria: "MATEMÁTICA",
-            pergunta: "Se 5 vigilantes fazem a ronda em 40 minutos, quanto tempo 10 vigilantes (mesmo ritmo) levariam para a mesma ronda?",
-            opcoes: ["80 minutos", "40 minutos", "20 minutos"],
-            correta: 2,
-            expl: "Proporcionalidade inversa: Se você dobrou a força de trabalho, o tempo cai pela metade."
-        },
-        {
-            categoria: "ÉTICA / DIREITO",
-            pergunta: "Qual a penalidade para o servidor público que aceita vantagem indevida (propina) no exercício da função?",
-            opcoes: ["Advertência por escrito", "Suspensão de 30 dias", "Demissão do cargo"],
-            correta: 2,
-            expl: "Corrupção é falta gravíssima. A lei prevê a demissão imediata do serviço público."
-        },
-        {
-            categoria: "INFORMÁTICA / SEGURANÇA",
-            pergunta: "Como se chama o ataque que usa e-mails falsos para 'pescar' senhas de usuários?",
-            opcoes: ["Firewall", "Phishing", "Spam"],
-            correta: 1,
-            expl: "Phishing vem de 'fishing' (pescar). É a isca digital para roubar dados."
-        }
+        { id: 1, cat: "RACIOCÍNIO LÓGICO", q: "Um lote com 200 caixas chegou ao galpão. O sistema acusa que 10% vieram com erro. Quantas caixas estão com erro?", opts: ["10 caixas", "20 caixas", "2 caixas"], corr: 1, exp: "Macete: 10% de um número terminado em zero, basta esconder o último zero! 200 vira 20." },
+        
+        { id: 2, cat: "INFORMÁTICA", q: "No Microsoft Word em português, qual o comando de teclado para SALVAR o documento?", opts: ["Ctrl + S", "Ctrl + B", "Ctrl + P"], corr: 1, exp: "No Word/Excel em português, o comando é Ctrl + B (de baixar/salvar no disco)." },
+        
+        { id: 3, cat: "DIREITO CONSTITUCIONAL", q: "Em qual caso a autoridade PODE entrar na casa de alguém durante a NOITE sem consentimento?", opts: ["Cumprir mandado judicial", "Prestar socorro ou flagrante", "Suspeita de crime grave"], corr: 1, exp: "Mandado judicial só de dia. Socorro, desastre ou flagrante pode a qualquer hora." },
+        
+        { id: 4, cat: "MATEMÁTICA", q: "Se 5 vigilantes fazem a ronda em 40 minutos, quanto tempo 10 vigilantes (mesmo ritmo) levariam para fazer a mesma ronda?", opts: ["80 minutos", "40 minutos", "20 minutos"], corr: 2, exp: "Proporcionalidade inversa: dobrou o pessoal, o tempo de trabalho cai pela metade." },
+        
+        { id: 5, cat: "ÉTICA / DIREITO", q: "Qual a penalidade para o servidor público que aceita vantagem indevida (propina) no exercício da função?", opts: ["Advertência", "Suspensão", "Demissão"], corr: 2, exp: "Corrupção é falta gravíssima. A lei prevê a demissão imediata do serviço público." },
+        
+        { id: 6, cat: "INFORMÁTICA / SEGURANÇA", q: "Como se chama o ataque que usa e-mails falsos para 'pescar' senhas e dados de usuários?", opts: ["Firewall", "Phishing", "Spam"], corr: 1, exp: "Phishing vem de 'fishing' (pescar). É a isca digital para roubar dados sensíveis." },
+        
+        { id: 7, cat: "LÓGICA / INVESTIMENTO", q: "Proposta A: R$ 180 fixos. Proposta B: 10% de um prêmio de R$ 2.000. Qual proposta paga mais?", opts: ["Proposta A", "Proposta B", "As duas são iguais"], corr: 1, exp: "10% de 2.000 é R$ 200. Logo, a Proposta B (200) é maior que a A (180)." },
+        
+        { id: 8, cat: "ADMINISTRATIVO / PRF", q: "O agente deve agir com ZELO ao manusear equipamentos. A palavra ZELO tem o mesmo sentido de:", opts: ["Desprezo", "Pressa", "Cuidado"], corr: 2, exp: "Zelo significa ter cuidado, atenção e responsabilidade com o que é público." }
+        { id: 1, cat: "RACING LÓGICO", q: "10% de 200 caixas?", opts: ["10", "20", "2"], corr: 1, exp: "Macete do zero!" },
+        { id: 2, cat: "INFORMÁTICA", q: "Atalho para SALVAR no Word?", opts: ["Ctrl+S", "Ctrl+B", "Ctrl+P"], corr: 1, exp: "B de Baixar/Salvar." },
+        { id: 3, cat: "DIREITO", q: "Entrar em casa à noite sem dono?", opts: ["Mandado", "Socorro/Flagrante", "Crime Grave"], corr: 1, exp: "Socorro e flagrante a qualquer hora." }
     ];
 
     function renderizar() {
         const div = document.getElementById('quiz');
-        questoes.forEach((q, i) => {
+        const agora = Date.now();
+        let acertos = localStorage.getItem('acertos_dia') || 0;
+        let totalRespostas = localStorage.getItem('total_tentativas') || 0;
+
+        div.innerHTML = '';
+        questoes.forEach((q) => {
+            const lastTime = localStorage.getItem(`bloqueio_${q.id}`);
+            const isBloqueado = lastTime && (agora - lastTime < COOLDOWN_HOURS * 3600000);
+            
             div.innerHTML += `
-                <div class="questao">
-                    <span class="badge">${q.categoria}</span>
-                    <div class="pergunta">${i + 1}. ${q.pergunta}</div>
-                    ${q.opcoes.map((opt, optIdx) => `
-                        <button class="opcao" onclick="verificar(${i}, ${optIdx})">${opt}</button>
-                    `).join('')}
+                <div class="questao ${isBloqueado ? 'bloqueado' : ''}" id="q-box-${q.id}">
+                    <span class="badge">${q.cat}</span>
+                    <div>${q.q}</div>
+                    <div class="timer-msg">⏳ Bloqueada por 4h após resposta.</div>
+                    ${q.opts.map((opt, i) => `<button class="opcao" onclick="verificar(${q.id}, ${i})">${opt}</button>`).join('')}
                 </div>
             `;
         });
+        atualizarStats();
     }
 
-    function verificar(qIdx, optIdx) {
-        const q = questoes[qIdx];
-        if(optIdx === q.correta) {
-            Swal.fire({
-                title: 'ACERTOU!',
-                text: q.expl,
-                icon: 'success',
-                confirmButtonColor: '#3b82f6',
-                background: '#1e293b',
-                color: '#fff'
-            });
+    function verificar(qId, optIdx) {
+        const q = questoes.find(x => x.id === qId);
+        let acertos = parseInt(localStorage.getItem('acertos_dia') || 0);
+        let total = parseInt(localStorage.getItem('total_tentativas') || 0);
+
+        localStorage.setItem(`bloqueio_${qId}`, Date.now());
+        localStorage.setItem('total_tentativas', total + 1);
+
+        if (optIdx === q.corr) {
+            localStorage.setItem('acertos_dia', acertos + 1);
+            Swal.fire({ title: 'Boa!', text: q.exp, icon: 'success' }).then(renderizar);
         } else {
-            Swal.fire({
-                title: 'ERROU!',
-                text: 'A resposta correta era: ' + q.opcoes[q.correta],
-                icon: 'error',
-                confirmButtonColor: '#ef4444',
-                background: '#1e293b',
-                color: '#fff'
-            });
+            Swal.fire({ title: 'Errou!', text: 'Resposta certa: ' + q.opts[q.corr], icon: 'error' }).then(renderizar);
         }
+    }
+
+    function atualizarStats() {
+        const acertos = localStorage.getItem('acertos_dia') || 0;
+        const total = localStorage.getItem('total_tentativas') || 1;
+        document.getElementById('total-hoje').innerText = acertos;
+        document.getElementById('percentual').innerText = Math.round((acertos / total) * 100) + '%';
     }
 
     renderizar();
