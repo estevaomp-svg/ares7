@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ares Kids - Desafio Júnior</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root { --primary: #fbbf24; --secondary: #60a5fa; --success: #4ade80; --bg: #1e3a8a; }
+        body { font-family: 'Comic Sans MS', cursive, sans-serif; background: var(--bg); color: white; padding: 15px; text-align: center; }
+        .container { max-width: 500px; margin: auto; }
+        h1 { color: var(--primary); text-shadow: 2px 2px #000; font-size: 2rem; }
+        .questao { background: #ffffff; color: #1e293b; padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 5px solid var(--secondary); }
+        .pergunta { font-size: 1.2rem; font-weight: bold; margin-bottom: 15px; }
+        .opcao { 
+            display: block; width: 100%; padding: 15px; margin: 10px 0; 
+            background: var(--secondary); border: none; border-radius: 12px; 
+            color: white; font-size: 1.1rem; cursor: pointer; transition: 0.2s;
+        }
+        .opcao:hover { transform: scale(1.02); filter: brightness(1.1); }
+        .stats { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 15px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🚀 Missão Ares Kids</h1>
+    <p>Prepare-se para o desafio, campeão!</p>
+
+    <div class="stats">
+        Estrelas Ganhas: <span id="estrelas">0</span> ⭐
+    </div>
+
+    <div id="quiz"></div>
+</div>
+
+<script>
+    let estrelas = 0;
+    const perguntasKids = [
+        { q: "Quanto é 5 + 5?", opts: ["8", "10", "12"], corr: 1, exp: "Isso aí! Dez dedos nas mãos!" },
+        { q: "Qual cor nasce da mistura de Azul com Amarelo?", opts: ["Verde", "Roxo", "Laranja"], corr: 0, exp: "Mágica das cores! Azul + Amarelo = Verde." },
+        { q: "Qual animal é conhecido como o Rei da Selva?", opts: ["Tigre", "Leão", "Elefante"], corr: 1, exp: "ROOOAR! O Leão manda na selva." },
+        { q: "Qual dessas palavras começa com a letra B?", opts: ["Anel", "Casa", "Bola"], corr: 2, exp: "B de Bola, Boneca e Bolo!" },
+        { q: "Quantos planetas existem no nosso sistema solar?", opts: ["5", "8", "20"], corr: 1, exp: "São 8 planetas girando em volta do Sol." },
+        { q: "Qual é o nome do satélite natural da Terra?", opts: ["Sol", "Marte", "Lua"], corr: 2, exp: "A Lua brilha lá no céu à noite!" },
+        { q: "O que o gelo vira quando derrete?", opts: ["Fogo", "Água", "Vapor"], corr: 1, exp: "O gelo é água bem geladinha e sólida." },
+        { q: "Quantos dias tem uma semana?", opts: ["5 dias", "7 dias", "10 dias"], corr: 1, exp: "Segunda, terça, quarta, quinta, sexta, sábado e domingo!" },
+        { q: "Qual é o maior animal do mundo?", opts: ["Elefante", "Baleia Azul", "Girafa"], corr: 1, exp: "A Baleia Azul é gigante e vive no oceano!" },
+        { q: "Qual dessas frutas é vermelha por fora?", opts: ["Banana", "Maçã", "Pêra"], corr: 1, exp: "A Maçã é vermelhinha e deliciosa." },
+        { q: "Quem descobriu o Brasil?", opts: ["Pedro Álvares Cabral", "Dom Pedro I", "Ziraldo"], corr: 0, exp: "Cabral chegou aqui faz muito tempo!" },
+        { q: "Quantos minutos tem uma hora?", opts: ["30", "60", "100"], corr: 1, exp: "O relógio gira 60 vezes para dar uma hora." },
+        { q: "Qual é o sentido que usamos para sentir o cheiro?", opts: ["Visão", "Olfato", "Paladar"], corr: 1, exp: "O nariz é o órgão do olfato." },
+        { q: "Qual animal põe ovos?", opts: ["Cachorro", "Galinha", "Gato"], corr: 1, exp: "As aves como a galinha põem ovos." },
+        { q: "Qual o nome da nossa galáxia?", opts: ["Via Láctea", "Andrômeda", "Estrela Guia"], corr: 0, exp: "Via Láctea parece um caminho de leite no céu!" },
+        { q: "O triângulo tem quantos lados?", opts: ["2", "3", "4"], corr: 1, exp: "Tri = Três!" },
+        { q: "Qual é o país onde nós moramos?", opts: ["Argentina", "Brasil", "Portugal"], corr: 1, exp: "Brasil, o melhor lugar!" },
+        { q: "Como se chama o movimento que a Terra faz em volta de si mesma?", opts: ["Rotação", "Translação", "Pulo"], corr: 0, exp: "A Rotação cria o dia e a noite." },
+        { q: "Qual é o antônimo (oposto) de 'Grande'?", opts: ["Longo", "Alto", "Pequeno"], corr: 2, exp: "Pequeno é o contrário de grande." },
+        { q: "Qual animal vive tanto na água quanto na terra?", opts: ["Peixe", "Sapo", "Pássaro"], corr: 1, exp: "O sapo é um anfíbio!" }
+    ];
+
+    function render() {
+        const div = document.getElementById('quiz');
+        div.innerHTML = '';
+        perguntasKids.forEach((p, i) => {
+            div.innerHTML += `
+                <div class="questao">
+                    <div class="pergunta">${i+1}. ${p.q}</div>
+                    ${p.opts.map((o, idx) => `<button class="opcao" onclick="check(${i}, ${idx})">${o}</button>`).join('')}
+                </div>
+            `;
+        });
+    }
+
+    function check(qIdx, oIdx) {
+        const p = perguntasKids[qIdx];
+        if(oIdx === p.corr) {
+            estrelas++;
+            document.getElementById('estrelas').innerText = estrelas;
+            Swal.fire({ title: 'ACERTOU! ✨', text: p.exp, icon: 'success', confirmButtonColor: '#4ade80' });
+        } else {
+            Swal.fire({ title: 'QUASE! 🤔', text: 'Tente de novo, você consegue!', icon: 'info', confirmButtonColor: '#60a5fa' });
+        }
+    }
+    render();
+</script>
+</body>
+</html>
