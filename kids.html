@@ -3,63 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ares Kids - Desafio Júnior</title>
+    <title>Ares Kids - Missão 25</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root { --primary: #fbbf24; --secondary: #60a5fa; --success: #4ade80; --bg: #1e3a8a; }
-        
-        /* FONTE BEM LIMPA E EM NEGRITO PARA FACILITAR A LEITURA */
-        body { 
-            font-family: Arial, Helvetica, sans-serif; 
-            background: var(--bg); 
-            color: white; 
-            padding: 15px; 
-            text-align: center; 
-            letter-spacing: 1px; /* Espaço entre letras ajuda a não embolar */
-        }
-
+        body { font-family: Arial, sans-serif; background: var(--bg); color: white; padding: 15px; text-align: center; }
         .container { max-width: 500px; margin: auto; }
+        h1 { color: var(--primary); font-size: 2.2rem; margin-bottom: 5px; }
         
-        h1 { color: var(--primary); text-transform: uppercase; font-size: 2.2rem; margin-bottom: 5px; }
-        
-        .instrucao { font-size: 1.1rem; color: #bfdbfe; margin-bottom: 20px; font-weight: bold; }
-
         .questao { 
-            background: #ffffff; 
-            color: #1e293b; 
-            padding: 25px; 
-            border-radius: 25px; 
-            margin-bottom: 25px; 
-            border: 6px solid var(--secondary);
-            box-shadow: 0 10px 0 #1d4ed8;
+            background: #ffffff; color: #1e293b; padding: 25px; border-radius: 25px; 
+            margin-bottom: 25px; border: 6px solid var(--secondary);
+            position: relative; transition: 0.3s;
         }
 
-        /* PERGUNTA GRANDE E CLARA */
-        .pergunta { 
-            font-size: 1.5rem; 
-            font-weight: 900; 
-            line-height: 1.4;
-            margin-bottom: 20px; 
-            text-transform: uppercase; /* Opcional: letras grandes às vezes ajudam na fase inicial */
-        }
+        /* ESTILO PARA QUANDO ESTIVER BLOQUEADO */
+        .bloqueado { opacity: 0.6; filter: grayscale(1); pointer-events: none; }
+        .msg-bloqueio { display: none; font-weight: bold; color: #ef4444; margin-top: 10px; font-size: 1.1rem; }
+        .bloqueado .msg-bloqueio { display: block; }
 
+        .pergunta { font-size: 1.5rem; font-weight: 900; margin-bottom: 20px; text-transform: uppercase; }
         .opcao { 
-            display: block; 
-            width: 100%; 
-            padding: 18px; 
-            margin: 12px 0; 
-            background: #f1f5f9; 
-            border: 3px solid var(--secondary); 
-            border-radius: 15px; 
-            color: #1e3a8a; 
-            font-size: 1.3rem; 
-            font-weight: bold; 
-            cursor: pointer; 
-            transition: 0.2s;
+            display: block; width: 100%; padding: 18px; margin: 12px 0; 
+            background: #f1f5f9; border: 3px solid var(--secondary); 
+            border-radius: 15px; color: #1e3a8a; font-size: 1.3rem; 
+            font-weight: bold; cursor: pointer;
         }
-
-        .opcao:hover { background: var(--primary); border-color: #d97706; transform: translateY(-3px); }
-
         .stats { font-size: 1.3rem; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 50px; margin-bottom: 20px; border: 2px solid var(--primary); }
     </style>
 </head>
@@ -67,96 +36,95 @@
 
 <div class="container">
     <h1>🚀 ARES KIDS</h1>
-    <p class="instrucao">LEIA COM ATENÇÃO E MARQUE A CERTA!</p>
-
-    <div class="stats">
-        ESTRELAS: <span id="estrelas">0</span> ⭐
-    </div>
-
+    <div class="stats">ESTRELAS: <span id="estrelas">0</span> ⭐</div>
     <div id="quiz"></div>
 </div>
 
 <script>
-    let estrelas = 0;
+    const COOLDOWN_MINUTES = 25;
+    let estrelas = parseInt(localStorage.getItem('kids_estrelas') || 0);
+    document.getElementById('estrelas').innerText = estrelas;
+
     const perguntasKids = [
-        { q: "QUAL É A COR DO CÉU EM UM DIA DE SOL?", opts: ["VERDE", "AZUL", "PRETO"], corr: 1, exp: "ISSO! O CÉU É AZULZINHO!" },
-        { q: "QUANTO É 2 + 2?", opts: ["3", "4", "5"], corr: 1, exp: "BOA! DOIS MAIS DOIS É IGUAL A QUATRO." },
-        { q: "QUAL ANIMAL FAZ 'MUUU'?", opts: ["CACHORRO", "GATO", "VACA"], corr: 2, exp: "A VACA DÁ O LEITE E FAZ MUUU!" },
-        { q: "QUAL DESSAS FRUTAS É AMARELA?", opts: ["MORANGO", "BANANA", "UVA"], corr: 1, exp: "A BANANA É AMARELA E MUITO DOCE." },
-        { q: "QUAL É O NÚMERO QUE VEM DEPOIS DO 9?", opts: ["8", "10", "11"], corr: 1, exp: "1, 2, 3... 8, 9, DEZ!" },
-        { q: "O PEIXE VIVE NA...", opts: ["TERRA", "ÁGUA", "ÁRVORE"], corr: 1, exp: "O PEIXE PRECISA DA ÁGUA PARA NADAR!" },
-        { q: "QUAL É O MEIO DE TRANSPORTE QUE VOA?", opts: ["CARRO", "AVIÃO", "NAVIO"], corr: 1, exp: "O AVIÃO VOA LÁ NAS NUVENS!" },
-        { q: "QUANTAS CORES TEM O SEMÁFORO (SINAL)?", opts: ["2", "3", "5"], corr: 1, exp: "VERDE, AMARELO E VERMELHO!" },
-        { q: "O QUE USAMOS PARA ESCREVER NO PAPEL?", opts: ["GARFO", "LÁPIS", "COLHER"], corr: 1, exp: "COM O LÁPIS VOCÊ DESENHA E ESCREVE!" },
-        { q: "QUAL É O NOME DO NOSSO PLANETA?", opts: ["MARTE", "TERRA", "LUA"], corr: 1, exp: "NÓS MORAMOS NO PLANETA TERRA!" },
-        { q: "QUAL É O CONTRÁRIO DE 'QUENTE'?", opts: ["MORNO", "FOGO", "GELADO"], corr: 2, exp: "O CONTRÁRIO DE QUENTE É GELADO!" },
-        { q: "QUANTOS DEDOS TEMOS EM UMA MÃO?", opts: ["5 DEDOS", "10 DEDOS", "2 DEDOS"], corr: 0, exp: "CONTE AÍ: 1, 2, 3, 4, CINCO!" },
-        { q: "QUAL DESSES ANIMAIS É BEM COMPRIDO?", opts: ["COELHO", "COBRA", "PORCO"], corr: 1, exp: "A COBRA RASTEJA E É COMPRIDA!" },
-        { q: "O SOL É UMA...", opts: ["PLANETA", "ESTRELA", "PEDRA"], corr: 1, exp: "O SOL É A NOSSA ESTRELA MAIS BRILHANTE!" },
-        { q: "QUAL FORMA TEM A BOLA DE FUTEBOL?", opts: ["QUADRADA", "REDONDA", "TRIÂNGULO"], corr: 1, exp: "A BOLA É UM CÍRCULO, ELA É REDONDA!" },
-        { q: "QUEM É O MELHOR AMIGO DO HOMEM?", opts: ["LEÃO", "CACHORRO", "TUBARÃO"], corr: 1, exp: "O CACHORRO É MUITO FIEL E AMIGO!" },
-        { q: "O QUE AS ABELHAS PRODUZEM?", opts: ["LEITE", "MEL", "SUCO"], corr: 1, exp: "O MEL É DOCINHO E FEITO PELAS ABELHAS!" },
-        { q: "QUAL É O DIA DEPOIS DE SÁBADO?", opts: ["DOMINGO", "SEXTA", "SEGUNDA"], corr: 0, exp: "DOMINGO É DIA DE PASSEAR E BRINCAR!" },
-        { q: "QUAL É O NOME DO LUGAR ONDE ESTUDAMOS?", opts: ["PARQUE", "ESCOLA", "MERCADO"], corr: 1, exp: "NA ESCOLA A GENTE APRENDE MUITO!" },
-        { q: "QUAL DESSES É UM MEIO DE TRANSPORTE DE 2 RODAS?", opts: ["CARRO", "BICICLETA", "ÔNIBUS"], corr: 1, exp: "A BIKE TEM DUAS RODAS!" },
-        { q: "Quanto é 5 + 5?", opts: ["8", "10", "12"], corr: 1, exp: "Isso aí! Dez dedos nas mãos!" },
-        { q: "Qual cor nasce da mistura de Azul com Amarelo?", opts: ["Verde", "Roxo", "Laranja"], corr: 0, exp: "Mágica das cores! Azul + Amarelo = Verde." },
-        { q: "Qual animal é conhecido como o Rei da Selva?", opts: ["Tigre", "Leão", "Elefante"], corr: 1, exp: "ROOOAR! O Leão manda na selva." },
-        { q: "Qual dessas palavras começa com a letra B?", opts: ["Anel", "Casa", "Bola"], corr: 2, exp: "B de Bola, Boneca e Bolo!" },
-        { q: "Quantos planetas existem no nosso sistema solar?", opts: ["5", "8", "20"], corr: 1, exp: "São 8 planetas girando em volta do Sol." },
-        { q: "Qual é o nome do satélite natural da Terra?", opts: ["Sol", "Marte", "Lua"], corr: 2, exp: "A Lua brilha lá no céu à noite!" },
-        { q: "O que o gelo vira quando derrete?", opts: ["Fogo", "Água", "Vapor"], corr: 1, exp: "O gelo é água bem geladinha e sólida." },
-        { q: "Quantos dias tem uma semana?", opts: ["5 dias", "7 dias", "10 dias"], corr: 1, exp: "Segunda, terça, quarta, quinta, sexta, sábado e domingo!" },
-        { q: "Qual é o maior animal do mundo?", opts: ["Elefante", "Baleia Azul", "Girafa"], corr: 1, exp: "A Baleia Azul é gigante e vive no oceano!" },
-        { q: "Qual dessas frutas é vermelha por fora?", opts: ["Banana", "Maçã", "Pêra"], corr: 1, exp: "A Maçã é vermelhinha e deliciosa." },
-        { q: "Quem descobriu o Brasil?", opts: ["Pedro Álvares Cabral", "Dom Pedro I", "Ziraldo"], corr: 0, exp: "Cabral chegou aqui faz muito tempo!" },
-        { q: "Quantos minutos tem uma hora?", opts: ["30", "60", "100"], corr: 1, exp: "O relógio gira 60 vezes para dar uma hora." },
-        { q: "Qual é o sentido que usamos para sentir o cheiro?", opts: ["Visão", "Olfato", "Paladar"], corr: 1, exp: "O nariz é o órgão do olfato." },
-        { q: "Qual animal põe ovos?", opts: ["Cachorro", "Galinha", "Gato"], corr: 1, exp: "As aves como a galinha põem ovos." },
-        { q: "Qual o nome da nossa galáxia?", opts: ["Via Láctea", "Andrômeda", "Estrela Guia"], corr: 0, exp: "Via Láctea parece um caminho de leite no céu!" },
-        { q: "O triângulo tem quantos lados?", opts: ["2", "3", "4"], corr: 1, exp: "Tri = Três!" },
-        { q: "Qual é o país onde nós moramos?", opts: ["Argentina", "Brasil", "Portugal"], corr: 1, exp: "Brasil, o melhor lugar!" },
-        { q: "Como se chama o movimento que a Terra faz em volta de si mesma?", opts: ["Rotação", "Translação", "Pulo"], corr: 0, exp: "A Rotação cria o dia e a noite." },
-        { q: "Qual é o antônimo (oposto) de 'Grande'?", opts: ["Longo", "Alto", "Pequeno"], corr: 2, exp: "Pequeno é o contrário de grande." },
-        { q: "Qual animal vive tanto na água quanto na terra?", opts: ["Peixe", "Sapo", "Pássaro"], corr: 1, exp: "O sapo é um anfíbio!" }
+        // BLOCO 1
+        { id: 1, q: "QUAL É A COR DO CÉU EM UM DIA DE SOL?", opts: ["VERDE", "AZUL", "PRETO"], corr: 1, exp: "ISSO! O CÉU É AZULZINHO!" },
+        { id: 2, q: "QUANTO É 2 + 2?", opts: ["3", "4", "5"], corr: 1, exp: "BOA! DOIS MAIS DOIS É IGUAL A QUATRO." },
+        { id: 3, q: "QUAL ANIMAL FAZ 'MUUU'?", opts: ["CACHORRO", "GATO", "VACA"], corr: 2, exp: "A VACA DÁ O LEITE E FAZ MUUU!" },
+        { id: 4, q: "QUAL DESSAS FRUTAS É AMARELA?", opts: ["MORANGO", "BANANA", "UVA"], corr: 1, exp: "A BANANA É AMARELA E MUITO DOCE." },
+        { id: 5, q: "QUAL É O NÚMERO QUE VEM DEPOIS DO 9?", opts: ["8", "10", "11"], corr: 1, exp: "1, 2, 3... 8, 9, DEZ!" },
+        { id: 6, q: "O PEIXE VIVE NA...", opts: ["TERRA", "ÁGUA", "ÁRVORE"], corr: 1, exp: "O PEIXE PRECISA DA ÁGUA PARA NADAR!" },
+        { id: 7, q: "QUAL É O MEIO DE TRANSPORTE QUE VOA?", opts: ["CARRO", "AVIÃO", "NAVIO"], corr: 1, exp: "O AVIÃO VOA LÁ NAS NUVENS!" },
+        { id: 8, q: "QUANTAS CORES TEM O SEMÁFORO (SINAL)?", opts: ["2", "3", "5"], corr: 1, exp: "VERDE, AMARELO E VERMELHO!" },
+        { id: 9, q: "O QUE USAMOS PARA ESCREVER NO PAPEL?", opts: ["GARFO", "LÁPIS", "COLHER"], corr: 1, exp: "COM O LÁPIS VOCÊ DESENHA E ESCREVE!" },
+        { id: 10, q: "QUAL É O NOME DO NOSSO PLANETA?", opts: ["MARTE", "TERRA", "LUA"], corr: 1, exp: "NÓS MORAMOS NO PLANETA TERRA!" },
+        { id: 11, q: "QUAL É O CONTRÁRIO DE 'QUENTE'?", opts: ["MORNO", "FOGO", "GELADO"], corr: 2, exp: "O CONTRÁRIO DE QUENTE É GELADO!" },
+        { id: 12, q: "QUANTOS DEDOS TEMOS EM UMA MÃO?", opts: ["5 DEDOS", "10 DEDOS", "2 DEDOS"], corr: 0, exp: "CONTE AÍ: 1, 2, 3, 4, CINCO!" },
+        { id: 13, q: "QUAL DESSES ANIMAIS É BEM COMPRIDO?", opts: ["COELHO", "COBRA", "PORCO"], corr: 1, exp: "A COBRA RASTEJA E É COMPRIDA!" },
+        { id: 14, q: "O SOL É UMA...", opts: ["PLANETA", "ESTRELA", "PEDRA"], corr: 1, exp: "O SOL É A NOSSA ESTRELA MAIS BRILHANTE!" },
+        { id: 15, q: "QUAL FORMA TEM A BOLA DE FUTEBOL?", opts: ["QUADRADA", "REDONDA", "TRIÂNGULO"], corr: 1, exp: "A BOLA É UM CÍRCULO, ELA É REDONDA!" },
+        { id: 16, q: "QUEM É O MELHOR AMIGO DO HOMEM?", opts: ["LEÃO", "CACHORRO", "TUBARÃO"], corr: 1, exp: "O CACHORRO É MUITO FIEL E AMIGO!" },
+        { id: 17, q: "O QUE AS ABELHAS PRODUZEM?", opts: ["LEITE", "MEL", "SUCO"], corr: 1, exp: "O MEL É DOCINHO E FEITO PELAS ABELHAS!" },
+        { id: 18, q: "QUAL É O DIA DEPOIS DE SÁBADO?", opts: ["DOMINGO", "SEXTA", "SEGUNDA"], corr: 0, exp: "DOMINGO É DIA DE PASSEAR E BRINCAR!" },
+        { id: 19, q: "QUAL É O NOME DO LUGAR ONDE ESTUDAMOS?", opts: ["PARQUE", "ESCOLA", "MERCADO"], corr: 1, exp: "NA ESCOLA A GENTE APRENDE MUITO!" },
+        { id: 20, q: "QUAL DESSES É UM MEIO DE TRANSPORTE DE 2 RODAS?", opts: ["CARRO", "BICICLETA", "ÔNIBUS"], corr: 1, exp: "A BIKE TEM DUAS RODAS!" },
+
+        // BLOCO 2
+        { id: 21, q: "QUANTO É 5 + 5?", opts: ["8", "10", "12"], corr: 1, exp: "ISSO AÍ! DEZ DEDOS NAS MÃOS!" },
+        { id: 22, q: "QUAL COR NASCE DA MISTURA DE AZUL COM AMARELO?", opts: ["VERDE", "ROXO", "LARANJA"], corr: 0, exp: "MÁGICA DAS CORES! AZUL + AMARELO = VERDE." },
+        { id: 23, q: "QUAL ANIMAL É O REI DA SELVA?", opts: ["TIGRE", "LEÃO", "ELEFANTE"], corr: 1, exp: "ROOOAR! O LEÃO MANDA NA SELVA." },
+        { id: 24, q: "QUAL DESSAS PALAVRAS COMEÇA COM A LETRA B?", opts: ["ANEL", "CASA", "BOLA"], corr: 2, exp: "B DE BOLA, BONECA E BOLO!" },
+        { id: 25, q: "QUANTOS PLANETAS EXISTEM NO NOSSO SISTEMA SOLAR?", opts: ["5", "8", "20"], corr: 1, exp: "SÃO 8 PLANETAS GIRANDO EM VOLTA DO SOL." },
+        { id: 26, q: "QUAL É O NOME DO SATÉLITE NATURAL DA TERRA?", opts: ["SOL", "MARTE", "LUA"], corr: 2, exp: "A LUA BRILHA LÁ NO CÉU À NOITE!" },
+        { id: 27, q: "O QUE O GELO VIRA QUANDO DERRETE?", opts: ["FOGO", "ÁGUA", "VAPOR"], corr: 1, exp: "O GELO É ÁGUA BEM GELADINHA E SÓLIDA." },
+        { id: 28, q: "QUANTOS DIAS TEM UMA SEMANA?", opts: ["5 DIAS", "7 DIAS", "10 DIAS"], corr: 1, exp: "DOMINGO A SÁBADO, SÃO 7 DIAS!" },
+        { id: 29, q: "QUAL É O MAIOR ANIMAL DO MUNDO?", opts: ["ELEFANTE", "BALEIA AZUL", "GIRAFA"], corr: 1, exp: "A BALEIA AZUL É GIGANTE E VIVE NO MAR!" },
+        { id: 30, q: "QUAL DESSAS FRUTAS É VERMELHA POR FORA?", opts: ["BANANA", "MAÇÃ", "PÊRA"], corr: 1, exp: "A MAÇÃ É VERMELHINHA E DELICIOSA." },
+        { id: 31, q: "QUEM DESCOBRIU O BRASIL?", opts: ["CABRAL", "DOM PEDRO", "ZIRALDO"], corr: 0, exp: "PEDRO ÁLVARES CABRAL CHEGOU AQUI PRIMEIRO!" },
+        { id: 32, q: "QUANTOS MINUTOS TEM UMA HORA?", opts: ["30", "60", "100"], corr: 1, exp: "O RELÓGIO GIRA 60 VEZES PARA DAR UMA HORA." },
+        { id: 33, q: "QUAL É O SENTIDO QUE USAMOS PARA SENTIR O CHEIRO?", opts: ["VISÃO", "OLFATO", "PALADAR"], corr: 1, exp: "O NARIZ É O ÓRGÃO DO OLFATO!" },
+        { id: 34, q: "QUAL ANIMAL PÕE OVOS?", opts: ["CACHORRO", "GALINHA", "GATO"], corr: 1, exp: "AS AVES COMO A GALINHA PÕEM OVOS." },
+        { id: 35, q: "QUAL O NOME DA NOSSA GALÁXIA?", opts: ["VIA LÁCTEA", "ANDRÔMEDA", "ESTRELA"], corr: 0, exp: "VIA LÁCTEA PARECE UM CAMINHO DE LEITE!" },
+        { id: 36, q: "O TRIÂNGULO TEM QUANTOS LADOS?", opts: ["2", "3", "4"], corr: 1, exp: "TRI VEM DE TRÊS!" },
+        { id: 37, q: "QUAL É O PAÍS ONDE NÓS MORAMOS?", opts: ["ARGENTINA", "BRASIL", "PORTUGAL"], corr: 1, exp: "BRASIL, O NOSSO PAÍS VERDE E AMARELO!" },
+        { id: 38, q: "QUAL MOVIMENTO A TERRA FAZ EM VOLTA DE SI MESMA?", opts: ["ROTAÇÃO", "TRANSLAÇÃO", "PULO"], corr: 0, exp: "A ROTAÇÃO CRIA O DIA E A NOITE." },
+        { id: 39, q: "QUAL É O OPOSTO DE 'GRANDE'?", opts: ["LONGO", "ALTO", "PEQUENO"], corr: 2, exp: "PEQUENO É O CONTRÁRIO DE GRANDE." },
+        { id: 40, q: "QUAL ANIMAL VIVE NA ÁGUA E NA TERRA?", opts: ["PEIXE", "SAPO", "PÁSSARO"], corr: 1, exp: "O SAPO É UM ANFÍBIO!" }
     ];
 
     function render() {
         const div = document.getElementById('quiz');
+        const agora = Date.now();
         div.innerHTML = '';
-        perguntasKids.forEach((p, i) => {
+
+        perguntasKids.forEach((p) => {
+            const lastTime = localStorage.getItem(`kids_bloqueio_${p.id}`);
+            const isBloqueado = lastTime && (agora - lastTime < COOLDOWN_MINUTES * 60000);
+            
             div.innerHTML += `
-                <div class="questao">
+                <div class="questao ${isBloqueado ? 'bloqueado' : ''}">
                     <div class="pergunta">${p.q}</div>
-                    ${p.opts.map((o, idx) => `<button class="opcao" onclick="check(${i}, ${idx})">${o}</button>`).join('')}
+                    <div class="msg-bloqueio">⏳ ESPERE UM POUQUINHO PARA TENTAR DE NOVO!</div>
+                    ${p.opts.map((o, idx) => `<button class="opcao" onclick="check(${p.id}, ${idx})">${o}</button>`).join('')}
                 </div>
             `;
         });
     }
 
-    function check(qIdx, oIdx) {
-        const p = perguntasKids[qIdx];
+    function check(pId, oIdx) {
+        const p = perguntasKids.find(x => x.id === pId);
+        localStorage.setItem(`kids_bloqueio_${pId}`, Date.now());
+
         if(oIdx === p.corr) {
             estrelas++;
+            localStorage.setItem('kids_estrelas', estrelas);
             document.getElementById('estrelas').innerText = estrelas;
-            Swal.fire({ 
-                title: 'ISSO AÍ! 🌟', 
-                text: p.exp, 
-                icon: 'success', 
-                confirmButtonText: 'PRÓXIMA!',
-                confirmButtonColor: '#4ade80' 
-            });
+            Swal.fire({ title: 'ISSO AÍ! 🌟', text: p.exp, icon: 'success' }).then(render);
         } else {
-            Swal.fire({ 
-                title: 'TENTE DE NOVO! 🧐', 
-                text: 'VOCÊ QUASE CONSEGUIU!', 
-                icon: 'info', 
-                confirmButtonText: 'VOU TENTAR!',
-                confirmButtonColor: '#60a5fa' 
-            });
+            Swal.fire({ title: 'QUASE! 🧐', text: 'VOCÊ ERROU, MAS PODE TENTAR DAQUI A POUCO!', icon: 'error' }).then(render);
         }
     }
     render();
+    setInterval(render, 60000); // Atualiza a tela a cada minuto para liberar questões
 </script>
 </body>
 </html>
