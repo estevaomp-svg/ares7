@@ -7,28 +7,70 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root { --primary: #fbbf24; --secondary: #60a5fa; --success: #4ade80; --bg: #1e3a8a; }
-        body { font-family: 'Comic Sans MS', cursive, sans-serif; background: var(--bg); color: white; padding: 15px; text-align: center; }
-        .container { max-width: 500px; margin: auto; }
-        h1 { color: var(--primary); text-shadow: 2px 2px #000; font-size: 2rem; }
-        .questao { background: #ffffff; color: #1e293b; padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 5px solid var(--secondary); }
-        .pergunta { font-size: 1.2rem; font-weight: bold; margin-bottom: 15px; }
-        .opcao { 
-            display: block; width: 100%; padding: 15px; margin: 10px 0; 
-            background: var(--secondary); border: none; border-radius: 12px; 
-            color: white; font-size: 1.1rem; cursor: pointer; transition: 0.2s;
+        
+        /* FONTE BEM LIMPA E EM NEGRITO PARA FACILITAR A LEITURA */
+        body { 
+            font-family: Arial, Helvetica, sans-serif; 
+            background: var(--bg); 
+            color: white; 
+            padding: 15px; 
+            text-align: center; 
+            letter-spacing: 1px; /* Espaço entre letras ajuda a não embolar */
         }
-        .opcao:hover { transform: scale(1.02); filter: brightness(1.1); }
-        .stats { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 15px; margin-bottom: 20px; }
+
+        .container { max-width: 500px; margin: auto; }
+        
+        h1 { color: var(--primary); text-transform: uppercase; font-size: 2.2rem; margin-bottom: 5px; }
+        
+        .instrucao { font-size: 1.1rem; color: #bfdbfe; margin-bottom: 20px; font-weight: bold; }
+
+        .questao { 
+            background: #ffffff; 
+            color: #1e293b; 
+            padding: 25px; 
+            border-radius: 25px; 
+            margin-bottom: 25px; 
+            border: 6px solid var(--secondary);
+            box-shadow: 0 10px 0 #1d4ed8;
+        }
+
+        /* PERGUNTA GRANDE E CLARA */
+        .pergunta { 
+            font-size: 1.5rem; 
+            font-weight: 900; 
+            line-height: 1.4;
+            margin-bottom: 20px; 
+            text-transform: uppercase; /* Opcional: letras grandes às vezes ajudam na fase inicial */
+        }
+
+        .opcao { 
+            display: block; 
+            width: 100%; 
+            padding: 18px; 
+            margin: 12px 0; 
+            background: #f1f5f9; 
+            border: 3px solid var(--secondary); 
+            border-radius: 15px; 
+            color: #1e3a8a; 
+            font-size: 1.3rem; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.2s;
+        }
+
+        .opcao:hover { background: var(--primary); border-color: #d97706; transform: translateY(-3px); }
+
+        .stats { font-size: 1.3rem; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 50px; margin-bottom: 20px; border: 2px solid var(--primary); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🚀 Missão Ares Kids</h1>
-    <p>Prepare-se para o desafio, campeão!</p>
+    <h1>🚀 ARES KIDS</h1>
+    <p class="instrucao">LEIA COM ATENÇÃO E MARQUE A CERTA!</p>
 
     <div class="stats">
-        Estrelas Ganhas: <span id="estrelas">0</span> ⭐
+        ESTRELAS: <span id="estrelas">0</span> ⭐
     </div>
 
     <div id="quiz"></div>
@@ -37,6 +79,26 @@
 <script>
     let estrelas = 0;
     const perguntasKids = [
+        { q: "QUAL É A COR DO CÉU EM UM DIA DE SOL?", opts: ["VERDE", "AZUL", "PRETO"], corr: 1, exp: "ISSO! O CÉU É AZULZINHO!" },
+        { q: "QUANTO É 2 + 2?", opts: ["3", "4", "5"], corr: 1, exp: "BOA! DOIS MAIS DOIS É IGUAL A QUATRO." },
+        { q: "QUAL ANIMAL FAZ 'MUUU'?", opts: ["CACHORRO", "GATO", "VACA"], corr: 2, exp: "A VACA DÁ O LEITE E FAZ MUUU!" },
+        { q: "QUAL DESSAS FRUTAS É AMARELA?", opts: ["MORANGO", "BANANA", "UVA"], corr: 1, exp: "A BANANA É AMARELA E MUITO DOCE." },
+        { q: "QUAL É O NÚMERO QUE VEM DEPOIS DO 9?", opts: ["8", "10", "11"], corr: 1, exp: "1, 2, 3... 8, 9, DEZ!" },
+        { q: "O PEIXE VIVE NA...", opts: ["TERRA", "ÁGUA", "ÁRVORE"], corr: 1, exp: "O PEIXE PRECISA DA ÁGUA PARA NADAR!" },
+        { q: "QUAL É O MEIO DE TRANSPORTE QUE VOA?", opts: ["CARRO", "AVIÃO", "NAVIO"], corr: 1, exp: "O AVIÃO VOA LÁ NAS NUVENS!" },
+        { q: "QUANTAS CORES TEM O SEMÁFORO (SINAL)?", opts: ["2", "3", "5"], corr: 1, exp: "VERDE, AMARELO E VERMELHO!" },
+        { q: "O QUE USAMOS PARA ESCREVER NO PAPEL?", opts: ["GARFO", "LÁPIS", "COLHER"], corr: 1, exp: "COM O LÁPIS VOCÊ DESENHA E ESCREVE!" },
+        { q: "QUAL É O NOME DO NOSSO PLANETA?", opts: ["MARTE", "TERRA", "LUA"], corr: 1, exp: "NÓS MORAMOS NO PLANETA TERRA!" },
+        { q: "QUAL É O CONTRÁRIO DE 'QUENTE'?", opts: ["MORNO", "FOGO", "GELADO"], corr: 2, exp: "O CONTRÁRIO DE QUENTE É GELADO!" },
+        { q: "QUANTOS DEDOS TEMOS EM UMA MÃO?", opts: ["5 DEDOS", "10 DEDOS", "2 DEDOS"], corr: 0, exp: "CONTE AÍ: 1, 2, 3, 4, CINCO!" },
+        { q: "QUAL DESSES ANIMAIS É BEM COMPRIDO?", opts: ["COELHO", "COBRA", "PORCO"], corr: 1, exp: "A COBRA RASTEJA E É COMPRIDA!" },
+        { q: "O SOL É UMA...", opts: ["PLANETA", "ESTRELA", "PEDRA"], corr: 1, exp: "O SOL É A NOSSA ESTRELA MAIS BRILHANTE!" },
+        { q: "QUAL FORMA TEM A BOLA DE FUTEBOL?", opts: ["QUADRADA", "REDONDA", "TRIÂNGULO"], corr: 1, exp: "A BOLA É UM CÍRCULO, ELA É REDONDA!" },
+        { q: "QUEM É O MELHOR AMIGO DO HOMEM?", opts: ["LEÃO", "CACHORRO", "TUBARÃO"], corr: 1, exp: "O CACHORRO É MUITO FIEL E AMIGO!" },
+        { q: "O QUE AS ABELHAS PRODUZEM?", opts: ["LEITE", "MEL", "SUCO"], corr: 1, exp: "O MEL É DOCINHO E FEITO PELAS ABELHAS!" },
+        { q: "QUAL É O DIA DEPOIS DE SÁBADO?", opts: ["DOMINGO", "SEXTA", "SEGUNDA"], corr: 0, exp: "DOMINGO É DIA DE PASSEAR E BRINCAR!" },
+        { q: "QUAL É O NOME DO LUGAR ONDE ESTUDAMOS?", opts: ["PARQUE", "ESCOLA", "MERCADO"], corr: 1, exp: "NA ESCOLA A GENTE APRENDE MUITO!" },
+        { q: "QUAL DESSES É UM MEIO DE TRANSPORTE DE 2 RODAS?", opts: ["CARRO", "BICICLETA", "ÔNIBUS"], corr: 1, exp: "A BIKE TEM DUAS RODAS!" },
         { q: "Quanto é 5 + 5?", opts: ["8", "10", "12"], corr: 1, exp: "Isso aí! Dez dedos nas mãos!" },
         { q: "Qual cor nasce da mistura de Azul com Amarelo?", opts: ["Verde", "Roxo", "Laranja"], corr: 0, exp: "Mágica das cores! Azul + Amarelo = Verde." },
         { q: "Qual animal é conhecido como o Rei da Selva?", opts: ["Tigre", "Leão", "Elefante"], corr: 1, exp: "ROOOAR! O Leão manda na selva." },
@@ -65,7 +127,7 @@
         perguntasKids.forEach((p, i) => {
             div.innerHTML += `
                 <div class="questao">
-                    <div class="pergunta">${i+1}. ${p.q}</div>
+                    <div class="pergunta">${p.q}</div>
                     ${p.opts.map((o, idx) => `<button class="opcao" onclick="check(${i}, ${idx})">${o}</button>`).join('')}
                 </div>
             `;
@@ -77,9 +139,21 @@
         if(oIdx === p.corr) {
             estrelas++;
             document.getElementById('estrelas').innerText = estrelas;
-            Swal.fire({ title: 'ACERTOU! ✨', text: p.exp, icon: 'success', confirmButtonColor: '#4ade80' });
+            Swal.fire({ 
+                title: 'ISSO AÍ! 🌟', 
+                text: p.exp, 
+                icon: 'success', 
+                confirmButtonText: 'PRÓXIMA!',
+                confirmButtonColor: '#4ade80' 
+            });
         } else {
-            Swal.fire({ title: 'QUASE! 🤔', text: 'Tente de novo, você consegue!', icon: 'info', confirmButtonColor: '#60a5fa' });
+            Swal.fire({ 
+                title: 'TENTE DE NOVO! 🧐', 
+                text: 'VOCÊ QUASE CONSEGUIU!', 
+                icon: 'info', 
+                confirmButtonText: 'VOU TENTAR!',
+                confirmButtonColor: '#60a5fa' 
+            });
         }
     }
     render();
