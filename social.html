@@ -3,20 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ares Social - Treinamento</title>
+    <title>Ares Social - Evolução</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        :root { --primary: #8b5cf6; --bg: #f3f4f6; --card: #ffffff; --text: #1f2937; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); padding: 15px; line-height: 1.6; }
+        :root { --primary: #8b5cf6; --bg: #f3f4f6; --card: #ffffff; --text: #1f2937; --gold: #fbbf24; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); padding: 15px; }
         .container { max-width: 600px; margin: auto; }
-        h1 { color: var(--primary); text-align: center; }
-        .questao { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 20px; border-left: 8px solid var(--primary); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .situacao { font-weight: bold; background: #ede9fe; padding: 10px; border-radius: 8px; margin-bottom: 15px; }
-        .pergunta { font-size: 1.1rem; margin-bottom: 15px; }
+        
+        /* PAINEL DE NÍVEL */
+        .xp-panel { 
+            background: var(--primary); color: white; padding: 20px; 
+            border-radius: 20px; margin-bottom: 20px; text-align: center;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+        .nivel-titulo { font-size: 1.5rem; font-weight: bold; margin-bottom: 5px; }
+        .pontos { font-size: 1rem; opacity: 0.9; }
+
+        .questao { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 20px; border-left: 8px solid var(--primary); box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: relative; }
+        .situacao { font-weight: bold; background: #ede9fe; padding: 12px; border-radius: 8px; margin-bottom: 15px; color: #5b21b6; }
         .opcao { 
             display: block; width: 100%; padding: 15px; margin: 10px 0; 
             background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 10px; 
-            color: var(--text); font-size: 1rem; cursor: pointer; text-align: left;
+            color: var(--text); font-size: 1rem; cursor: pointer; text-align: left; transition: 0.2s;
         }
         .opcao:hover { border-color: var(--primary); background: #f5f3ff; }
         .bloqueado { opacity: 0.5; pointer-events: none; filter: grayscale(1); }
@@ -25,108 +33,83 @@
 <body>
 
 <div class="container">
-    <h1>🧩 Ares Social</h1>
-    <p style="text-align: center;">Treinamento de Padrões Sociais e Intenções</p>
+    <div class="xp-panel">
+        <div id="rank-emoji" style="font-size: 3rem;">🌱</div>
+        <div class="nivel-titulo" id="rank-nome">INICIANTE SOCIAL</div>
+        <div class="pontos">CONHECIMENTOS ACUMULADOS: <span id="xp-atual">0</span></div>
+    </div>
+
     <div id="quiz"></div>
 </div>
 
 <script>
-    const perguntasSocial = [
-        { 
-            id: 1, 
-            situ: "Um conhecido diz: 'Nossa, você vai comer TUDO isso mesmo?'", 
-            q: "Qual é a intenção mais provável por trás dessa frase?", 
-            opts: ["Ele está genuinamente interessado na minha fome", "É uma crítica disfarçada de pergunta sobre o meu peso ou gula", "Ele quer dividir a comida comigo"], 
-            corr: 1, 
-            exp: "Tutorial: Geralmente, focar na quantidade de comida do outro é uma forma de julgamento social (maldade/zueira), não uma pergunta honesta." 
-        },
-        { 
-            id: 2, 
-            situ: "Você está contando algo e a pessoa olha o relógio e boceja.", 
-            q: "O que esse sinal corporal indica?", 
-            opts: ["A pessoa está com sono e quer café", "O relógio dela está estragado", "Ela está entediada e quer que você encerre o assunto"], 
-            corr: 2, 
-            exp: "Tutorial: Bocejos e olhar o relógio são sinais clássicos de que a pessoa perdeu o interesse. O padrão social é encerrar a fala em 1 ou 2 frases." 
-        },
-        { 
-            id: 3, 
-            situ: "Alguém ri e diz: 'Você é muito engraçadinha, né?' com um tom sério.", 
-            q: "Isso é um elogio real?", 
-            opts: ["Sim, ela me acha divertida", "Não, é sarcasmo. Ela achou o que eu disse inconveniente ou bobo", "Ela quer me contratar para um show"], 
-            corr: 1, 
-            exp: "Tutorial: Se o tom de voz não combina com o riso, quase sempre é sarcasmo. 'Engraçadinha' nesse contexto costuma ser uma crítica à sua fala." 
-        },
-        { 
-            id: 4, 
-            situ: "Um grupo de amigos está rindo de uma falha sua de forma repetida.", 
-            q: "Como diferenciar brincadeira de 'zueira' maldosa?", 
-            opts: ["Se eu pedir para parar e eles continuarem, virou maldade", "É sempre brincadeira se eles estiverem rindo", "É maldade apenas se usarem palavrões"], 
-            corr: 0, 
-            exp: "Tutorial: A regra social é: se o alvo da brincadeira não está rindo ou pediu para parar, o grupo deve parar. Se continuam, é falta de respeito (gaffe deles)." 
-        },
-        { 
-            id: 5, 
-            situ: "Alguém te convida dizendo: 'A gente precisa marcar um café qualquer dia!'", 
-            q: "O que você deve fazer agora?", 
-            opts: ["Pegar a agenda e perguntar o dia e a hora exatos", "Responder: 'Sim, vamos marcar!' e esperar ela sugerir uma data", "Dizer que não gosta de café"], 
-            corr: 1, 
-            exp: "Tutorial: Na maioria das vezes, isso é apenas uma 'frase de despedida cordial' e não um convite real. Se a pessoa não sugerir um dia, não se cobra." 
-        },
-{ 
-            id: 6, 
-            situ: "Você deu sua opinião, a pessoa não concordou e você já explicou 3 vezes de formas diferentes.", 
-            q: "O que você deve fazer agora?", 
-            opts: ["Explicar uma 4ª vez usando palavras mais difíceis", "Parar e dizer: 'Entendo seu ponto, vamos concordar em discordar'", "Ficar em silêncio e fechar a cara até ela entender"], 
-            corr: 1, 
-            exp: "Tutorial: Se após 3 explicações a pessoa não mudou de ideia, não é falha sua. É o direito dela de pensar diferente. Prolongar além disso gera estresse desnecessário e desgaste na sua imagem." 
-        },
-        { 
-            id: 7, 
-            situ: "Você precisa sair mais cedo para a terapia e percebe colegas trocando olhares ou cochichando.", 
-            q: "Como reagir a esses olhares no trabalho?", 
-            opts: ["Parar e explicar para todos o seu diagnóstico e o porquê da terapia", "Ignorar e seguir seu caminho, pois seu acordo é com a chefia", "Sair escondida para ninguém ver"], 
-            corr: 1, 
-            exp: "Tutorial: Você não deve explicações aos colegas. Se a empresa autorizou, o 'olhar' deles é um problema de falta de educação deles, não uma gaffe sua. Ignore." 
-        },
-        { 
-            id: 8, 
-            situ: "Em uma discussão de trabalho, o clima começa a esquentar e você sente seu coração acelerar.", 
-            q: "Qual o comportamento correto para evitar uma crise de nervosismo?", 
-            opts: ["Falar mais alto para ser ouvida", "Pedir uma pausa: 'Preciso de 5 minutos, vamos retomar isso depois'", "Continuar até que o outro admita que você está certa"], 
-            corr: 1, 
-            exp: "Tutorial: Reconhecer o sinal do corpo (coração acelerado) é o momento de pausar. No trabalho, pedir um tempo para 'esfriar a cabeça' é visto como maturidade, não fraqueza." 
-        },
-        { 
-            id: 9, 
-            situ: "Um chefe te faz uma crítica construtiva sobre uma tarefa que você fez.", 
-            q: "Qual a melhor forma de reagir?", 
-            opts: ["Dizer: 'Vou anotar os pontos para melhorar na próxima vez'", "Explicar detalhadamente por que você errou para ele não achar que você é burra", "Ficar triste e achar que será demitida"], 
-            corr: 0, 
-            exp: "Tutorial: No trabalho, críticas são sobre a TAREFA, não sobre VOCÊ. Aceitar o feedback com uma solução (anotar para melhorar) encerra o assunto de forma profissional." 
-        },
-        { 
-            id: 10, 
-            situ: "Alguém diz algo que você sabe que está errado, mas o assunto não é importante para o trabalho.", 
-            q: "Vale a pena iniciar uma discussão para corrigir a pessoa?", 
-            opts: ["Sim, a verdade é o mais importante sempre", "Não, se não afeta o resultado, deixe a pessoa com a opinião errada dela", "Corrigir e mandar o link da prova no WhatsApp dela"], 
-            corr: 1, 
-            exp: "Tutorial: Escolher quais 'batalhas' lutar poupa sua energia. Corrigir erros irrelevantes dos outros é visto socialmente como ser 'chato'. Deixe passar para manter a paz." 
-        }
+    // CONFIGURAÇÃO DE TEMPO: Atualmente 60 minutos (1 hora)
+    // Se quiser 4 horas, mude para 240. Se quiser 25min igual ao kids, mude para 25.
+    const TEMPO_ESPERA_MINUTOS = 60; 
+
+    let xp = parseInt(localStorage.getItem('social_xp') || 0);
+
+    const ranks = [
+        { min: 0, nome: "INICIANTE SOCIAL", emoji: "🌱" },
+        { min: 5, nome: "OBSERVADORA ATENTA", emoji: "🧐" },
+        { min: 15, nome: "ESTRATEGISTA SOCIAL", emoji: "🧠" },
+        { min: 30, nome: "MESTRE DA HARMONIA", emoji: "🎭" },
+        { min: 50, nome: "DIPLOMATA DE ELITE", emoji: "👑" }
     ];
+
+    const perguntasSocial = [
+        const perguntasSocial = [
+        // O Bloco que você mandou (1 a 10)
+        { id: 1, situ: "Um conhecido diz: 'Nossa, você vai comer TUDO isso mesmo?'", q: "Qual é a intenção mais provável por trás dessa frase?", opts: ["Ele está genuinamente interessado na minha fome", "É uma crítica disfarçada de pergunta sobre o meu peso ou gula", "Ele quer dividir a comida comigo"], corr: 1, exp: "Tutorial: Geralmente, focar na quantidade de comida do outro é uma forma de julgamento social (maldade/zueira), não uma pergunta honesta." },
+        { id: 2, situ: "Você está contando algo e a pessoa olha o relógio e boceja.", q: "O que esse sinal corporal indica?", opts: ["A pessoa está com sono e quer café", "O relógio dela está estragado", "Ela está entediada e quer que você encerre o assunto"], corr: 2, exp: "Tutorial: Bocejos e olhar o relógio são sinais clássicos de que a pessoa perdeu o interesse. O padrão social é encerrar a fala em 1 ou 2 frases." },
+        { id: 3, situ: "Alguém ri e diz: 'Você é muito engraçadinha, né?' com um tom sério.", q: "Isso é um elogio real?", opts: ["Sim, ela me acha divertida", "Não, é sarcasmo. Ela achou o que eu disse inconveniente ou bobo", "Ela quer me contratar para um show"], corr: 1, exp: "Tutorial: Se o tom de voz não combina com o riso, quase sempre é sarcasmo. 'Engraçadinha' nesse contexto costuma ser uma crítica à sua fala." },
+        { id: 4, situ: "Um grupo de amigos está rindo de uma falha sua de forma repetida.", q: "Como diferenciar brincadeira de 'zueira' maldosa?", opts: ["Se eu pedir para parar e eles continuarem, virou maldade", "É sempre brincadeira se eles estiverem rindo", "É maldade apenas se usarem palavrões"], corr: 0, exp: "Tutorial: A regra social é: se o alvo da brincadeira não está rindo ou pediu para parar, o grupo deve parar." },
+        { id: 5, situ: "Alguém te convida dizendo: 'A gente precisa marcar um café qualquer dia!'", q: "O que você deve fazer agora?", opts: ["Pegar a agenda e perguntar o dia e a hora exatos", "Responder: 'Sim, vamos marcar!' e esperar ela sugerir uma data", "Dizer que não gosta de café"], corr: 1, exp: "Tutorial: Na maioria das vezes, isso é apenas uma 'frase de despedida cordial' e não um convite real." },
+        { id: 6, situ: "Você deu sua opinião, a pessoa não concordou e você já explicou 3 vezes de formas diferentes.", q: "O que você deve fazer agora?", opts: ["Explicar uma 4ª vez usando palavras mais difíceis", "Parar e dizer: 'Entendo seu ponto, vamos concordar em discordar'", "Ficar em silêncio e fechar a cara até ela entender"], corr: 1, exp: "Tutorial: Se após 3 explicações a pessoa não mudou de ideia, não é falha sua. É o direito dela de pensar diferente." },
+        { id: 7, situ: "Você precisa sair mais cedo para a terapia e percebe colegas trocando olhares ou cochichando.", q: "Como reagir a esses olhares no trabalho?", opts: ["Parar e explicar para todos o seu diagnóstico e o porquê da terapia", "Ignorar e seguir seu caminho, pois seu acordo é com a chefia", "Sair escondida para ninguém ver"], corr: 1, exp: "Tutorial: Você não deve explicações aos colegas. Se a empresa autorizou, o 'olhar' deles é um problema de falta de educação deles." },
+        { id: 8, situ: "Em uma discussão de trabalho, o clima começa a esquentar e você sente seu coração acelerar.", q: "Qual o comportamento correto?", opts: ["Falar mais alto", "Pedir uma pausa: 'Preciso de 5 minutos, vamos retomar isso depois'", "Continuar até que o outro admita"], corr: 1, exp: "Tutorial: Reconhecer o sinal do corpo (coração acelerado) é o momento de pausar." },
+        { id: 9, situ: "Um chefe te faz uma crítica construtiva sobre uma tarefa que você fez.", q: "Qual a melhor forma de reagir?", opts: ["Dizer: 'Vou anotar os pontos para melhorar'", "Explicar detalhadamente por que você errou", "Ficar triste"], corr: 0, exp: "Tutorial: No trabalho, críticas são sobre a TAREFA, não sobre VOCÊ." },
+        { id: 10, situ: "Alguém diz algo que você sabe que está errado, mas o assunto não é importante.", q: "Vale a pena iniciar uma discussão?", opts: ["Sim, a verdade é o mais importante", "Não, deixe a pessoa com a opinião errada dela", "Corrigir e mandar links"], corr: 1, exp: "Tutorial: Escolher quais 'batalhas' lutar poupa sua energia." },
+
+        // O Bloco que eu criei para completar (11 a 20)
+        { id: 11, situ: "Uma pessoa que você mal conhece te faz uma pergunta muito íntima.", q: "Como responder sem ser grossa?", opts: ["Responder a verdade", "Dizer educadamente que prefere não falar sobre isso", "Sair andando"], corr: 1, exp: "Tutorial: Você não é obrigada a responder perguntas íntimas." },
+        { id: 12, situ: "Alguém te elogia muito e logo em seguida pede um favor difícil.", q: "Qual o padrão desse comportamento?", opts: ["Admiração real", "Manipulação para você não dizer 'não'", "Gentileza"], corr: 1, exp: "Tutorial: Elogios exagerados seguidos de pedidos costumam ser interesse." },
+        { id: 13, situ: "No WhatsApp, alguém coloca um emoji de piscada (😉) no final da frase.", q: "O que isso indica?", opts: ["Problema no olho", "Tom de brincadeira ou ironia", "Paquera"], corr: 1, exp: "Tutorial: A piscada indica que a frase não deve ser levada 100% ao pé da letra." },
+        { id: 14, situ: "Você chega em um grupo e todos ficam em silêncio de repente.", q: "O que isso indica?", opts: ["Assunto privado ou estavam falando de você", "Esqueceram o assunto", "Esperando você falar"], corr: 0, exp: "Tutorial: Indica que o assunto era restrito. Apenas cumprimente e siga seu caminho." },
+        { id: 15, situ: "Um colega diz: 'Aquela sua ideia foi... interessante', com cara de dúvida.", q: "Significa que ele gostou?", opts: ["Sim, achou ótima", "Não, é uma forma educada de dizer que achou estranha", "Quer investir nela"], corr: 1, exp: "Tutorial: 'Interessante' com cara de dúvida é um código para 'achei ruim, mas não quero ser grosso'." },
+        { id: 16, situ: "Sua bateria social acabou em um evento (overload). O que fazer?", opts: ["Sumir sem falar nada", "Avisar o dono da casa que está cansada e vai sair", "Ficar no canto com cara feia"], corr: 1, exp: "Tutorial: Sair com um aviso curto e educado é a melhor forma de respeitar seu limite." },
+        { id: 17, situ: "Alguém faz uma piada sobre uma característica sua que te incomoda.", q: "Como reagir com elegância?", opts: ["Rir junto", "Perguntar: 'Não entendi, pode me explicar a piada?'", "Gritar"], corr: 1, exp: "Tutorial: Pedir para explicar a piada maldosa desmonta a pessoa sem você precisar brigar." },
+        { id: 18, situ: "Um vendedor insiste muito em algo que você não quer.", q: "O que fazer?", opts: ["Comprar por educação", "Dizer: 'Obrigada, estou apenas olhando'", "Sair correndo"], corr: 1, exp: "Tutorial: Você tem o direito de dizer 'não' e 'apenas olhando' quantas vezes for necessário." },
+        { id: 19, situ: "Você percebeu que cometeu uma gaffe social antes.", q: "Como consertar?", opts: ["Texto gigante de explicação", "Mensagem curta pedindo desculpas pelo mal-entendido", "Sumir"], corr: 1, exp: "Tutorial: Pedidos de desculpas curtos são mais eficazes e menos desconfortáveis." },
+        { id: 20, situ: "Alguém te interrompe toda hora enquanto você fala.", q: "Como agir?", opts: ["Parar de falar", "Dizer: 'Só um segundo, deixa eu concluir e já te ouço'", "Falar mais alto"], corr: 1, exp: "Tutorial: Reivindicar o fim da sua fala de forma calma mantém você no controle." }
+    ];
+        // Adicione as outras perguntas aqui seguindo o mesmo padrão...
+    ];
+
+    function atualizarRank() {
+        const atual = [...ranks].reverse().find(r => xp >= r.min);
+        document.getElementById('rank-nome').innerText = atual.nome;
+        document.getElementById('rank-emoji').innerText = atual.emoji;
+        document.getElementById('xp-atual').innerText = xp;
+        localStorage.setItem('social_xp', xp);
+    }
 
     function render() {
         const div = document.getElementById('quiz');
+        const agora = Date.now();
         div.innerHTML = '';
+        atualizarRank();
+
         perguntasSocial.forEach((p) => {
             const lastTime = localStorage.getItem(`social_bloqueio_${p.id}`);
-            const isBloqueado = lastTime && (Date.now() - lastTime < 4 * 3600000); // 4 horas
+            const isBloqueado = lastTime && (agora - lastTime < TEMPO_ESPERA_MINUTOS * 60000);
             
             div.innerHTML += `
                 <div class="questao ${isBloqueado ? 'bloqueado' : ''}">
                     <div class="situacao">SITUAÇÃO: ${p.situ}</div>
                     <div class="pergunta">${p.q}</div>
-                    ${p.opts.map((o, idx) => `<button class="opcao" onclick="check(${p.id}, ${idx})">${o}</button>`).join('')}
-                    ${isBloqueado ? '<p style="color:red">✔ Padrão memorizado. Disponível em 4h.</p>' : ''}
+                    ${isBloqueado ? '<p style="color:var(--primary); font-weight:bold;">✔ PADRÃO MEMORIZADO. RECARREGANDO...</p>' : 
+                    p.opts.map((o, idx) => `<button class="opcao" onclick="check(${p.id}, ${idx})">${o}</button>`).join('')}
                 </div>
             `;
         });
@@ -135,13 +118,16 @@
     function check(pId, oIdx) {
         const p = perguntasSocial.find(x => x.id === pId);
         if(oIdx === p.corr) {
+            xp++;
             localStorage.setItem(`social_bloqueio_${pId}`, Date.now());
-            Swal.fire({ title: 'PADRÃO CORRETO!', text: p.exp, icon: 'success' }).then(render);
+            Swal.fire({ title: 'PERFEITO! ✨', text: p.exp, icon: 'success' }).then(render);
         } else {
-            Swal.fire({ title: 'CUIDADO...', text: 'Nessa situação, a intenção costuma ser outra. Leia o tutorial no acerto!', icon: 'warning' });
+            Swal.fire({ title: 'OPS...', text: 'Nessa situação, o padrão social costuma ser outro. Tente novamente!', icon: 'warning' });
         }
     }
+
     render();
+    setInterval(render, 60000);
 </script>
 </body>
 </html>
