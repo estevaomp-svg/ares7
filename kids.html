@@ -3,23 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ares Kids - Missão 25</title>
+    <title>Ares Kids - Painel de Controle</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        :root { --primary: #fbbf24; --secondary: #60a5fa; --success: #4ade80; --bg: #1e3a8a; }
+        :root { --primary: #fbbf24; --secondary: #60a5fa; --success: #4ade80; --bg: #1e3a8a; --danger: #ef4444; }
         body { font-family: Arial, sans-serif; background: var(--bg); color: white; padding: 15px; text-align: center; }
         .container { max-width: 500px; margin: auto; }
         h1 { color: var(--primary); font-size: 2.2rem; margin-bottom: 5px; }
         
+        /* PAINEL PARA A MAMÃE */
+        .painel-desempenho {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 20px;
+            border: 2px solid var(--primary);
+        }
+        .stat-value { font-size: 1.5rem; font-weight: bold; display: block; }
+        .stat-label { font-size: 0.8rem; text-transform: uppercase; opacity: 0.9; }
+
         .questao { 
             background: #ffffff; color: #1e293b; padding: 25px; border-radius: 25px; 
             margin-bottom: 25px; border: 6px solid var(--secondary);
             position: relative; transition: 0.3s;
         }
 
-        /* ESTILO PARA QUANDO ESTIVER BLOQUEADO */
         .bloqueado { opacity: 0.6; filter: grayscale(1); pointer-events: none; }
-        .msg-bloqueio { display: none; font-weight: bold; color: #ef4444; margin-top: 10px; font-size: 1.1rem; }
+        .msg-bloqueio { display: none; font-weight: bold; color: var(--danger); margin-top: 10px; font-size: 1.1rem; }
         .bloqueado .msg-bloqueio { display: block; }
 
         .pergunta { font-size: 1.5rem; font-weight: 900; margin-bottom: 20px; text-transform: uppercase; }
@@ -29,21 +44,52 @@
             border-radius: 15px; color: #1e3a8a; font-size: 1.3rem; 
             font-weight: bold; cursor: pointer;
         }
-        .stats { font-size: 1.3rem; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 50px; margin-bottom: 20px; border: 2px solid var(--primary); }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>🚀 ARES KIDS</h1>
-    <div class="stats">ESTRELAS: <span id="estrelas">0</span> ⭐</div>
+    
+    <div class="painel-desempenho">
+        <div class="stat-card">
+            <span class="stat-label">⭐ Estrelas</span>
+            <span id="estrelas" class="stat-value">0</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">🎯 Acertos Hoje</span>
+            <span id="acertosHoje" class="stat-value">0</span>
+        </div>
+        <div class="stat-card" style="grid-column: span 2;">
+            <span class="stat-label">📊 Precisão de Hoje</span>
+            <span id="precisao" class="stat-value">0%</span>
+        </div>
+    </div>
+
     <div id="quiz"></div>
 </div>
 
 <script>
     const COOLDOWN_MINUTES = 25;
+    const hoje = new Date().toLocaleDateString();
+
+    // Inicia os dados se não existirem ou se o dia mudou
+    if(localStorage.getItem('kids_data') !== hoje) {
+        localStorage.setItem('kids_data', hoje);
+        localStorage.setItem('kids_acertos_hoje', 0);
+        localStorage.setItem('kids_total_hoje', 0);
+    }
+
     let estrelas = parseInt(localStorage.getItem('kids_estrelas') || 0);
-    document.getElementById('estrelas').innerText = estrelas;
+    let acertosHoje = parseInt(localStorage.getItem('kids_acertos_hoje') || 0);
+    let totalHoje = parseInt(localStorage.getItem('kids_total_hoje') || 0);
+
+    function atualizarStats() {
+        document.getElementById('estrelas').innerText = estrelas;
+        document.getElementById('acertosHoje').innerText = acertosHoje;
+        const perc = totalHoje === 0 ? 0 : Math.round((acertosHoje / totalHoje) * 100);
+        document.getElementById('precisao').innerText = perc + "%";
+    }
 
     const perguntasKids = [
         // BLOCO 1
@@ -70,24 +116,24 @@
 
         // BLOCO 2
         { id: 21, q: "QUANTO É 5 + 5?", opts: ["8", "10", "12"], corr: 1, exp: "ISSO AÍ! DEZ DEDOS NAS MÃOS!" },
-        { id: 22, q: "QUAL COR NASCE DA MISTURA DE AZUL COM AMARELO?", opts: ["VERDE", "ROXO", "LARANJA"], corr: 0, exp: "MÁGICA DAS CORES! AZUL + AMARELO = VERDE." },
+        { id: 22, q: "QUAL COR NASCE DA MISTURA DE AZUL COM AMARELO?", opts: ["VERDE", "ROXO", "LARANJA"], corr: 0, exp: "AZUL + AMARELO = VERDE." },
         { id: 23, q: "QUAL ANIMAL É O REI DA SELVA?", opts: ["TIGRE", "LEÃO", "ELEFANTE"], corr: 1, exp: "ROOOAR! O LEÃO MANDA NA SELVA." },
         { id: 24, q: "QUAL DESSAS PALAVRAS COMEÇA COM A LETRA B?", opts: ["ANEL", "CASA", "BOLA"], corr: 2, exp: "B DE BOLA, BONECA E BOLO!" },
         { id: 25, q: "QUANTOS PLANETAS EXISTEM NO NOSSO SISTEMA SOLAR?", opts: ["5", "8", "20"], corr: 1, exp: "SÃO 8 PLANETAS GIRANDO EM VOLTA DO SOL." },
         { id: 26, q: "QUAL É O NOME DO SATÉLITE NATURAL DA TERRA?", opts: ["SOL", "MARTE", "LUA"], corr: 2, exp: "A LUA BRILHA LÁ NO CÉU À NOITE!" },
-        { id: 27, q: "O QUE O GELO VIRA QUANDO DERRETE?", opts: ["FOGO", "ÁGUA", "VAPOR"], corr: 1, exp: "O GELO É ÁGUA BEM GELADINHA E SÓLIDA." },
+        { id: 27, q: "O QUE O GELO VIRA QUANDO DERRETE?", opts: ["FOGO", "ÁGUA", "VAPOR"], corr: 1, exp: "O GELO É ÁGUA CONGELADA!" },
         { id: 28, q: "QUANTOS DIAS TEM UMA SEMANA?", opts: ["5 DIAS", "7 DIAS", "10 DIAS"], corr: 1, exp: "DOMINGO A SÁBADO, SÃO 7 DIAS!" },
-        { id: 29, q: "QUAL É O MAIOR ANIMAL DO MUNDO?", opts: ["ELEFANTE", "BALEIA AZUL", "GIRAFA"], corr: 1, exp: "A BALEIA AZUL É GIGANTE E VIVE NO MAR!" },
-        { id: 30, q: "QUAL DESSAS FRUTAS É VERMELHA POR FORA?", opts: ["BANANA", "MAÇÃ", "PÊRA"], corr: 1, exp: "A MAÇÃ É VERMELHINHA E DELICIOSA." },
-        { id: 31, q: "QUEM DESCOBRIU O BRASIL?", opts: ["CABRAL", "DOM PEDRO", "ZIRALDO"], corr: 0, exp: "PEDRO ÁLVARES CABRAL CHEGOU AQUI PRIMEIRO!" },
-        { id: 32, q: "QUANTOS MINUTOS TEM UMA HORA?", opts: ["30", "60", "100"], corr: 1, exp: "O RELÓGIO GIRA 60 VEZES PARA DAR UMA HORA." },
-        { id: 33, q: "QUAL É O SENTIDO QUE USAMOS PARA SENTIR O CHEIRO?", opts: ["VISÃO", "OLFATO", "PALADAR"], corr: 1, exp: "O NARIZ É O ÓRGÃO DO OLFATO!" },
-        { id: 34, q: "QUAL ANIMAL PÕE OVOS?", opts: ["CACHORRO", "GALINHA", "GATO"], corr: 1, exp: "AS AVES COMO A GALINHA PÕEM OVOS." },
-        { id: 35, q: "QUAL O NOME DA NOSSA GALÁXIA?", opts: ["VIA LÁCTEA", "ANDRÔMEDA", "ESTRELA"], corr: 0, exp: "VIA LÁCTEA PARECE UM CAMINHO DE LEITE!" },
+        { id: 29, q: "QUAL É O MAIOR ANIMAL DO MUNDO?", opts: ["ELEFANTE", "BALEIA AZUL", "GIRAFA"], corr: 1, exp: "A BALEIA AZUL É GIGANTE!" },
+        { id: 30, q: "QUAL DESSAS FRUTAS É VERMELHA POR FORA?", opts: ["BANANA", "MAÇÃ", "PÊRA"], corr: 1, exp: "A MAÇÃ É VERMELHINHA!" },
+        { id: 31, q: "QUEM DESCOBRIU O BRASIL?", opts: ["CABRAL", "DOM PEDRO", "ZIRALDO"], corr: 0, exp: "PEDRO ÁLVARES CABRAL!" },
+        { id: 32, q: "QUANTOS MINUTOS TEM UMA HORA?", opts: ["30", "60", "100"], corr: 1, exp: "60 MINUTOS FORMAM UMA HORA." },
+        { id: 33, q: "QUAL É O SENTIDO QUE USAMOS PARA SENTIR O CHEIRO?", opts: ["VISÃO", "OLFATO", "PALADAR"], corr: 1, exp: "O NARIZ SENTE O OLFATO!" },
+        { id: 34, q: "QUAL ANIMAL PÕE OVOS?", opts: ["CACHORRO", "GALINHA", "GATO"], corr: 1, exp: "A GALINHA PÕE OVOS!" },
+        { id: 35, q: "QUAL O NOME DA NOSSA GALÁXIA?", opts: ["VIA LÁCTEA", "ANDRÔMEDA", "ESTRELA"], corr: 0, exp: "MORAMOS NA VIA LÁCTEA!" },
         { id: 36, q: "O TRIÂNGULO TEM QUANTOS LADOS?", opts: ["2", "3", "4"], corr: 1, exp: "TRI VEM DE TRÊS!" },
-        { id: 37, q: "QUAL É O PAÍS ONDE NÓS MORAMOS?", opts: ["ARGENTINA", "BRASIL", "PORTUGAL"], corr: 1, exp: "BRASIL, O NOSSO PAÍS VERDE E AMARELO!" },
+        { id: 37, q: "QUAL É O PAÍS ONDE NÓS MORAMOS?", opts: ["ARGENTINA", "BRASIL", "PORTUGAL"], corr: 1, exp: "BRASIL, NOSSO PAÍS!" },
         { id: 38, q: "QUAL MOVIMENTO A TERRA FAZ EM VOLTA DE SI MESMA?", opts: ["ROTAÇÃO", "TRANSLAÇÃO", "PULO"], corr: 0, exp: "A ROTAÇÃO CRIA O DIA E A NOITE." },
-        { id: 39, q: "QUAL É O OPOSTO DE 'GRANDE'?", opts: ["LONGO", "ALTO", "PEQUENO"], corr: 2, exp: "PEQUENO É O CONTRÁRIO DE GRANDE." },
+        { id: 39, q: "QUAL É O OPOSTO DE 'GRANDE'?", opts: ["LONGO", "ALTO", "PEQUENO"], corr: 2, exp: "PEQUENO É O OPOSTO DE GRANDE." },
         { id: 40, q: "QUAL ANIMAL VIVE NA ÁGUA E NA TERRA?", opts: ["PEIXE", "SAPO", "PÁSSARO"], corr: 1, exp: "O SAPO É UM ANFÍBIO!" }
     ];
 
@@ -108,23 +154,29 @@
                 </div>
             `;
         });
+        atualizarStats();
     }
 
     function check(pId, oIdx) {
         const p = perguntasKids.find(x => x.id === pId);
         localStorage.setItem(`kids_bloqueio_${pId}`, Date.now());
+        
+        totalHoje++;
+        localStorage.setItem('kids_total_hoje', totalHoje);
 
         if(oIdx === p.corr) {
             estrelas++;
+            acertosHoje++;
             localStorage.setItem('kids_estrelas', estrelas);
-            document.getElementById('estrelas').innerText = estrelas;
+            localStorage.setItem('kids_acertos_hoje', acertosHoje);
             Swal.fire({ title: 'ISSO AÍ! 🌟', text: p.exp, icon: 'success' }).then(render);
         } else {
-            Swal.fire({ title: 'QUASE! 🧐', text: 'VOCÊ ERROU, MAS PODE TENTAR DAQUI A POUCO!', icon: 'error' }).then(render);
+            Swal.fire({ title: 'QUASE! 🧐', text: 'ERROU, MAS PODE TENTAR DAQUI A POUCO!', icon: 'error' }).then(render);
         }
     }
+
     render();
-    setInterval(render, 60000); // Atualiza a tela a cada minuto para liberar questões
+    setInterval(render, 60000);
 </script>
 </body>
 </html>
