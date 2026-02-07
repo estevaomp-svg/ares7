@@ -715,6 +715,223 @@
     opts: ["ESCREVER MUITO", "DIZER O MÁXIMO COM O MÍNIMO DE PALAVRAS", "USAR PALAVRAS DIFÍCEIS"], 
     corr: 1, 
     exp: "Regra: Concisão é ir direto ao ponto, sem 'encher linguiça'." 
+},
+        { 
+    id: 138, 
+    cat: "RACIOCÍNIO LÓGICO (MGS)", 
+    q: "SE 'P' É FALSA E 'Q' É FALSA, O VALOR LÓGICO DE 'P OU Q' É:", 
+    opts: ["VERDADEIRO", "FALSO", "INCONCLUSIVO"], 
+    corr: 1, 
+    exp: "Regra do 'OU': Só é falso se as duas forem falsas. Como ambas são falsas, o resultado é FALSO." 
+},
+{ 
+    id: 139, 
+    cat: "RACIOCÍNIO LÓGICO (MGS)", 
+    q: "SE 'P' É VERDADEIRA E 'Q' É FALSA, O VALOR LÓGICO DE 'P OU Q' É:", 
+    opts: ["VERDADEIRO", "FALSO", "INCONCLUSIVO"], 
+    corr: 0, 
+    exp: "Regra do 'OU': Se pelo menos UMA for verdade, a frase toda é VERDADEIRA." 
+},
+{ 
+    id: 140, 
+    cat: "MATEMÁTICA (MGS)", 
+    q: "UM LOTE COM 300 CAIXAS CHEGOU AO GALPÃO. O SISTEMA ACUSA QUE 15% VIERAM COM ERRO. QUANTAS SÃO?", 
+    opts: ["30 CAIXAS", "45 CAIXAS", "60 CAIXAS"], 
+    corr: 1, 
+    exp: "Cálculo: 10% de 300 = 30. 5% = 15. Total: 30 + 15 = 45 caixas." 
+},
+        { 
+    id: 141, 
+    cat: "INFORMÁTICA (MGS)", 
+    q: "NO EXCEL, QUAL O RESULTADO DA FÓRMULA =SOMA(10;20;30)?", 
+    opts: ["20", "60", "30"], 
+    corr: 1, 
+    exp: "Atenção: A função SOMA apenas soma os valores. 10+20+30 = 60." 
+},
+{ 
+    id: 142, 
+    cat: "INFORMÁTICA (MGS)", 
+    q: "QUAL O RESULTADO DA FÓRMULA =MÉDIA(5;15)?", 
+    opts: ["10", "20", "5"], 
+    corr: 0, 
+    exp: "Cálculo: (5 + 15) = 20. Como são 2 números, 20 dividido por 2 = 10." 
+},
+        { 
+    id: 143, 
+    cat: "PORTUGUÊS (MGS)", 
+    q: "QUAL A GRAFIA CORRETA DA PALAVRA?", 
+    opts: ["EXCESSÃO", "EXCEÇÃO", "ESCEÇÃO"], 
+    corr: 1, 
+    exp: "Memorize: EXCEÇÃO se escreve com 'XC' e 'Ç'. É uma das que a IBFC mais gosta!" 
+},
+{ 
+    id: 144, 
+    cat: "PORTUGUÊS (MGS)", 
+    q: "NA FRASE 'O VIGILANTE AGIU COM RAPIDEZ', A PALAVRA 'RAPIDEZ' É UM:", 
+    opts: ["ADJETIVO", "SUBSTANTIVO", "VERBO"], 
+    corr: 1, 
+    exp: "Dica: Rapidez é o NOME da característica, logo é um substantivo abstrato. (Rápido seria o adjetivo)." 
+},
+{ 
+    id: 145, 
+    cat: "PORTUGUÊS (MGS)", 
+    q: "ASSINALE A ALTERNATIVA ONDE O USO DO 'PORQUÊ' ESTÁ CORRETO:", 
+    opts: ["VOCÊ NÃO FOI POR QUÊ?", "NÃO FUI PORQUE ESTAVA CANSADO.", "O PORQUE DISSO É SIMPLES."], 
+    corr: 1, 
+    exp: "Regra: 'Porque' junto e sem acento é usado para respostas e explicações." 
+},
+        { 
+    id: 146, 
+    cat: "PORTUGUÊS (MGS)", 
+    q: "NA FRASE 'O FUNCIONÁRIO EFICIENTE TERMINOU O TRABALHO', A PALAVRA 'EFICIENTE' É UM:", 
+    opts: ["SUBSTANTIVO", "ADJETIVO", "VERBO"], 
+    corr: 1, 
+    exp: "Lembre-se: Eficiente é uma CARACTERÍSTICA do funcionário, por isso é ADJETIVO." 
+},
+{ 
+    id: 147, 
+    cat: "PORTUGUÊS (MGS)", 
+    q: "QUAL DAS PALAVRAS ABAIXO É UM SUBSTANTIVO (NOME)?", 
+    opts: ["BONITO", "CORRER", "ESCRITÓRIO"], 
+    corr: 2, 
+    exp: "Escritório é o nome de um lugar (Substantivo). Bonito é adjetivo e Correr é verbo." 
+},
+{ 
+    id: 148, 
+    cat: "PORTUGUÊS (MGS)", 
+    q: "ASSINALE A ALTERNATIVA ONDE A PALAVRA EM DESTAQUE É UM ADJETIVO:", 
+    opts: ["A CASA é grande.", "O dia está LINDO.", "O CARRO quebrou."], 
+    corr: 1, 
+    exp: "LINDO dá uma qualidade ao dia, logo é adjetivo." 
+},
+        { 
+    id: 149, 
+    cat: "PORTUGUÊS (MGS)", 
+    q: "QUAL É O SUBSTANTIVO DERIVADO DO ADJETIVO 'BELO'?", 
+    opts: ["BELEZA", "EMBELEZAR", "BELISSÍMO"], 
+    corr: 0, 
+    exp: "Atenção: 'Belo' é a qualidade (adjetivo), 'Beleza' é o nome da qualidade (substantivo)." 
+},
+{ 
+    id: 150, 
+    cat: "RACIOCÍNIO LÓGICO", 
+    q: "NO DAY TRADE, SE UMA ESTRATÉGIA TEM 60% DE ACERTO, EM 10 OPERAÇÕES, QUAL A MÉDIA DE ACERTOS?", 
+    opts: ["4 ACERTOS", "6 ACERTOS", "8 ACERTOS"], 
+    corr: 1, 
+    exp: "Cálculo: 60% de 10 = 6. Use sua facilidade no trade para dominar a lógica!" 
+},
+{ 
+    id: 151, 
+    cat: "INFORMÁTICA", 
+    q: "NO WINDOWS 10, O ATALHO 'ALT + TAB' SERVE PARA:", 
+    opts: ["FECHAR UMA JANELA", "ALTERNAR ENTRE JANELAS ABERTAS", "REINICIAR O COMPUTADOR"], 
+    corr: 1, 
+    exp: "Funcionalidade: Atalho essencial para produtividade no dia a dia administrativo." 
+},
+        { 
+    id: 152, cat: "PORTUGUÊS", 
+    q: "NA FRASE 'VENDE-SE ESTA CASA', A PALAVRA 'SE' É UM:", 
+    opts: ["PRONOME REFLEXIVO", "PARTÍCULA APASSIVADORA", "ÍNDICE DE INDETERMINAÇÃO"], 
+    corr: 1, 
+    exp: "Clássico IBFC: Se você pode dizer 'Esta casa é vendida', o 'SE' é partícula apassivadora." 
+},
+{ 
+    id: 153, cat: "PORTUGUÊS", 
+    q: "QUAL É O ANTÔNIMO DE 'EFÊMERO'?", 
+    opts: ["PASSAGEIRO", "DURADOURO", "RÁPIDO"], 
+    corr: 1, 
+    exp: "Vocabulário: Efêmero é algo curto. O oposto é duradouro ou permanente." 
+},
+{ 
+    id: 154, cat: "LOGÍSTICA", 
+    q: "O MÉTODO DE ESTOQUE ONDE O PRIMEIRO QUE ENTRA É O PRIMEIRO QUE SAI É:", 
+    opts: ["PEPS", "UEPS", "MÉDIA PONDERADA"], 
+    corr: 0, 
+    exp: "PEPS: Primeiro que Entra, Primeiro que Sai. Essencial para almoxarifado MGS." 
+},
+{ 
+    id: 155, cat: "INFORMÁTICA", 
+    q: "QUAL O ATALHO PARA SALVAR UM DOCUMENTO NO WORD (VERSÃO PORTUGUÊS)?", 
+    opts: ["CTRL + S", "CTRL + B", "CTRL + A"], 
+    corr: 1, 
+    exp: "Pegadinha: Em Inglês é S (Save), em Português é B (salBar)." 
+},
+{ 
+    id: 156, cat: "R. LÓGICO", 
+    q: "A NEGAÇÃO DA PROPOSIÇÃO 'FUI À SERRA E FUI A FUNDÃO' É:", 
+    opts: ["NÃO FUI À SERRA E NÃO FUI A FUNDÃO", "NÃO FUI À SERRA OU NÃO FUI A FUNDÃO", "FUI À SERRA OU FUI A FUNDÃO"], 
+    corr: 1, 
+    exp: "Lei de De Morgan: A negação do 'E' vira 'OU' e nega as duas partes." 
+},
+{ 
+    id: 157, cat: "PORTUGUÊS", 
+    q: "EM 'OUVI DIZER QUE VOCÊ PASSOU', A ORAÇÃO EM DESTAQUE É:", 
+    opts: ["COORDENADA", "SUBJETIVA", "SUBJETIVA OBJETIVA DIRETA"], 
+    corr: 2, 
+    exp: "Quem ouve, ouve ALGO. 'Que você passou' completa o verbo, sendo objeto direto." 
+},
+{ 
+    id: 158, cat: "ADMINISTRAÇÃO", 
+    q: "NA REDAÇÃO OFICIAL, A IMPESSOALIDADE VISA EVITAR:", 
+    opts: ["CLAREZA", "SUBJETIVIDADE", "FORMALIDADE"], 
+    corr: 1, 
+    exp: "Impessoalidade significa que o texto não deve ter opiniões do autor (subjetivismo)." 
+},
+{ 
+    id: 159, cat: "INFORMÁTICA", 
+    q: "NO EXCEL, A FUNÇÃO =CONT.NUM(A1:A10) SERVE PARA:", 
+    opts: ["SOMAR OS NÚMEROS", "CONTAR QUANTAS CÉLULAS TÊM NÚMEROS", "VER A MÉDIA"], 
+    corr: 1, 
+    exp: "Função: Ela não soma o valor, ela apenas conta em quantas células você digitou números." 
+},
+{ 
+    id: 160, cat: "MATEMÁTICA", 
+    q: "SE 3 AJUDANTES LIMPAM UM PÁTIO EM 2 HORAS, 6 AJUDANTES LIMPARÃO EM:", 
+    opts: ["4 HORAS", "1 HORA", "3 HORAS"], 
+    corr: 1, 
+    exp: "Regra de Três Inversa: Dobrou a força de trabalho, o tempo cai pela metade!" 
+},
+{ 
+    id: 161, cat: "PORTUGUÊS", 
+    q: "QUAL PALAVRA ESTÁ ACENTUADA PELA MESMA REGRA QUE 'HISTÓRIA'?", 
+    opts: ["CAFÉ", "REGUÁ", "DÓCIL"], 
+    corr: 1, 
+    exp: "Regra: Paroxítonas terminadas em ditongo crescente." 
+},
+{ 
+    id: 162, cat: "R. LÓGICO", 
+    q: "SE TODO A É B, E C É A, ENTÃO:", 
+    opts: ["TODO C É B", "TODO B É C", "NENHUM C É B"], 
+    corr: 0, 
+    exp: "Silogismo clássico: Se o C está dentro do A, e o A está dentro do B, C está dentro do B." 
+},
+{ 
+    id: 163, cat: "INFORMÁTICA", 
+    q: "O QUE É UM 'PHISHING' NA SEGURANÇA DA INFORMAÇÃO?", 
+    opts: ["UM VÍRUS QUE APAGA ARQUIVOS", "UM GOLPE PARA ROUBAR DADOS", "UM PROGRAMA DE ANTIVÍRUS"], 
+    corr: 1, 
+    exp: "Conceito: É a 'pescaria' de dados através de e-mails ou sites falsos." 
+},
+{ 
+    id: 164, cat: "REDAÇÃO OFICIAL", 
+    q: "QUAL O FECHO PARA UMA AUTORIDADE SUPERIOR À SUA?", 
+    opts: ["ATENCIOSAMENTE", "RESPEITOSAMENTE", "CORDIALMENTE"], 
+    corr: 1, 
+    exp: "Padrão Oficial: Subir de cargo = Respeitosamente. Mesma altura = Atenciosamente." 
+},
+{ 
+    id: 165, cat: "MATEMÁTICA", 
+    q: "UM PRODUTO DE R$ 80,00 COM DESCONTO DE 15% CUSTA:", 
+    opts: ["R$ 65,00", "R$ 68,00", "R$ 72,00"], 
+    corr: 1, 
+    exp: "Cálculo: 10% de 80 = 8. 5% = 4. Total desconto: 12. 80 - 12 = 68." 
+},
+{ 
+    id: 166, cat: "PORTUGUÊS", 
+    q: "QUAL É O SUJEITO DA FRASE: 'SOARAM DEZ HORAS NO RELÓGIO'?", 
+    opts: ["INEXISTENTE", "DEZ HORAS", "RELÓGIO"], 
+    corr: 1, 
+    exp: "Pegadinha: Com horas, o verbo soar concorda com o número de horas. 'Dez horas' é o sujeito." 
 }
     ];
 
@@ -768,6 +985,7 @@
 </script>
 </body>
 </html>
+
 
 
 
