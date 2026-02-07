@@ -70,7 +70,7 @@
 </div>
 
 <script>
-    const COOLDOWN_MINUTES = 1;
+    const COOLDOWN_MINUTES = 240;
     const hoje = new Date().toLocaleDateString();
 
     // Inicia os dados se não existirem ou se o dia mudou
@@ -135,7 +135,146 @@
         { id: 38, q: "QUAL MOVIMENTO A TERRA FAZ EM VOLTA DE SI MESMA?", opts: ["ROTAÇÃO", "TRANSLAÇÃO", "PULO"], corr: 0, exp: "A ROTAÇÃO CRIA O DIA E A NOITE." },
         { id: 39, q: "QUAL É O OPOSTO DE 'GRANDE'?", opts: ["LONGO", "ALTO", "PEQUENO"], corr: 2, exp: "PEQUENO É O OPOSTO DE GRANDE." },
         { id: 40, q: "QUAL ANIMAL VIVE NA ÁGUA E NA TERRA?", opts: ["PEIXE", "SAPO", "PÁSSARO"], corr: 1, exp: "O SAPO É UM ANFÍBIO!" },
-        { id: 40, q: "O QUE É EXATAMENTE O SUKUNA?", opts: ["OBJETO AMALDIÇOADO", "ESPIRITO AMALDIÇOADO", "DESONRADO"], corr: 0, exp: "O SUKUMA É UM OBJETO AMALDIÇOADO!" }
+        { 
+    id: 41, 
+    q: "QUAL É A COR DO CABELO DO PERSONAGEM ITADORI YUJI?", 
+    opts: ["VERDE", "ROSA", "AZUL"], 
+    corr: 1, 
+    exp: "ISSO! O ITADORI TEM O CABELO ROSA E É MUITO FORTE!" 
+},
+{ 
+    id: 42, 
+    q: "O MESTRE GOJO SATORU USA UMA FAIXA NOS OLHOS. DE QUE COR É A FAIXA DELE?", 
+    opts: ["BRANCA", "PRETA", "AMARELA"], 
+    corr: 1, 
+    exp: "BOA! ELE USA UMA VENDA PRETA NOS OLHOS!" 
+},
+{ 
+    id: 43, 
+    q: "QUANTOS BRAÇOS TEM O MONSTRO SUKUNA QUANDO ELE APARECE DE VERDADE?", 
+    opts: ["2 BRAÇOS", "4 BRAÇOS", "6 BRAÇOS"], 
+    corr: 1, 
+    exp: "UAU! O SUKUNA É UM VILÃO DE 4 BRAÇOS!" 
+},
+{ 
+    id: 44, 
+    q: "O PERSONAGEM PANDA SE PARECE COM QUAL ANIMAL?", 
+    opts: ["UM URSO PANDA", "UM LEÃO", "UM COELHO"], 
+    corr: 0, 
+    exp: "ISSO AÍ! ELE É UM PANDA MUITO FOFO E LUTADOR!" 
+},
+{ 
+    id: 45, 
+    q: "SE O ITADORI DER 3 PULAR E DEPOIS DER MAIS 2 PULOS, QUANTOS PULOS ELE DEU?", 
+    opts: ["4 PULOS", "5 PULOS", "6 PULOS"], 
+    corr: 1, 
+    exp: "3 + 2 = 5! VOCÊ PULA ALTO IGUAL AO ITADORI!" 
+},
+{ 
+    id: 46, 
+    q: "QUAL DESSES PERSONAGENS USA LOBOS DE SOMBRA PARA LUTAR?", 
+    opts: ["ITADORI", "MEGUMI FUSHIGURO", "NOBARA"], 
+    corr: 1, 
+    exp: "ISSO! O MEGUMI CHAMA OS LOBOS PELA SOMBRA!" 
+},
+{ 
+    id: 47, 
+    q: "A NOBARA USA UMA FERRAMENTA PARA LUTAR. QUAL É?", 
+    opts: ["UM MARTELO", "UMA ESPADA", "UM ARCO"], 
+    corr: 0, 
+    exp: "CERTINHO! A NOBARA USA UM MARTELO E PREGOS!" 
+},
+{ 
+    id: 48, 
+    q: "O MESTRE GOJO É MUITO ALTO. QUAL É O CONTRÁRIO DE ALTO?", 
+    opts: ["GRANDE", "BAIXO", "FORTE"], 
+    corr: 1, 
+    exp: "MUITO BEM! O CONTRÁRIO DE ALTO É BAIXO!" 
+},
+{ 
+    id: 49, 
+    q: "ITADORI ADORA COMER. QUAL DESSAS COMIDAS É UM LANCHE?", 
+    opts: ["PEDRA", "PIZZA", "SABÃO"], 
+    corr: 1, 
+    exp: "DELÍCIA! PIZZA É UM LANCHE MUITO BOM!" 
+},
+{ 
+    id: 50, 
+    q: "JUJUTSU KAISEN COMEÇA COM QUAL LETRA?", 
+    opts: ["LETRA A", "LETRA J", "LETRA M"], 
+    corr: 1, 
+    exp: "ISSO! J DE JUJUTSU E J DE JACARÉ!" 
+},
+        { 
+    id: 51, 
+    q: "O ITADORI COMEU 1 DEDO DO SUKUNA DE MANHÃ E MAIS 1 DEDO À TARDE. QUANTOS ELE COMEU NO TOTAL?", 
+    opts: ["1 DEDO", "2 DEDOS", "3 DEDOS"], 
+    corr: 1, 
+    exp: "ISSO! 1 + 1 É IGUAL A DOIS DEDOS!" 
+},
+{ 
+    id: 52, 
+    q: "O MESTRE GOJO TEM 2 OLHOS, MAS ELE USA UMA VENDA QUE COBRE OS DOIS. QUANTAS VENDAS ELE USA?", 
+    opts: ["1 VENDA", "2 VENDAS", "5 VENDAS"], 
+    corr: 0, 
+    exp: "CERTINHO! UMA VENDA SÓ JÁ COBRE TUDO!" 
+},
+{ 
+    id: 53, 
+    q: "O MEGUMI CHAMOU 2 LOBOS BRANCOS E 2 LOBOS PRETOS. QUANTOS LOBOS APARECERAM?", 
+    opts: ["2 LOBOS", "3 LOBOS", "4 LOBOS"], 
+    corr: 2, 
+    exp: "BOA! 2 MAIS 2 SÃO QUATRO LOBOS AMIGOS!" 
+},
+{ 
+    id: 54, 
+    q: "A NOBARA TEM 5 PREGOS NA MÃO. SE ELA USAR 1 PREGO, QUANTOS SOBRAM?", 
+    opts: ["3 PREGOS", "4 PREGOS", "5 PREGOS"], 
+    corr: 1, 
+    exp: "ISSO! 5 TIRA 1 FICA QUATRO!" 
+},
+{ 
+    id: 55, 
+    q: "QUAL É A FORMA DA BOLA DE ENERGIA QUE O ITADORI FAZ COM A MÃO?", 
+    opts: ["QUADRADA", "REDONDA", "TRIÂNGULO"], 
+    corr: 1, 
+    exp: "ISSO! A ENERGIA SAI REDONDINHA IGUAL UMA BOLA!" 
+},
+{ 
+    id: 56, 
+    q: "O PANDA É GRANDE E O DOGUINHO DO MEGUMI É...", 
+    opts: ["PEQUENO", "GIGANTE", "ALTO"], 
+    corr: 0, 
+    exp: "MUITO BEM! O CONTRÁRIO DE GRANDE É PEQUENO!" 
+},
+{ 
+    id: 57, 
+    q: "O INUMAKI SÓ FALA COMIDAS. SE ELE DISSER 'SALMÃO, ATUM E ALGA', QUANTAS PALAVRAS ELE DISSE?", 
+    opts: ["2 PALAVRAS", "3 PALAVRAS", "1 PALAVRA"], 
+    corr: 1, 
+    exp: "CONTE COMIGO: 1, 2, TRÊS COMIDINHAS!" 
+},
+{ 
+    id: 58, 
+    q: "O PODER DO GOJO SE CHAMA 'VAZIO ROXO'. QUE COR É ESSA?", 
+    opts: ["AMARELO", "AZUL", "ROXO"], 
+    corr: 2, 
+    exp: "ISSO! É A COR DA UVA E DO PODER DO GOJO!" 
+},
+{ 
+    id: 59, 
+    q: "SE O ITADORI TEM 6 COLEGAS NA ESCOLA JUJUTSU E CHEGAM MAIS 2, QUANTOS FICAM?", 
+    opts: ["7 COLEGAS", "8 COLEGAS", "9 COLEGAS"], 
+    corr: 1, 
+    exp: "BOA! 6 MAIS 2 É IGUAL A OITO!" 
+},
+{ 
+    id: 60, 
+    q: "QUANTAS PESSOAS APARECEM NA ABERTURA: ITADORI, NOBARA E MEGUMI?", 
+    opts: ["1 PESSOA", "2 PESSOAS", "3 PESSOAS"], 
+    corr: 2, 
+    exp: "ISSO! SÃO OS 3 AMIGOS UNIDOS!" 
+}
     ];
 
     function render() {
@@ -181,6 +320,7 @@
 </script>
 </body>
 </html>
+
 
 
 
