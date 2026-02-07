@@ -70,7 +70,7 @@
 </div>
 
 <script>
-    const COOLDOWN_MINUTES = 25;
+    const COOLDOWN_MINUTES = 1440;
     const hoje = new Date().toLocaleDateString();
 
     // Inicia os dados se não existirem ou se o dia mudou
@@ -134,7 +134,8 @@
         { id: 37, q: "QUAL É O PAÍS ONDE NÓS MORAMOS?", opts: ["ARGENTINA", "BRASIL", "PORTUGAL"], corr: 1, exp: "BRASIL, NOSSO PAÍS!" },
         { id: 38, q: "QUAL MOVIMENTO A TERRA FAZ EM VOLTA DE SI MESMA?", opts: ["ROTAÇÃO", "TRANSLAÇÃO", "PULO"], corr: 0, exp: "A ROTAÇÃO CRIA O DIA E A NOITE." },
         { id: 39, q: "QUAL É O OPOSTO DE 'GRANDE'?", opts: ["LONGO", "ALTO", "PEQUENO"], corr: 2, exp: "PEQUENO É O OPOSTO DE GRANDE." },
-        { id: 40, q: "QUAL ANIMAL VIVE NA ÁGUA E NA TERRA?", opts: ["PEIXE", "SAPO", "PÁSSARO"], corr: 1, exp: "O SAPO É UM ANFÍBIO!" }
+        { id: 40, q: "QUAL ANIMAL VIVE NA ÁGUA E NA TERRA?", opts: ["PEIXE", "SAPO", "PÁSSARO"], corr: 1, exp: "O SAPO É UM ANFÍBIO!" },
+        { id: 40, q: "O QUE É EXATAMENTE O SUKUNA?", opts: ["OBJETO AMALDIÇOADO", "ESPIRITO AMALDIÇOADO", "DESONRADO"], corr: 1, exp: "O SUKUMA É UM OBJETO AMALDIÇOADO!" }
     ];
 
     function render() {
@@ -180,3 +181,4 @@
 </script>
 </body>
 </html>
+
