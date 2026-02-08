@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ares RPG - Dieta PRO</title>
+    <title>Ares RPG - Dieta & Bio</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
@@ -11,38 +11,42 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        :root { --p: #3b82f6; --g: #f59e0b; --c: #ec4899; --success: #22c55e; }
+        :root { --p: #3b82f6; --g: #f59e0b; --c: #ec4899; --success: #22c55e; --danger: #ef4444; }
         body { 
             font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #fff; margin: 0; padding: 15px;
             background: linear-gradient(rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.9)), url('https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&q=80&w=1000');
-            background-size: cover; background-attachment: fixed;
+            background-size: cover; background-attachment: fixed; padding-bottom: 50px;
         }
         .card { background: rgba(30, 41, 59, 0.95); padding: 20px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #334155; }
         
+        /* Layout de Macros */
         .macro-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; text-align: center; }
-        .macro-box { padding: 10px; border-radius: 10px; background: rgba(0,0,0,0.2); }
-        .macro-val { font-size: 18px; font-weight: bold; display: block; }
+        .macro-box { padding: 10px; border-radius: 10px; background: rgba(0,0,0,0.2); border-bottom: 3px solid #334155; }
+        .macro-val { font-size: 16px; font-weight: bold; display: block; }
         .macro-label { font-size: 10px; text-transform: uppercase; color: #94a3b8; }
         
         .progress-main { height: 12px; background: #334155; border-radius: 6px; overflow: hidden; margin: 10px 0; }
         .progress-bar { height: 100%; width: 0%; transition: 0.5s; background: var(--success); }
 
-        input, select { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; background: #1e293b; color: white; box-sizing: border-box; }
-        button { cursor: pointer; padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; width: 100%; margin-top: 10px; }
+        input, select { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; background: #1e293b; color: white; box-sizing: border-box; font-size: 14px; }
+        button { cursor: pointer; padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.2s; }
+        button:active { transform: scale(0.98); }
         
         .btn-add { background: #3b82f6; }
-        .btn-custom { background: #64748b; font-size: 12px; margin-top: 5px; }
+        .btn-save-bio { background: #ec4899; }
         
         .food-item { display: flex; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid #3b82f6; }
         .tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; color: white; margin-right: 4px; }
+        
+        .label-bio { font-size: 12px; color: #94a3b8; margin-top: 5px; display: block; }
     </style>
 </head>
 <body>
 
-    <a href="./" style="color: #94a3b8; text-decoration: none; font-size: 14px;">⬅ Voltar ao Painel</a>
+    <a href="./" style="display: block; text-align: center; background: #334155; color: white; padding: 10px; border-radius: 8px; text-decoration: none; margin-bottom: 15px; font-weight: bold;">⬅ VOLTAR AO MENU</a>
 
     <div class="card">
-        <h2 style="margin:0; text-align:center;">🍎 Diário de Hoje</h2>
+        <h2 style="margin:0; text-align:center; color: var(--success);">🥗 Diário de Hoje</h2>
         <div style="text-align:center; margin: 15px 0;">
             <span style="font-size: 32px; font-weight: 900;" id="total-kcal">0</span> 
             <span style="color: #94a3b8;">/ <span id="meta-kcal">2000</span> kcal</span>
@@ -50,62 +54,82 @@
         </div>
 
         <div class="macro-grid">
-            <div class="macro-box" style="border-bottom: 3px solid var(--p);">
-                <span class="macro-val" id="total-p">0g</span><span class="macro-label">Prot (4kcal)</span>
-            </div>
-            <div class="macro-box" style="border-bottom: 3px solid var(--c);">
-                <span class="macro-val" id="total-c">0g</span><span class="macro-label">Carb (4kcal)</span>
-            </div>
-            <div class="macro-box" style="border-bottom: 3px solid var(--g);">
-                <span class="macro-val" id="total-g">0g</span><span class="macro-label">Gord (9kcal)</span>
-            </div>
+            <div class="macro-box" style="border-color: var(--p);"><span class="macro-val" id="total-p">0g</span><span class="macro-label">Prot</span></div>
+            <div class="macro-box" style="border-color: var(--c);"><span class="macro-val" id="total-c">0g</span><span class="macro-label">Carb</span></div>
+            <div class="macro-box" style="border-color: var(--g);"><span class="macro-val" id="total-g">0g</span><span class="macro-label">Gord</span></div>
         </div>
     </div>
 
     <div class="card">
         <h3 style="margin-top:0;">➕ Adicionar Alimento</h3>
+        <select id="select-alimento" onchange="toggleInputs()">
+            <option value="">Buscar na lista...</option>
+            <option value="custom">✨ Item Personalizado (Digitar macros)</option>
+            <option value="frango">Frango Grelhado (100g)</option>
+            <option value="arroz">Arroz Branco (100g)</option>
+            <option value="ovo">Ovo Cozido (Unidade)</option>
+            <option value="pao">Pão de Forma (Fatia)</option>
+        </select>
         
-        <div id="area-selecao">
-            <select id="select-alimento" onchange="atualizarPreview()">
-                <option value="">Buscar na lista...</option>
-                <option value="custom">✨ Item Personalizado...</option>
-            </select>
-            
-            <div id="campos-comuns">
-                <input type="number" id="input-gramas" placeholder="Quantidade em gramas (g)" oninput="atualizarPreview()">
-            </div>
-
-            <div id="campos-custom" style="display:none; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; margin-top: 10px;">
-                <input type="text" id="cust-nome" placeholder="Nome do Alimento">
-                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px;">
-                    <input type="number" id="cust-p" placeholder="P (g)">
-                    <input type="number" id="cust-c" placeholder="C (g)">
-                    <input type="number" id="cust-g" placeholder="G (g)">
-                </div>
-                <p style="font-size:10px; color: #94a3b8; margin: 5px 0;">* Macros para a porção que você vai comer.</p>
-            </div>
-
-            <div id="preview-area" style="text-align: center; margin-top: 10px; color: var(--success); font-weight: bold; font-size: 18px;">
-                0 kcal
-            </div>
-            
-            <button class="btn-add" onclick="salvarAlimento()">ADICIONAR AO PRATO</button>
+        <div id="campos-comuns">
+            <input type="number" id="input-gramas" placeholder="Quantidade (g ou un)" oninput="calcPreview()">
         </div>
+
+        <div id="campos-custom" style="display:none; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; margin-top: 10px;">
+            <input type="text" id="cust-nome" placeholder="Nome do Alimento">
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px;">
+                <input type="number" id="cust-p" placeholder="P (g)" oninput="calcPreview()">
+                <input type="number" id="cust-c" placeholder="C (g)" oninput="calcPreview()">
+                <input type="number" id="cust-g" placeholder="G (g)" oninput="calcPreview()">
+            </div>
+        </div>
+
+        <div id="preview-area" style="text-align: center; margin-top: 10px; color: var(--success); font-weight: bold;">0 kcal</div>
+        <button class="btn-add" onclick="salvarAlimento()">ADICIONAR AO DIÁRIO</button>
     </div>
 
     <div class="card">
-        <h3>🍽️ Refeições do Dia</h3>
+        <h3 style="margin:0 0 10px 0;">🍽️ Refeições</h3>
         <div id="lista-alimentos"></div>
+    </div>
+
+    <div class="card" style="border-top: 4px solid #ec4899;">
+        <h3 style="margin-top:0; color: #ec4899;">📊 Bioestatística & Metas</h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div><span class="label-bio">Sexo</span><select id="calc-sexo"><option value="m">Masc</option><option value="f">Fem</option></select></div>
+            <div><span class="label-bio">Idade</span><input type="number" id="calc-idade"></div>
+            <div><span class="label-bio">Peso (kg)</span><input type="number" id="calc-peso"></div>
+            <div><span class="label-bio">Altura (cm)</span><input type="number" id="calc-altura"></div>
+            <div><span class="label-bio">Atividade</span>
+                <select id="calc-fator">
+                    <option value="1.2">Sedentário</option>
+                    <option value="1.375" selected>Leve</option>
+                    <option value="1.55">Moderado</option>
+                    <option value="1.725">Intenso</option>
+                </select>
+            </div>
+            <div><span class="label-bio">Objetivo</span>
+                <select id="calc-obj">
+                    <option value="0">Manter</option>
+                    <option value="-500">Perder Peso</option>
+                    <option value="300">Ganhar Massa</option>
+                </select>
+            </div>
+        </div>
+        <button class="btn-save-bio" onclick="calcularESalvarBio()">💾 SALVAR PERFIL E CALCULAR META</button>
+        
+        <div id="res-bio" style="display:none; margin-top:15px; padding:10px; background:rgba(0,0,0,0.3); border-radius:10px; text-align:center;">
+             <p style="margin:5px 0;">Sua meta diária foi salva como: <b id="res-meta-val" style="color:var(--success)">---</b></p>
+        </div>
     </div>
 
     <script>
         const TABELA = {
-            "frango": { nome: "Frango Grelhado", p: 31, c: 0, g: 3.6 },
-            "arroz": { nome: "Arroz Branco Cozido", p: 2.5, c: 28, g: 0.2 },
-            "feijao": { nome: "Feijão Carioca", p: 4.8, c: 13.6, g: 0.5 },
-            "ovo": { nome: "Ovo Cozido (un)", p: 6.3, c: 0.6, g: 5 }, // valores por unidade simplificada
-            "patinho": { nome: "Patinho", p: 35, c: 0, g: 7 },
-            "pao": { nome: "Pão de Forma", p: 4, c: 25, g: 1.5 }
+            "frango": { p: 31, c: 0, g: 3.6 },
+            "arroz": { p: 2.5, c: 28, g: 0.2 },
+            "ovo": { p: 6.3, c: 0.6, g: 5 },
+            "pao": { p: 4, c: 25, g: 1.5 }
         };
 
         const firebaseConfig = {
@@ -119,120 +143,110 @@
         let jogador = "";
         const dataKey = new Date().toISOString().split('T')[0];
 
-        // Lógica de UI
-        function atualizarPreview() {
+        firebase.auth().onAuthStateChanged(u => {
+            if(u) {
+                jogador = u.email.split('@')[0].replace(/[.#$[\]]/g, "_");
+                carregarTudo();
+            } else { window.location.href = './'; }
+        });
+
+        function toggleInputs() {
+            const val = document.getElementById('select-alimento').value;
+            document.getElementById('campos-custom').style.display = (val === 'custom') ? 'block' : 'none';
+            document.getElementById('campos-comuns').style.display = (val === 'custom') ? 'none' : 'block';
+            calcPreview();
+        }
+
+        function calcPreview() {
             const mode = document.getElementById('select-alimento').value;
-            const preview = document.getElementById('preview-area');
-            
-            if(mode === "custom") {
-                document.getElementById('campos-custom').style.display = "block";
-                document.getElementById('campos-comuns').style.display = "none";
+            let kcal = 0;
+            if(mode === 'custom') {
                 const p = parseFloat(document.getElementById('cust-p').value) || 0;
                 const c = parseFloat(document.getElementById('cust-c').value) || 0;
                 const g = parseFloat(document.getElementById('cust-g').value) || 0;
-                preview.innerText = Math.round((p*4)+(c*4)+(g*9)) + " kcal";
-            } else {
-                document.getElementById('campos-custom').style.display = "none";
-                document.getElementById('campos-comuns').style.display = "block";
-                const g = document.getElementById('input-gramas').value || 0;
-                if(TABELA[mode]) {
-                    const alim = TABELA[mode];
-                    const kcal = ((alim.p * 4) + (alim.c * 4) + (alim.g * 9)) * (g / 100);
-                    preview.innerText = Math.round(kcal) + " kcal";
-                }
+                kcal = (p*4) + (c*4) + (g*9);
+            } else if(TABELA[mode]) {
+                const g = parseFloat(document.getElementById('input-gramas').value) || 0;
+                const b = TABELA[mode];
+                kcal = ((b.p*4)+(b.c*4)+(b.g*9)) * (g/100);
             }
+            document.getElementById('preview-area').innerText = Math.round(kcal) + " kcal";
         }
 
         function salvarAlimento() {
             const mode = document.getElementById('select-alimento').value;
-            let novoItem = {};
-
-            if(mode === "custom") {
-                const nome = document.getElementById('cust-nome').value;
+            let item = {};
+            if(mode === 'custom') {
+                const n = document.getElementById('cust-nome').value;
                 const p = parseFloat(document.getElementById('cust-p').value) || 0;
                 const c = parseFloat(document.getElementById('cust-c').value) || 0;
                 const g = parseFloat(document.getElementById('cust-g').value) || 0;
-                if(!nome) return alert("Dê um nome ao alimento!");
-                
-                novoItem = {
-                    nome: nome,
-                    p: p, c: c, g: g,
-                    kcal: Math.round((p*4)+(c*4)+(g*9)),
-                    peso: 'Pers.'
-                };
+                if(!n) return;
+                item = { nome: n, p: p, c: c, g: g, kcal: Math.round((p*4)+(c*4)+(g*9)), peso: 'Pers.' };
             } else if(TABELA[mode]) {
                 const gramas = parseFloat(document.getElementById('input-gramas').value);
-                if(!gramas) return alert("Digite a quantidade!");
-                const base = TABELA[mode];
-                const f = gramas / 100;
-                novoItem = {
-                    nome: base.nome,
-                    peso: gramas,
-                    p: (base.p * f).toFixed(1),
-                    c: (base.c * f).toFixed(1),
-                    g: (base.g * f).toFixed(1),
-                    kcal: Math.round(((base.p * 4) + (base.c * 4) + (base.g * 9)) * f)
-                };
+                if(!gramas) return;
+                const b = TABELA[mode]; const f = gramas/100;
+                item = { nome: document.getElementById('select-alimento').options[document.getElementById('select-alimento').selectedIndex].text, p: (b.p*f).toFixed(1), c: (b.c*f).toFixed(1), g: (b.g*f).toFixed(1), kcal: Math.round(((b.p*4)+(b.c*4)+(b.g*9))*f), peso: gramas };
             }
-
-            db.ref(`rpg_data/${jogador}/dieta/${dataKey}`).push(novoItem);
-            // Limpar campos
-            document.getElementById('cust-nome').value = "";
-            document.getElementById('input-gramas').value = "";
+            if(item.nome) db.ref(`rpg_data/${jogador}/dieta/${dataKey}`).push(item);
         }
 
-        // --- Firebase Auth e Sync (Igual aos anteriores) ---
-        firebase.auth().onAuthStateChanged(u => {
-            if(u) {
-                jogador = u.email.split('@')[0].replace(/[.#$[\]]/g, "_");
-                // Preencher Select
-                const sel = document.getElementById('select-alimento');
-                Object.keys(TABELA).forEach(k => {
-                    let opt = document.createElement('option');
-                    opt.value = k; opt.text = TABELA[k].nome;
-                    sel.add(opt);
-                });
-                carregarDieta();
-            }
-        });
+        function calcularESalvarBio() {
+            const peso = parseFloat(document.getElementById('calc-peso').value);
+            const alt = parseFloat(document.getElementById('calc-altura').value);
+            const idade = parseFloat(document.getElementById('calc-idade').value);
+            const sexo = document.getElementById('calc-sexo').value;
+            const fat = parseFloat(document.getElementById('calc-fator').value);
+            const obj = parseFloat(document.getElementById('calc-obj').value);
 
-        function carregarDieta() {
-            db.ref(`rpg_data/${jogador}/bio/metaDiaria`).on('value', s => {
-                if(s.val()) document.getElementById('meta-kcal').innerText = s.val();
+            if(!peso || !alt || !idade) return Swal.fire("Erro", "Preencha os dados básicos!", "error");
+
+            let tmb = (sexo === 'm') ? (10 * peso) + (6.25 * alt) - (5 * idade) + 5 : (10 * peso) + (6.25 * alt) - (5 * idade) - 161;
+            let meta = Math.round((tmb * fat) + obj);
+
+            db.ref(`rpg_data/${jogador}/bio`).update({ peso, altura: alt, idade, sexo, fator: fat, objetivo: obj, metaDiaria: meta });
+            Swal.fire("Salvo!", "Sua meta de " + meta + " kcal foi atualizada.", "success");
+        }
+
+        function carregarTudo() {
+            // Bio
+            db.ref(`rpg_data/${jogador}/bio`).on('value', s => {
+                const d = s.val();
+                if(d) {
+                    document.getElementById('calc-peso').value = d.peso || '';
+                    document.getElementById('calc-altura').value = d.altura || '';
+                    document.getElementById('calc-idade').value = d.idade || '';
+                    document.getElementById('calc-sexo').value = d.sexo || 'm';
+                    document.getElementById('meta-kcal').innerText = d.metaDiaria || 2000;
+                    document.getElementById('res-meta-val').innerText = (d.metaDiaria || 2000) + " kcal";
+                    document.getElementById('res-bio').style.display = 'block';
+                }
             });
-
+            // Dieta
             db.ref(`rpg_data/${jogador}/dieta/${dataKey}`).on('value', s => {
                 const dados = s.val();
-                let tKcal = 0, tP = 0, tC = 0, tG = 0;
-                const container = document.getElementById('lista-alimentos');
-                container.innerHTML = "";
-
+                let tk = 0, tp = 0, tc = 0, tg = 0;
+                const cont = document.getElementById('lista-alimentos');
+                cont.innerHTML = "";
                 if(dados) {
                     Object.keys(dados).forEach(id => {
                         const i = dados[id];
-                        tKcal += i.kcal; tP += parseFloat(i.p); tC += parseFloat(i.c); tG += parseFloat(i.g);
-                        container.innerHTML += `
-                            <div class="food-item">
-                                <div>
-                                    <b>${i.nome}</b> <small>(${i.peso}g)</small><br>
-                                    <span class="tag" style="background:var(--p)">P: ${i.p}g</span>
-                                    <span class="tag" style="background:var(--c)">C: ${i.c}g</span>
-                                    <span class="tag" style="background:var(--g)">G: ${i.g}g</span>
-                                </div>
-                                <div style="text-align:right">
-                                    <b style="color:var(--success)">${i.kcal} kcal</b><br>
-                                    <span style="color:#ef4444; cursor:pointer; font-size:10px;" onclick="db.ref('rpg_data/${jogador}/dieta/${dataKey}/${id}').remove()">Remover</span>
-                                </div>
-                            </div>`;
+                        tk += i.kcal; tp += parseFloat(i.p); tc += parseFloat(i.c); tg += parseFloat(i.g);
+                        cont.innerHTML += `<div class="food-item">
+                            <div><b>${i.nome}</b> <small>(${i.peso}g)</small><br>
+                            <span class="tag" style="background:var(--p)">P: ${i.p}g</span><span class="tag" style="background:var(--c)">C: ${i.c}g</span><span class="tag" style="background:var(--g)">G: ${i.g}g</span></div>
+                            <div style="text-align:right"><b style="color:var(--success)">${i.kcal} kcal</b><br>
+                            <span style="color:var(--danger); cursor:pointer; font-size:10px;" onclick="db.ref('rpg_data/${jogador}/dieta/${dataKey}/${id}').remove()">Remover</span></div>
+                        </div>`;
                     });
                 }
-                document.getElementById('total-kcal').innerText = tKcal;
-                document.getElementById('total-p').innerText = tP.toFixed(0) + "g";
-                document.getElementById('total-c').innerText = tC.toFixed(0) + "g";
-                document.getElementById('total-g').innerText = tG.toFixed(0) + "g";
-                
-                const meta = parseInt(document.getElementById('meta-kcal').innerText);
-                document.getElementById('bar-kcal').style.width = Math.min((tKcal/meta)*100, 100) + "%";
+                document.getElementById('total-kcal').innerText = tk;
+                document.getElementById('total-p').innerText = tp.toFixed(0)+"g";
+                document.getElementById('total-c').innerText = tc.toFixed(0)+"g";
+                document.getElementById('total-g').innerText = tg.toFixed(0)+"g";
+                const m = parseInt(document.getElementById('meta-kcal').innerText);
+                document.getElementById('bar-kcal').style.width = Math.min((tk/m)*100, 100) + "%";
             });
         }
     </script>
