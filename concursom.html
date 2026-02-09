@@ -3,30 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ares RPG - ConcursoM</title>
+    <title>Ares RPG - Módulo Elite (MGS)</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root { --primary: #3b82f6; --success: #22c55e; --danger: #ef4444; --bg: #0f172a; --card: #1e293b; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #f8fafc; padding: 15px; margin: 0; }
         .container { max-width: 600px; margin: auto; }
-        .stats-bar { background: var(--card); padding: 15px; border-radius: 12px; display: flex; justify-content: space-around; margin-bottom: 20px; border: 1px solid var(--primary); }
+        
+        /* Barra de Status */
+        .stats-bar { 
+            background: var(--card); padding: 15px; border-radius: 12px; 
+            display: flex; justify-content: space-around; margin-bottom: 20px; 
+            border: 1px solid var(--primary); box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
         .stat-item { text-align: center; }
-        .stat-value { display: block; font-size: 1.2rem; font-weight: bold; color: var(--primary); }
-        .questao { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid rgba(51, 65, 85, 0.5); margin-bottom: 20px; position: relative; }
-        .bloqueado { opacity: 0.5; pointer-events: none; }
-        .timer-msg { color: var(--danger); font-size: 0.8rem; margin-top: 10px; display: none; }
+        .stat-value { display: block; font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+        .stat-label { font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; }
+
+        /* Questões */
+        .questao { 
+            background: var(--card); padding: 20px; border-radius: 15px; 
+            border: 1px solid rgba(51, 65, 85, 0.5); margin-bottom: 20px; 
+            position: relative; transition: transform 0.2s;
+        }
+        .questao:hover { transform: translateY(-2px); border-color: var(--primary); }
+        
+        .bloqueado { opacity: 0.5; pointer-events: none; filter: grayscale(0.8); }
+        .timer-msg { color: var(--danger); font-size: 0.8rem; margin-top: 10px; display: none; font-weight: bold; }
         .bloqueado .timer-msg { display: block; }
-        .badge { background: var(--primary); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; margin-bottom: 10px; display: inline-block; }
-        .opcao { display: block; width: 100%; padding: 14px; margin: 10px 0; background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; color: #cbd5e1; cursor: pointer; text-align: left; transition: 0.2s; }
-        .opcao:hover { background: var(--primary); color: white; }
+
+        .badge { 
+            background: var(--primary); padding: 4px 10px; border-radius: 6px; 
+            font-size: 0.75rem; font-weight: bold; margin-bottom: 10px; 
+            display: inline-block; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        /* Botões */
+        .opcao { 
+            display: block; width: 100%; padding: 15px; margin: 10px 0; 
+            background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; 
+            border-radius: 10px; color: #cbd5e1; cursor: pointer; text-align: left; 
+            transition: 0.2s; font-size: 1rem;
+        }
+        .opcao:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .opcao:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="stats-bar">
-        <div class="stat-item"><span class="stat-value" id="total-hoje">0</span>Acertos Hoje</div>
-        <div class="stat-item"><span class="stat-value" id="percentual">0%</span>Precisão</div>
+        <div class="stat-item">
+            <span class="stat-value" id="total-hoje">0</span>
+            <span class="stat-label">Acertos</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value" id="percentual">0%</span>
+            <span class="stat-label">Precisão</span>
+        </div>
     </div>
 
     <div id="quiz"></div>
@@ -34,534 +68,537 @@
 
 <script>
     const COOLDOWN_HOURS = 4;
-    const questoes = [  
-    id: 1, 
-    cat: "CONSTITUCIONAL (INSS/MGS)", 
-    q: "A SEGURIDADE SOCIAL NO BRASIL COMPREENDE QUAIS ÁREAS?", 
-    opts: ["SAÚDE, PREVIDÊNCIA E ASSISTÊNCIA SOCIAL", "APENAS APOSENTADORIA", "EDUCAÇÃO E SEGURANÇA"], 
-    corr: 0, 
-    exp: "Regra do Art. 194 da CF: A Seguridade Social é o tripé: Saúde, Previdência e Assistência (SPA)." 
-},
+
+    // --- LISTA DE QUESTÕES CORRIGIDA ---
+    const questoes = [
         { 
-    id: 2, 
-    cat: "ADMINISTRATIVO (MGS)", 
-    q: "A REDAÇÃO OFICIAL DEVE SER CARACTERIZADA PELA:", 
-    opts: ["SUBJETIVIDADE E GÍRIAS", "CLAREZA E IMPESSOALIDADE", "DIFICULDADE E ARCAÍSMOS"], 
-    corr: 1, 
-    exp: "Regra de Ouro: Documentos oficiais devem ser claros e impessoais (iguais para todos)." 
-},
-{ 
-    id: 3, 
-    cat: "MATEMÁTICA (MGS)", 
-    q: "SE 20% DE UM LOTE DE 500 CAIXAS ESTÃO COM DEFEITO, QUANTAS CAIXAS ESTÃO BOAS?", 
-    opts: ["100 CAIXAS", "400 CAIXAS", "450 CAIXAS"], 
-    corr: 1, 
-    exp: "Cálculo: 10% de 500 é 50. Logo, 20% é 100. Se 100 estão ruins, 500 - 100 = 400 estão boas!" 
-},
-{ 
-    id: 4, 
-    cat: "INFORMÁTICA (MGS)", 
-    q: "NO WINDOWS 10, O 'EXPLORADOR DE ARQUIVOS' SERVE PARA:", 
-    opts: ["NAVEGAR NA INTERNET", "GERENCIAR PASTAS E ARQUIVOS", "EDITAR FOTOS"], 
-    corr: 1, 
-    exp: "Função: O Explorador (antigo Windows Explorer) é onde você organiza suas pastas no PC." 
-},
+            id: 1, 
+            cat: "CONSTITUCIONAL (INSS/MGS)", 
+            q: "A SEGURIDADE SOCIAL NO BRASIL COMPREENDE QUAIS ÁREAS?", 
+            opts: ["SAÚDE, PREVIDÊNCIA E ASSISTÊNCIA SOCIAL", "APENAS APOSENTADORIA", "EDUCAÇÃO E SEGURANÇA"], 
+            corr: 0, 
+            exp: "Regra do Art. 194 da CF: A Seguridade Social é o tripé: Saúde, Previdência e Assistência (SPA)." 
+        },
         { 
-    id: 5, 
-    cat: "PORTUGUÊS (MGS)", 
-    q: "NA FRASE 'ESTUDEI MUITO, PORÉM NÃO PASSEI', A PALAVRA 'PORÉM' PODE SER SUBSTITUÍDA SEM MUDAR O SENTIDO POR:", 
-    opts: ["PORTANTO", "CONTUDO", "PORQUÊ"], 
-    corr: 1, 
-    exp: "Dica: 'Porém' e 'Contudo' são conjunções adversativas (indicam oposição)." 
-},
-{ 
-    id: 6, 
-    cat: "RACIOCÍNIO LÓGICO (MGS)", 
-    q: "QUAL A NEGAÇÃO DA FRASE: 'TODO MUNDO É FELIZ'?", 
-    opts: ["NINGUÉM É FELIZ", "PELO MENOS UM NÃO É FELIZ", "TODOS SÃO TRISTES"], 
-    corr: 1, 
-    exp: "Cuidado! Para negar que TODOS são, basta provar que UM não é." 
-},
-{ 
-    id: 7, 
-    cat: "INFORMÁTICA (MGS)", 
-    q: "NO EXCEL, QUAL O RESULTADO DA FÓRMULA =MÉDIA(10;20;30)?", 
-    opts: ["60", "20", "30"], 
-    corr: 1, 
-    exp: "Cálculo: (10+20+30) = 60. 60 dividido por 3 elementos = 20." 
-},
+            id: 2, 
+            cat: "ADMINISTRATIVO (MGS)", 
+            q: "A REDAÇÃO OFICIAL DEVE SER CARACTERIZADA PELA:", 
+            opts: ["SUBJETIVIDADE E GÍRIAS", "CLAREZA E IMPESSOALIDADE", "DIFICULDADE E ARCAÍSMOS"], 
+            corr: 1, 
+            exp: "Regra de Ouro: Documentos oficiais devem ser claros e impessoais (iguais para todos)." 
+        },
         { 
-    id: 8, 
-    cat: "PORTUGUÊS (MGS)", 
-    q: "QUAL DAS FRASES ABAIXO ESTÁ ESCRITA CORRETAMENTE QUANTO À CRASE?", 
-    opts: ["ELE FOI À PADARIA.", "ELE FOI À PÉ.", "ELE ENTREGOU À VOCÊ."], 
-    corr: 0, 
-    exp: "Regra: Só usamos crase antes de palavras femininas (A + A padaria). Nunca antes de masculino (pé) ou pronomes (você)." 
-},
-{ 
-    id: 9, 
-    cat: "PORTUGUÊS (MGS)", 
-    q: "NA FRASE 'O RELATÓRIO ESTÁ PRONTO, PORTANTO PODE SER ENVIADO', A PALAVRA 'PORTANTO' INDICA:", 
-    opts: ["OPOSIÇÃO", "EXPLICAÇÃO", "CONCLUSÃO"], 
-    corr: 2, 
-    exp: "Dica: 'Portanto', 'Logo' e 'Assim' indicam que você chegou a uma CONCLUSÃO." 
-},
-{ 
-    id: 10, 
-    cat: "PORTUGUÊS (MGS)", 
-    q: "QUAL É O SINÔNIMO CORRETO PARA A PALAVRA 'EFICAZ'?", 
-    opts: ["LENTO", "EFICIENTE", "DUVIDOSO"], 
-    corr: 1, 
-    exp: "Vocabulário: Ser eficaz ou eficiente significa que o trabalho produz o resultado esperado." 
-},
-{ 
-    id: 131, 
-    cat: "PORTUGUÊS (MGS)", 
-    q: "A PALAVRA 'ADMINISTRATIVO' POSSUI QUANTAS SÍLABAS?", 
-    opts: ["5 SÍLABAS", "6 SÍLABAS", "7 SÍLABAS"], 
-    corr: 1, 
-    exp: "Separação: AD-MI-NIS-TRA-TI-VO (6 sílabas). A IBFC adora cobrar separação silábica básica!" 
-},
-{ 
-    id: 132, 
-    cat: "PORTUGUÊS (MGS)", 
-    q: "QUAL É O ANTÔNIMO (OPOSTO) DE 'PÚBLICO'?", 
-    opts: ["COLETIVO", "ESTATAL", "PRIVADO"], 
-    corr: 2, 
-    exp: "Lógica: Se algo não é público (do governo), ele é privado (particular)." 
-},
+            id: 3, 
+            cat: "MATEMÁTICA (MGS)", 
+            q: "SE 20% DE UM LOTE DE 500 CAIXAS ESTÃO COM DEFEITO, QUANTAS CAIXAS ESTÃO BOAS?", 
+            opts: ["100 CAIXAS", "400 CAIXAS", "450 CAIXAS"], 
+            corr: 1, 
+            exp: "Cálculo: 10% de 500 é 50. Logo, 20% é 100. Se 100 estão ruins, 500 - 100 = 400 estão boas!" 
+        },
         { 
-    id: 133, 
-    cat: "REDAÇÃO OFICIAL (MGS)", 
-    q: "QUAL O PRONOME DE TRATAMENTO CORRETO PARA SE DIRIGIR A UM MINISTRO DE ESTADO?", 
-    opts: ["VOSSA EXCELÊNCIA", "VOSSA SENHORIA", "VOSSA MAGNIFICÊNCIA"], 
-    corr: 0, 
-    exp: "Regra: 'Vossa Excelência' é usado para altas autoridades (Ministros, Juízes, Deputados)." 
-},
-{ 
-    id: 134, 
-    cat: "REDAÇÃO OFICIAL (MGS)", 
-    q: "O FECHO UTILIZADO EM COMUNICAÇÕES OFICIAIS PARA AUTORIDADES DE MESMA HIERARQUIA OU INFERIOR É:", 
-    opts: ["COM AMOR,", "RESPEITOSAMENTE,", "ATENCIOSAMENTE,"], 
-    corr: 2, 
-    exp: "Dica: 'Atenciosamente' para mesma hierarquia ou inferior. 'Respeitosamente' para autoridades superiores." 
-},
-{ 
-    id: 135, 
-    cat: "REDAÇÃO OFICIAL (MGS)", 
-    q: "A REDAÇÃO OFICIAL DEVE SER SEMPRE IMPESSOAL. ISSO SIGNIFICA QUE:", 
-    opts: ["DEVE TER OPINIÃO PESSOAL", "NÃO HÁ LUGAR PARA IMPRESSÕES INDIVIDUAIS", "PODE USAR GÍRIAS"], 
-    corr: 1, 
-    exp: "Conceito: O documento fala pelo Estado, não pela pessoa que o escreve." 
-},
-{ 
-    id: 136, 
-    cat: "REDAÇÃO OFICIAL (MGS)", 
-    q: "QUAL O NOME DO DOCUMENTO USADO PARA COMUNICAÇÃO INTERNA ENTRE UNIDADES ADMINISTRATIVAS?", 
-    opts: ["OFÍCIO", "MEMORANDO", "EDITAL"], 
-    corr: 1, 
-    exp: "Dica: Embora o termo esteja caindo em desuso em alguns manuais novos, a IBFC ainda cobra o 'Memorando' como comunicação interna." 
-},
-{ 
-    id: 137, 
-    cat: "REDAÇÃO OFICIAL (MGS)", 
-    q: "NA REDAÇÃO OFICIAL, A CONCISÃO SIGNIFICA:", 
-    opts: ["ESCREVER MUITO", "DIZER O MÁXIMO COM O MÍNIMO DE PALAVRAS", "USAR PALAVRAS DIFÍCEIS"], 
-    corr: 1, 
-    exp: "Regra: Concisão é ir direto ao ponto, sem 'encher linguiça'." 
-},
+            id: 4, 
+            cat: "INFORMÁTICA (MGS)", 
+            q: "NO WINDOWS 10, O 'EXPLORADOR DE ARQUIVOS' SERVE PARA:", 
+            opts: ["NAVEGAR NA INTERNET", "GERENCIAR PASTAS E ARQUIVOS", "EDITAR FOTOS"], 
+            corr: 1, 
+            exp: "Função: O Explorador (antigo Windows Explorer) é onde você organiza suas pastas no PC." 
+        },
         { 
-    id: 138, 
-    cat: "RACIOCÍNIO LÓGICO (MGS)", 
-    q: "SE 'P' É FALSA E 'Q' É FALSA, O VALOR LÓGICO DE 'P OU Q' É:", 
-    opts: ["VERDADEIRO", "FALSO", "INCONCLUSIVO"], 
-    corr: 1, 
-    exp: "Regra do 'OU': Só é falso se as duas forem falsas. Como ambas são falsas, o resultado é FALSO." 
-},
-{ 
-    id: 139, 
-    cat: "RACIOCÍNIO LÓGICO (MGS)", 
-    q: "SE 'P' É VERDADEIRA E 'Q' É FALSA, O VALOR LÓGICO DE 'P OU Q' É:", 
-    opts: ["VERDADEIRO", "FALSO", "INCONCLUSIVO"], 
-    corr: 0, 
-    exp: "Regra do 'OU': Se pelo menos UMA for verdade, a frase toda é VERDADEIRA." 
-},
-{ 
-    id: 140, 
-    cat: "MATEMÁTICA (MGS)", 
-    q: "UM LOTE COM 300 CAIXAS CHEGOU AO GALPÃO. O SISTEMA ACUSA QUE 15% VIERAM COM ERRO. QUANTAS SÃO?", 
-    opts: ["30 CAIXAS", "45 CAIXAS", "60 CAIXAS"], 
-    corr: 1, 
-    exp: "Cálculo: 10% de 300 = 30. 5% = 15. Total: 30 + 15 = 45 caixas." 
-},
+            id: 5, 
+            cat: "PORTUGUÊS (MGS)", 
+            q: "NA FRASE 'ESTUDEI MUITO, PORÉM NÃO PASSEI', A PALAVRA 'PORÉM' PODE SER SUBSTITUÍDA SEM MUDAR O SENTIDO POR:", 
+            opts: ["PORTANTO", "CONTUDO", "PORQUÊ"], 
+            corr: 1, 
+            exp: "Dica: 'Porém' e 'Contudo' são conjunções adversativas (indicam oposição)." 
+        },
         { 
-    id: 141, 
-    cat: "INFORMÁTICA (MGS)", 
-    q: "NO EXCEL, QUAL O RESULTADO DA FÓRMULA =SOMA(10;20;30)?", 
-    opts: ["20", "60", "30"], 
-    corr: 1, 
-    exp: "Atenção: A função SOMA apenas soma os valores. 10+20+30 = 60." 
-},
-{ 
-    id: 142, 
-    cat: "INFORMÁTICA (MGS)", 
-    q: "QUAL O RESULTADO DA FÓRMULA =MÉDIA(5;15)?", 
-    opts: ["10", "20", "5"], 
-    corr: 0, 
-    exp: "Cálculo: (5 + 15) = 20. Como são 2 números, 20 dividido por 2 = 10." 
-},
+            id: 6, 
+            cat: "RACIOCÍNIO LÓGICO (MGS)", 
+            q: "QUAL A NEGAÇÃO DA FRASE: 'TODO MUNDO É FELIZ'?", 
+            opts: ["NINGUÉM É FELIZ", "PELO MENOS UM NÃO É FELIZ", "TODOS SÃO TRISTES"], 
+            corr: 1, 
+            exp: "Cuidado! Para negar que TODOS são, basta provar que UM não é." 
+        },
         { 
-    id: 143, 
-    cat: "PORTUGUÊS (MGS)", 
-    q: "QUAL A GRAFIA CORRETA DA PALAVRA?", 
-    opts: ["EXCESSÃO", "EXCEÇÃO", "ESCEÇÃO"], 
-    corr: 1, 
-    exp: "Memorize: EXCEÇÃO se escreve com 'XC' e 'Ç'. É uma das que a IBFC mais gosta!" 
-},
-{ 
-    id: 144, 
-    cat: "PORTUGUÊS (MGS)", 
-    q: "NA FRASE 'O VIGILANTE AGIU COM RAPIDEZ', A PALAVRA 'RAPIDEZ' É UM:", 
-    opts: ["ADJETIVO", "SUBSTANTIVO", "VERBO"], 
-    corr: 1, 
-    exp: "Dica: Rapidez é o NOME da característica, logo é um substantivo abstrato. (Rápido seria o adjetivo)." 
-},
-{ 
-    id: 145, 
-    cat: "PORTUGUÊS (MGS)", 
-    q: "ASSINALE A ALTERNATIVA ONDE O USO DO 'PORQUÊ' ESTÁ CORRETO:", 
-    opts: ["VOCÊ NÃO FOI POR QUÊ?", "NÃO FUI PORQUE ESTAVA CANSADO.", "O PORQUE DISSO É SIMPLES."], 
-    corr: 1, 
-    exp: "Regra: 'Porque' junto e sem acento é usado para respostas e explicações." 
-},
+            id: 7, 
+            cat: "INFORMÁTICA (MGS)", 
+            q: "NO EXCEL, QUAL O RESULTADO DA FÓRMULA =MÉDIA(10;20;30)?", 
+            opts: ["60", "20", "30"], 
+            corr: 1, 
+            exp: "Cálculo: (10+20+30) = 60. 60 dividido por 3 elementos = 20." 
+        },
         { 
-    id: 146, 
-    cat: "PORTUGUÊS (MGS)", 
-    q: "NA FRASE 'O FUNCIONÁRIO EFICIENTE TERMINOU O TRABALHO', A PALAVRA 'EFICIENTE' É UM:", 
-    opts: ["SUBSTANTIVO", "ADJETIVO", "VERBO"], 
-    corr: 1, 
-    exp: "Lembre-se: Eficiente é uma CARACTERÍSTICA do funcionário, por isso é ADJETIVO." 
-},
-{ 
-    id: 147, 
-    cat: "PORTUGUÊS (MGS)", 
-    q: "QUAL DAS PALAVRAS ABAIXO É UM SUBSTANTIVO (NOME)?", 
-    opts: ["BONITO", "CORRER", "ESCRITÓRIO"], 
-    corr: 2, 
-    exp: "Escritório é o nome de um lugar (Substantivo). Bonito é adjetivo e Correr é verbo." 
-},
-{ 
-    id: 148, 
-    cat: "PORTUGUÊS (MGS)", 
-    q: "ASSINALE A ALTERNATIVA ONDE A PALAVRA EM DESTAQUE É UM ADJETIVO:", 
-    opts: ["A CASA é grande.", "O dia está LINDO.", "O CARRO quebrou."], 
-    corr: 1, 
-    exp: "LINDO dá uma qualidade ao dia, logo é adjetivo." 
-},
+            id: 8, 
+            cat: "PORTUGUÊS (MGS)", 
+            q: "QUAL DAS FRASES ABAIXO ESTÁ ESCRITA CORRETAMENTE QUANTO À CRASE?", 
+            opts: ["ELE FOI À PADARIA.", "ELE FOI À PÉ.", "ELE ENTREGOU À VOCÊ."], 
+            corr: 0, 
+            exp: "Regra: Só usamos crase antes de palavras femininas (A + A padaria). Nunca antes de masculino (pé) ou pronomes (você)." 
+        },
         { 
-    id: 149, 
-    cat: "PORTUGUÊS (MGS)", 
-    q: "QUAL É O SUBSTANTIVO DERIVADO DO ADJETIVO 'BELO'?", 
-    opts: ["BELEZA", "EMBELEZAR", "BELISSÍMO"], 
-    corr: 0, 
-    exp: "Atenção: 'Belo' é a qualidade (adjetivo), 'Beleza' é o nome da qualidade (substantivo)." 
-},
-{ 
-    id: 150, 
-    cat: "RACIOCÍNIO LÓGICO", 
-    q: "NO DAY TRADE, SE UMA ESTRATÉGIA TEM 60% DE ACERTO, EM 10 OPERAÇÕES, QUAL A MÉDIA DE ACERTOS?", 
-    opts: ["4 ACERTOS", "6 ACERTOS", "8 ACERTOS"], 
-    corr: 1, 
-    exp: "Cálculo: 60% de 10 = 6. Use sua facilidade no trade para dominar a lógica!" 
-},
-{ 
-    id: 151, 
-    cat: "INFORMÁTICA", 
-    q: "NO WINDOWS 10, O ATALHO 'ALT + TAB' SERVE PARA:", 
-    opts: ["FECHAR UMA JANELA", "ALTERNAR ENTRE JANELAS ABERTAS", "REINICIAR O COMPUTADOR"], 
-    corr: 1, 
-    exp: "Funcionalidade: Atalho essencial para produtividade no dia a dia administrativo." 
-},
+            id: 9, 
+            cat: "PORTUGUÊS (MGS)", 
+            q: "NA FRASE 'O RELATÓRIO ESTÁ PRONTO, PORTANTO PODE SER ENVIADO', A PALAVRA 'PORTANTO' INDICA:", 
+            opts: ["OPOSIÇÃO", "EXPLICAÇÃO", "CONCLUSÃO"], 
+            corr: 2, 
+            exp: "Dica: 'Portanto', 'Logo' e 'Assim' indicam que você chegou a uma CONCLUSÃO." 
+        },
         { 
-    id: 152, cat: "PORTUGUÊS", 
-    q: "NA FRASE 'VENDE-SE ESTA CASA', A PALAVRA 'SE' É UM:", 
-    opts: ["PRONOME REFLEXIVO", "PARTÍCULA APASSIVADORA", "ÍNDICE DE INDETERMINAÇÃO"], 
-    corr: 1, 
-    exp: "Clássico IBFC: Se você pode dizer 'Esta casa é vendida', o 'SE' é partícula apassivadora." 
-},
-{ 
-    id: 153, cat: "PORTUGUÊS", 
-    q: "QUAL É O ANTÔNIMO DE 'EFÊMERO'?", 
-    opts: ["PASSAGEIRO", "DURADOURO", "RÁPIDO"], 
-    corr: 1, 
-    exp: "Vocabulário: Efêmero é algo curto. O oposto é duradouro ou permanente." 
-},
-{ 
-    id: 154, cat: "LOGÍSTICA", 
-    q: "O MÉTODO DE ESTOQUE ONDE O PRIMEIRO QUE ENTRA É O PRIMEIRO QUE SAI É:", 
-    opts: ["PEPS", "UEPS", "MÉDIA PONDERADA"], 
-    corr: 0, 
-    exp: "PEPS: Primeiro que Entra, Primeiro que Sai. Essencial para almoxarifado MGS." 
-},
-{ 
-    id: 155, cat: "INFORMÁTICA", 
-    q: "QUAL O ATALHO PARA SALVAR UM DOCUMENTO NO WORD (VERSÃO PORTUGUÊS)?", 
-    opts: ["CTRL + S", "CTRL + B", "CTRL + A"], 
-    corr: 1, 
-    exp: "Pegadinha: Em Inglês é S (Save), em Português é B (salBar)." 
-},
-{ 
-    id: 156, cat: "R. LÓGICO", 
-    q: "A NEGAÇÃO DA PROPOSIÇÃO 'FUI À SERRA E FUI A FUNDÃO' É:", 
-    opts: ["NÃO FUI À SERRA E NÃO FUI A FUNDÃO", "NÃO FUI À SERRA OU NÃO FUI A FUNDÃO", "FUI À SERRA OU FUI A FUNDÃO"], 
-    corr: 1, 
-    exp: "Lei de De Morgan: A negação do 'E' vira 'OU' e nega as duas partes." 
-},
-{ 
-    id: 157, cat: "PORTUGUÊS", 
-    q: "EM 'OUVI DIZER QUE VOCÊ PASSOU', A ORAÇÃO EM DESTAQUE É:", 
-    opts: ["COORDENADA", "SUBJETIVA", "SUBJETIVA OBJETIVA DIRETA"], 
-    corr: 2, 
-    exp: "Quem ouve, ouve ALGO. 'Que você passou' completa o verbo, sendo objeto direto." 
-},
-{ 
-    id: 158, cat: "ADMINISTRAÇÃO", 
-    q: "NA REDAÇÃO OFICIAL, A IMPESSOALIDADE VISA EVITAR:", 
-    opts: ["CLAREZA", "SUBJETIVIDADE", "FORMALIDADE"], 
-    corr: 1, 
-    exp: "Impessoalidade significa que o texto não deve ter opiniões do autor (subjetivismo)." 
-},
-{ 
-    id: 159, cat: "INFORMÁTICA", 
-    q: "NO EXCEL, A FUNÇÃO =CONT.NUM(A1:A10) SERVE PARA:", 
-    opts: ["SOMAR OS NÚMEROS", "CONTAR QUANTAS CÉLULAS TÊM NÚMEROS", "VER A MÉDIA"], 
-    corr: 1, 
-    exp: "Função: Ela não soma o valor, ela apenas conta em quantas células você digitou números." 
-},
-{ 
-    id: 160, cat: "MATEMÁTICA", 
-    q: "SE 3 AJUDANTES LIMPAM UM PÁTIO EM 2 HORAS, 6 AJUDANTES LIMPARÃO EM:", 
-    opts: ["4 HORAS", "1 HORA", "3 HORAS"], 
-    corr: 1, 
-    exp: "Regra de Três Inversa: Dobrou a força de trabalho, o tempo cai pela metade!" 
-},
-{ 
-    id: 161, cat: "PORTUGUÊS", 
-    q: "QUAL PALAVRA ESTÁ ACENTUADA PELA MESMA REGRA QUE 'HISTÓRIA'?", 
-    opts: ["CAFÉ", "REGUÁ", "DÓCIL"], 
-    corr: 1, 
-    exp: "Regra: Paroxítonas terminadas em ditongo crescente." 
-},
-{ 
-    id: 162, cat: "R. LÓGICO", 
-    q: "SE TODO A É B, E C É A, ENTÃO:", 
-    opts: ["TODO C É B", "TODO B É C", "NENHUM C É B"], 
-    corr: 0, 
-    exp: "Silogismo clássico: Se o C está dentro do A, e o A está dentro do B, C está dentro do B." 
-},
-{ 
-    id: 163, cat: "INFORMÁTICA", 
-    q: "O QUE É UM 'PHISHING' NA SEGURANÇA DA INFORMAÇÃO?", 
-    opts: ["UM VÍRUS QUE APAGA ARQUIVOS", "UM GOLPE PARA ROUBAR DADOS", "UM PROGRAMA DE ANTIVÍRUS"], 
-    corr: 1, 
-    exp: "Conceito: É a 'pescaria' de dados através de e-mails ou sites falsos." 
-},
-{ 
-    id: 164, cat: "REDAÇÃO OFICIAL", 
-    q: "QUAL O FECHO PARA UMA AUTORIDADE SUPERIOR À SUA?", 
-    opts: ["ATENCIOSAMENTE", "RESPEITOSAMENTE", "CORDIALMENTE"], 
-    corr: 1, 
-    exp: "Padrão Oficial: Subir de cargo = Respeitosamente. Mesma altura = Atenciosamente." 
-},
-{ 
-    id: 165, cat: "MATEMÁTICA", 
-    q: "UM PRODUTO DE R$ 80,00 COM DESCONTO DE 15% CUSTA:", 
-    opts: ["R$ 65,00", "R$ 68,00", "R$ 72,00"], 
-    corr: 1, 
-    exp: "Cálculo: 10% de 80 = 8. 5% = 4. Total desconto: 12. 80 - 12 = 68." 
-},
-{ 
-    id: 166, cat: "PORTUGUÊS", 
-    q: "QUAL É O SUJEITO DA FRASE: 'SOARAM DEZ HORAS NO RELÓGIO'?", 
-    opts: ["INEXISTENTE", "DEZ HORAS", "RELÓGIO"], 
-    corr: 1, 
-    exp: "Pegadinha: Com horas, o verbo soar concorda com o número de horas. 'Dez horas' é o sujeito." 
-},
+            id: 10, 
+            cat: "PORTUGUÊS (MGS)", 
+            q: "QUAL É O SINÔNIMO CORRETO PARA A PALAVRA 'EFICAZ'?", 
+            opts: ["LENTO", "EFICIENTE", "DUVIDOSO"], 
+            corr: 1, 
+            exp: "Vocabulário: Ser eficaz ou eficiente significa que o trabalho produz o resultado esperado." 
+        },
         { 
-    id: 167, cat: "PORTUGUÊS (REAL)", 
-    q: "NO TRECHO 'O CUSTO DE VIDA É ALTO', A PALAVRA 'ALTO' CLASSIFICA-SE COMO:", 
-    opts: ["SUBSTANTIVO", "ADJETIVO", "ADVÉRBIO"], 
-    corr: 1, 
-    exp: "Atenção: 'Alto' caracteriza o custo (substantivo), logo é ADJETIVO." 
-},
-{ 
-    id: 168, cat: "PORTUGUÊS (REAL)", 
-    q: "ASSINALE A ALTERNATIVA ONDE A PALAVRA ESTÁ GRAFADA CORRETAMENTE:", 
-    opts: ["ANALIZAR", "ANALISAR", "ANALLIZAR"], 
-    corr: 1, 
-    exp: "Dica: Analisar vem de análise, por isso mantém o S." 
-},
-{ 
-    id: 169, cat: "PORTUGUÊS (REAL)", 
-    q: "NA FRASE 'COMPROU-SE O EQUIPAMENTO', O 'SE' É:", 
-    opts: ["PARTÍCULA APASSIVADORA", "ÍNDICE DE INDETERMINAÇÃO", "PRONOME REFLEXIVO"], 
-    corr: 0, 
-    exp: "Inversão: 'O equipamento foi comprado'. Logo, o SE apassiva a frase." 
-},
-{ 
-    id: 170, cat: "PORTUGUÊS (REAL)", 
-    q: "O SINÔNIMO DE 'REITERAR' É:", 
-    opts: ["DESISTIR", "REPETIR", "ESQUECER"], 
-    corr: 1, 
-    exp: "Vocabulário: Reiterar um pedido significa fazê-lo novamente, repetir." 
-},
-{ 
-    id: 171, cat: "PORTUGUÊS (REAL)", 
-    q: "QUAL O SUJEITO DA ORAÇÃO: 'EXISTEM MUITOS PROBLEMAS NO SETOR'?", 
-    opts: ["INEXISTENTE", "MUITOS PROBLEMAS", "SETOR"], 
-    corr: 1, 
-    exp: "Cuidado: Diferente do verbo 'haver', o verbo 'existir' tem sujeito claro." 
-},
-{ 
-    id: 172, cat: "R. LÓGICO (REAL)", 
-    q: "SE TODO ASSISTENTE É DEDICADO E JOÃO É ASSISTENTE, ENTÃO:", 
-    opts: ["JOÃO É DEDICADO", "JOÃO PODE SER DEDICADO", "TODO DEDICADO É ASSISTENTE"], 
-    corr: 0, 
-    exp: "Lógica de Conjuntos: Se João está no grupo A, e A está dentro de B, João está em B." 
-},
-{ 
-    id: 173, cat: "R. LÓGICO (REAL)", 
-    q: "A NEGAÇÃO DA PROPOSIÇÃO 'PENSO E LOGO EXISTO' É:", 
-    opts: ["NÃO PENSO E NÃO EXISTO", "NÃO PENSO OU NÃO EXISTO", "NÃO PENSO OU EXISTO"], 
-    corr: 1, 
-    exp: "Lei de Morgan: Nega o primeiro, nega o segundo e troca o E pelo OU." 
-},
-{ 
-    id: 174, cat: "R. LÓGICO (REAL)", 
-    q: "NUM CARDÁPIO COM 4 ENTRADAS E 5 PRATOS PRINCIPAIS, QUANTAS COMBINAÇÕES SÃO POSSÍVEIS?", 
-    opts: ["9", "20", "15"], 
-    corr: 1, 
-    exp: "Princípio Fundamental da Contagem: 4 x 5 = 20." 
-},
-{ 
-    id: 175, cat: "R. LÓGICO (REAL)", 
-    q: "QUAL O PRÓXIMO NÚMERO DA SEQUÊNCIA: 2, 4, 8, 16, ...?", 
-    opts: ["20", "32", "24"], 
-    corr: 1, 
-    exp: "Lógica: Cada número é o dobro do anterior." 
-},
-{ 
-    id: 176, cat: "R. LÓGICO (REAL)", 
-    q: "SE A PROPOSIÇÃO P É V E Q É F, O VALOR DE 'P OU Q' É:", 
-    opts: ["VERDADEIRO", "FALSO", "INCONCLUSIVO"], 
-    corr: 0, 
-    exp: "Regra do OU: Basta uma ser verdade para a frase ser Verdadeira." 
-},
+            id: 131, 
+            cat: "PORTUGUÊS (MGS)", 
+            q: "A PALAVRA 'ADMINISTRATIVO' POSSUI QUANTAS SÍLABAS?", 
+            opts: ["5 SÍLABAS", "6 SÍLABAS", "7 SÍLABAS"], 
+            corr: 1, 
+            exp: "Separação: AD-MI-NIS-TRA-TI-VO (6 sílabas). A IBFC adora cobrar separação silábica básica!" 
+        },
         { 
-    id: 177, cat: "INFORMÁTICA (REAL)", 
-    q: "NO MICROSOFT WORD, QUAL ATALHO É UTILIZADO PARA CENTRALIZAR UM TEXTO?", 
-    opts: ["CTRL + C", "CTRL + E", "CTRL + G"], 
-    corr: 1, 
-    exp: "Dica: CTRL+C copia, CTRL+G alinha à direita. O CTRL+E centraliza (lembre de E-ixo)." 
-},
-{ 
-    id: 178, cat: "INFORMÁTICA (REAL)", 
-    q: "QUAL DAS OPÇÕES ABAIXO É UM NAVEGADOR DE INTERNET (BROWSER)?", 
-    opts: ["EXCEL", "GOOGLE CHROME", "WINDOWS EXPLORER"], 
-    corr: 1, 
-    exp: "Navegadores são programas para ver sites, como Chrome, Edge e Firefox." 
-},
-{ 
-    id: 179, cat: "INFORMÁTICA (REAL)", 
-    q: "NO EXCEL, A FUNÇÃO UTILIZADA PARA SOMAR UM INTERVALO DE CÉLULAS É:", 
-    opts: ["=TOTAL()", "=SOMA()", "=ADICIONAR()"], 
-    corr: 1, 
-    exp: "O Excel usa o comando =SOMA(A1:A10) para totalizar valores." 
-},
-{ 
-    id: 180, cat: "INFORMÁTICA (REAL)", 
-    q: "O ATALHO 'CTRL + Z' NO WINDOWS TEM A FUNÇÃO DE:", 
-    opts: ["DESFAZER A ÚLTIMA AÇÃO", "REFAZER A ÚLTIMA AÇÃO", "RECORTAR"], 
-    corr: 0, 
-    exp: "Regra: Z de 'Zebra' (quando algo dá errado, você desfaz)." 
-},
-{ 
-    id: 181, cat: "INFORMÁTICA (REAL)", 
-    q: "NA SEGURANÇA DA INFORMAÇÃO, UM 'FIREWALL' SERVE PARA:", 
-    opts: ["ACELERAR A INTERNET", "BLOQUEAR ACESSOS NÃO AUTORIZADOS", "LIMPAR VÍRUS DO DISCO"], 
-    corr: 1, 
-    exp: "Firewall funciona como um muro ou filtro contra invasões." 
-},
-{ 
-    id: 182, cat: "ADMNISTRAÇÃO (REAL)", 
-    q: "O DOCUMENTO UTILIZADO PARA REQUERER ALGO A UMA AUTORIDADE É O:", 
-    opts: ["OFÍCIO", "REQUERIMENTO", "MEMORANDO"], 
-    corr: 1, 
-    exp: "Conceito: O próprio nome diz, se você quer algo, faz um Requerimento." 
-},
-{ 
-    id: 183, cat: "REDAÇÃO OFICIAL (REAL)", 
-    q: "A QUALIDADE DO TEXTO OFICIAL QUE EVITA O USO DE GÍRIAS E EXPRESSÕES VAGAS É:", 
-    opts: ["CONCISÃO", "FORMALIDADE", "PROLIXIDADE"], 
-    corr: 1, 
-    exp: "Formalidade exige o uso da norma culta e tratamento adequado." 
-},
-{ 
-    id: 184, cat: "INFORMÁTICA (REAL)", 
-    q: "QUAL COMPONENTE DO COMPUTADOR É CONSIDERADO O 'CÉREBRO' DO SISTEMA?", 
-    opts: ["MEMÓRIA RAM", "PROCESSADOR (CPU)", "DISCO RÍGIDO (HD)"], 
-    corr: 1, 
-    exp: "A CPU processa todas as informações e comandos do computador." 
-},
-{ 
-    id: 185, cat: "ADMNISTRAÇÃO (REAL)", 
-    q: "NO ATENDIMENTO AO PÚBLICO, A EMPATIA SIGNIFICA:", 
-    opts: ["SER RÁPIDO NO SERVIÇO", "COLOCAR-SE NO LUGAR DO OUTRO", "IGNORAR RECLAMAÇÕES"], 
-    corr: 1, 
-    exp: "Empatia é a base do bom atendimento humanizado." 
-},
-{ 
-    id: 186, cat: "INFORMÁTICA (REAL)", 
-    q: "PARA SELECIONAR TODO O CONTEÚDO DE UM DOCUMENTO NO WORD, USA-SE:", 
-    opts: ["CTRL + A", "CTRL + T", "CTRL + S"], 
-    corr: 1, 
-    exp: "Atenção: No Windows é CTRL+A, mas no Word em português é CTRL+T (T de Tudo)." 
-},
-{ 
-    id: 187, cat: "REDAÇÃO OFICIAL (REAL)", 
-    q: "O FECHO 'ATENCIOSAMENTE' DEVE SER USADO PARA:", 
-    opts: ["AUTORIDADES SUPERIORES", "MESMA HIERARQUIA OU INFERIOR", "PRESIDENTE DA REPÚBLICA"], 
-    corr: 1, 
-    exp: "Para superiores usa-se Respeitosamente. Para os demais, Atenciosamente." 
-},
-{ 
-    id: 188, cat: "ADMNISTRAÇÃO (REAL)", 
-    q: "O ARQUIVO QUE GUARDA DOCUMENTOS DE USO POUCO FREQUENTE É CHAMADO DE:", 
-    opts: ["ARQUIVO CORRENTE", "ARQUIVO INTERMEDIÁRIO", "ARQUIVO MORTO"], 
-    corr: 1, 
-    exp: "Uso frequente = Corrente. Uso pouco frequente = Intermediário." 
-},
-{ 
-    id: 189, cat: "INFORMÁTICA (REAL)", 
-    q: "NO EXCEL, QUAL O RESULTADO DE =5+2*3 ?", 
-    opts: ["21", "11", "15"], 
-    corr: 1, 
-    exp: "Matemática: Primeiro a multiplicação (2*3=6), depois a soma (5+6=11)." 
-},
-{ 
-    id: 190, cat: "INFORMÁTICA (REAL)", 
-    q: "QUAL DISPOSITIVO É APENAS DE ENTRADA DE DADOS?", 
-    opts: ["MONITOR", "TECLADO", "IMPRESSORA"], 
-    corr: 1, 
-    exp: "O teclado envia dados PARA o computador (Entrada)." 
-},
-{ 
-    id: 191, cat: "ADMNISTRAÇÃO (REAL)", 
-    q: "A ÉTICA NO SERVIÇO PÚBLICO DETERMINA QUE O SERVIDOR DEVE PRIORIZAR:", 
-    opts: ["O INTERESSE PESSOAL", "O INTERESSE PÚBLICO", "O INTERESSE DA CHEFIA"], 
-    corr: 1, 
-    exp: "O bem comum e o interesse público sempre vêm primeiro." 
-}
+            id: 132, 
+            cat: "PORTUGUÊS (MGS)", 
+            q: "QUAL É O ANTÔNIMO (OPOSTO) DE 'PÚBLICO'?", 
+            opts: ["COLETIVO", "ESTATAL", "PRIVADO"], 
+            corr: 2, 
+            exp: "Lógica: Se algo não é público (do governo), ele é privado (particular)." 
+        },
+        { 
+            id: 133, 
+            cat: "REDAÇÃO OFICIAL (MGS)", 
+            q: "QUAL O PRONOME DE TRATAMENTO CORRETO PARA SE DIRIGIR A UM MINISTRO DE ESTADO?", 
+            opts: ["VOSSA EXCELÊNCIA", "VOSSA SENHORIA", "VOSSA MAGNIFICÊNCIA"], 
+            corr: 0, 
+            exp: "Regra: 'Vossa Excelência' é usado para altas autoridades (Ministros, Juízes, Deputados)." 
+        },
+        { 
+            id: 134, 
+            cat: "REDAÇÃO OFICIAL (MGS)", 
+            q: "O FECHO UTILIZADO EM COMUNICAÇÕES OFICIAIS PARA AUTORIDADES DE MESMA HIERARQUIA OU INFERIOR É:", 
+            opts: ["COM AMOR,", "RESPEITOSAMENTE,", "ATENCIOSAMENTE,"], 
+            corr: 2, 
+            exp: "Dica: 'Atenciosamente' para mesma hierarquia ou inferior. 'Respeitosamente' para autoridades superiores." 
+        },
+        { 
+            id: 135, 
+            cat: "REDAÇÃO OFICIAL (MGS)", 
+            q: "A REDAÇÃO OFICIAL DEVE SER SEMPRE IMPESSOAL. ISSO SIGNIFICA QUE:", 
+            opts: ["DEVE TER OPINIÃO PESSOAL", "NÃO HÁ LUGAR PARA IMPRESSÕES INDIVIDUAIS", "PODE USAR GÍRIAS"], 
+            corr: 1, 
+            exp: "Conceito: O documento fala pelo Estado, não pela pessoa que o escreve." 
+        },
+        { 
+            id: 136, 
+            cat: "REDAÇÃO OFICIAL (MGS)", 
+            q: "QUAL O NOME DO DOCUMENTO USADO PARA COMUNICAÇÃO INTERNA ENTRE UNIDADES ADMINISTRATIVAS?", 
+            opts: ["OFÍCIO", "MEMORANDO", "EDITAL"], 
+            corr: 1, 
+            exp: "Dica: Embora o termo esteja caindo em desuso em alguns manuais novos, a IBFC ainda cobra o 'Memorando' como comunicação interna." 
+        },
+        { 
+            id: 137, 
+            cat: "REDAÇÃO OFICIAL (MGS)", 
+            q: "NA REDAÇÃO OFICIAL, A CONCISÃO SIGNIFICA:", 
+            opts: ["ESCREVER MUITO", "DIZER O MÁXIMO COM O MÍNIMO DE PALAVRAS", "USAR PALAVRAS DIFÍCEIS"], 
+            corr: 1, 
+            exp: "Regra: Concisão é ir direto ao ponto, sem 'encher linguiça'." 
+        },
+        { 
+            id: 138, 
+            cat: "RACIOCÍNIO LÓGICO (MGS)", 
+            q: "SE 'P' É FALSA E 'Q' É FALSA, O VALOR LÓGICO DE 'P OU Q' É:", 
+            opts: ["VERDADEIRO", "FALSO", "INCONCLUSIVO"], 
+            corr: 1, 
+            exp: "Regra do 'OU': Só é falso se as duas forem falsas. Como ambas são falsas, o resultado é FALSO." 
+        },
+        { 
+            id: 139, 
+            cat: "RACIOCÍNIO LÓGICO (MGS)", 
+            q: "SE 'P' É VERDADEIRA E 'Q' É FALSA, O VALOR LÓGICO DE 'P OU Q' É:", 
+            opts: ["VERDADEIRO", "FALSO", "INCONCLUSIVO"], 
+            corr: 0, 
+            exp: "Regra do 'OU': Se pelo menos UMA for verdade, a frase toda é VERDADEIRA." 
+        },
+        { 
+            id: 140, 
+            cat: "MATEMÁTICA (MGS)", 
+            q: "UM LOTE COM 300 CAIXAS CHEGOU AO GALPÃO. O SISTEMA ACUSA QUE 15% VIERAM COM ERRO. QUANTAS SÃO?", 
+            opts: ["30 CAIXAS", "45 CAIXAS", "60 CAIXAS"], 
+            corr: 1, 
+            exp: "Cálculo: 10% de 300 = 30. 5% = 15. Total: 30 + 15 = 45 caixas." 
+        },
+        { 
+            id: 141, 
+            cat: "INFORMÁTICA (MGS)", 
+            q: "NO EXCEL, QUAL O RESULTADO DA FÓRMULA =SOMA(10;20;30)?", 
+            opts: ["20", "60", "30"], 
+            corr: 1, 
+            exp: "Atenção: A função SOMA apenas soma os valores. 10+20+30 = 60." 
+        },
+        { 
+            id: 142, 
+            cat: "INFORMÁTICA (MGS)", 
+            q: "QUAL O RESULTADO DA FÓRMULA =MÉDIA(5;15)?", 
+            opts: ["10", "20", "5"], 
+            corr: 0, 
+            exp: "Cálculo: (5 + 15) = 20. Como são 2 números, 20 dividido por 2 = 10." 
+        },
+        { 
+            id: 143, 
+            cat: "PORTUGUÊS (MGS)", 
+            q: "QUAL A GRAFIA CORRETA DA PALAVRA?", 
+            opts: ["EXCESSÃO", "EXCEÇÃO", "ESCEÇÃO"], 
+            corr: 1, 
+            exp: "Memorize: EXCEÇÃO se escreve com 'XC' e 'Ç'. É uma das que a IBFC mais gosta!" 
+        },
+        { 
+            id: 144, 
+            cat: "PORTUGUÊS (MGS)", 
+            q: "NA FRASE 'O VIGILANTE AGIU COM RAPIDEZ', A PALAVRA 'RAPIDEZ' É UM:", 
+            opts: ["ADJETIVO", "SUBSTANTIVO", "VERBO"], 
+            corr: 1, 
+            exp: "Dica: Rapidez é o NOME da característica, logo é um substantivo abstrato. (Rápido seria o adjetivo)." 
+        },
+        { 
+            id: 145, 
+            cat: "PORTUGUÊS (MGS)", 
+            q: "ASSINALE A ALTERNATIVA ONDE O USO DO 'PORQUÊ' ESTÁ CORRETO:", 
+            opts: ["VOCÊ NÃO FOI POR QUÊ?", "NÃO FUI PORQUE ESTAVA CANSADO.", "O PORQUE DISSO É SIMPLES."], 
+            corr: 1, 
+            exp: "Regra: 'Porque' junto e sem acento é usado para respostas e explicações." 
+        },
+        { 
+            id: 146, 
+            cat: "PORTUGUÊS (MGS)", 
+            q: "NA FRASE 'O FUNCIONÁRIO EFICIENTE TERMINOU O TRABALHO', A PALAVRA 'EFICIENTE' É UM:", 
+            opts: ["SUBSTANTIVO", "ADJETIVO", "VERBO"], 
+            corr: 1, 
+            exp: "Lembre-se: Eficiente é uma CARACTERÍSTICA do funcionário, por isso é ADJETIVO." 
+        },
+        { 
+            id: 147, 
+            cat: "PORTUGUÊS (MGS)", 
+            q: "QUAL DAS PALAVRAS ABAIXO É UM SUBSTANTIVO (NOME)?", 
+            opts: ["BONITO", "CORRER", "ESCRITÓRIO"], 
+            corr: 2, 
+            exp: "Escritório é o nome de um lugar (Substantivo). Bonito é adjetivo e Correr é verbo." 
+        },
+        { 
+            id: 148, 
+            cat: "PORTUGUÊS (MGS)", 
+            q: "ASSINALE A ALTERNATIVA ONDE A PALAVRA EM DESTAQUE É UM ADJETIVO:", 
+            opts: ["A CASA é grande.", "O dia está LINDO.", "O CARRO quebrou."], 
+            corr: 1, 
+            exp: "LINDO dá uma qualidade ao dia, logo é adjetivo." 
+        },
+        { 
+            id: 149, 
+            cat: "PORTUGUÊS (MGS)", 
+            q: "QUAL É O SUBSTANTIVO DERIVADO DO ADJETIVO 'BELO'?", 
+            opts: ["BELEZA", "EMBELEZAR", "BELISSÍMO"], 
+            corr: 0, 
+            exp: "Atenção: 'Belo' é a qualidade (adjetivo), 'Beleza' é o nome da qualidade (substantivo)." 
+        },
+        { 
+            id: 150, 
+            cat: "RACIOCÍNIO LÓGICO", 
+            q: "NO DAY TRADE, SE UMA ESTRATÉGIA TEM 60% DE ACERTO, EM 10 OPERAÇÕES, QUAL A MÉDIA DE ACERTOS?", 
+            opts: ["4 ACERTOS", "6 ACERTOS", "8 ACERTOS"], 
+            corr: 1, 
+            exp: "Cálculo: 60% de 10 = 6. Use sua facilidade no trade para dominar a lógica!" 
+        },
+        { 
+            id: 151, 
+            cat: "INFORMÁTICA", 
+            q: "NO WINDOWS 10, O ATALHO 'ALT + TAB' SERVE PARA:", 
+            opts: ["FECHAR UMA JANELA", "ALTERNAR ENTRE JANELAS ABERTAS", "REINICIAR O COMPUTADOR"], 
+            corr: 1, 
+            exp: "Funcionalidade: Atalho essencial para produtividade no dia a dia administrativo." 
+        },
+        { 
+            id: 152, cat: "PORTUGUÊS", 
+            q: "NA FRASE 'VENDE-SE ESTA CASA', A PALAVRA 'SE' É UM:", 
+            opts: ["PRONOME REFLEXIVO", "PARTÍCULA APASSIVADORA", "ÍNDICE DE INDETERMINAÇÃO"], 
+            corr: 1, 
+            exp: "Clássico IBFC: Se você pode dizer 'Esta casa é vendida', o 'SE' é partícula apassivadora." 
+        },
+        { 
+            id: 153, cat: "PORTUGUÊS", 
+            q: "QUAL É O ANTÔNIMO DE 'EFÊMERO'?", 
+            opts: ["PASSAGEIRO", "DURADOURO", "RÁPIDO"], 
+            corr: 1, 
+            exp: "Vocabulário: Efêmero é algo curto. O oposto é duradouro ou permanente." 
+        },
+        { 
+            id: 154, cat: "LOGÍSTICA", 
+            q: "O MÉTODO DE ESTOQUE ONDE O PRIMEIRO QUE ENTRA É O PRIMEIRO QUE SAI É:", 
+            opts: ["PEPS", "UEPS", "MÉDIA PONDERADA"], 
+            corr: 0, 
+            exp: "PEPS: Primeiro que Entra, Primeiro que Sai. Essencial para almoxarifado MGS." 
+        },
+        { 
+            id: 155, cat: "INFORMÁTICA", 
+            q: "QUAL O ATALHO PARA SALVAR UM DOCUMENTO NO WORD (VERSÃO PORTUGUÊS)?", 
+            opts: ["CTRL + S", "CTRL + B", "CTRL + A"], 
+            corr: 1, 
+            exp: "Pegadinha: Em Inglês é S (Save), em Português é B (salBar)." 
+        },
+        { 
+            id: 156, cat: "R. LÓGICO", 
+            q: "A NEGAÇÃO DA PROPOSIÇÃO 'FUI À SERRA E FUI A FUNDÃO' É:", 
+            opts: ["NÃO FUI À SERRA E NÃO FUI A FUNDÃO", "NÃO FUI À SERRA OU NÃO FUI A FUNDÃO", "FUI À SERRA OU FUI A FUNDÃO"], 
+            corr: 1, 
+            exp: "Lei de De Morgan: A negação do 'E' vira 'OU' e nega as duas partes." 
+        },
+        { 
+            id: 157, cat: "PORTUGUÊS", 
+            q: "EM 'OUVI DIZER QUE VOCÊ PASSOU', A ORAÇÃO EM DESTAQUE É:", 
+            opts: ["COORDENADA", "SUBJETIVA", "SUBJETIVA OBJETIVA DIRETA"], 
+            corr: 2, 
+            exp: "Quem ouve, ouve ALGO. 'Que você passou' completa o verbo, sendo objeto direto." 
+        },
+        { 
+            id: 158, cat: "ADMINISTRAÇÃO", 
+            q: "NA REDAÇÃO OFICIAL, A IMPESSOALIDADE VISA EVITAR:", 
+            opts: ["CLAREZA", "SUBJETIVIDADE", "FORMALIDADE"], 
+            corr: 1, 
+            exp: "Impessoalidade significa que o texto não deve ter opiniões do autor (subjetivismo)." 
+        },
+        { 
+            id: 159, cat: "INFORMÁTICA", 
+            q: "NO EXCEL, A FUNÇÃO =CONT.NUM(A1:A10) SERVE PARA:", 
+            opts: ["SOMAR OS NÚMEROS", "CONTAR QUANTAS CÉLULAS TÊM NÚMEROS", "VER A MÉDIA"], 
+            corr: 1, 
+            exp: "Função: Ela não soma o valor, ela apenas conta em quantas células você digitou números." 
+        },
+        { 
+            id: 160, cat: "MATEMÁTICA", 
+            q: "SE 3 AJUDANTES LIMPAM UM PÁTIO EM 2 HORAS, 6 AJUDANTES LIMPARÃO EM:", 
+            opts: ["4 HORAS", "1 HORA", "3 HORAS"], 
+            corr: 1, 
+            exp: "Regra de Três Inversa: Dobrou a força de trabalho, o tempo cai pela metade!" 
+        },
+        { 
+            id: 161, cat: "PORTUGUÊS", 
+            q: "QUAL PALAVRA ESTÁ ACENTUADA PELA MESMA REGRA QUE 'HISTÓRIA'?", 
+            opts: ["CAFÉ", "REGUÁ", "DÓCIL"], 
+            corr: 1, 
+            exp: "Regra: Paroxítonas terminadas em ditongo crescente." 
+        },
+        { 
+            id: 162, cat: "R. LÓGICO", 
+            q: "SE TODO A É B, E C É A, ENTÃO:", 
+            opts: ["TODO C É B", "TODO B É C", "NENHUM C É B"], 
+            corr: 0, 
+            exp: "Silogismo clássico: Se o C está dentro do A, e o A está dentro do B, C está dentro do B." 
+        },
+        { 
+            id: 163, cat: "INFORMÁTICA", 
+            q: "O QUE É UM 'PHISHING' NA SEGURANÇA DA INFORMAÇÃO?", 
+            opts: ["UM VÍRUS QUE APAGA ARQUIVOS", "UM GOLPE PARA ROUBAR DADOS", "UM PROGRAMA DE ANTIVÍRUS"], 
+            corr: 1, 
+            exp: "Conceito: É a 'pescaria' de dados através de e-mails ou sites falsos." 
+        },
+        { 
+            id: 164, cat: "REDAÇÃO OFICIAL", 
+            q: "QUAL O FECHO PARA UMA AUTORIDADE SUPERIOR À SUA?", 
+            opts: ["ATENCIOSAMENTE", "RESPEITOSAMENTE", "CORDIALMENTE"], 
+            corr: 1, 
+            exp: "Padrão Oficial: Subir de cargo = Respeitosamente. Mesma altura = Atenciosamente." 
+        },
+        { 
+            id: 165, cat: "MATEMÁTICA", 
+            q: "UM PRODUTO DE R$ 80,00 COM DESCONTO DE 15% CUSTA:", 
+            opts: ["R$ 65,00", "R$ 68,00", "R$ 72,00"], 
+            corr: 1, 
+            exp: "Cálculo: 10% de 80 = 8. 5% = 4. Total desconto: 12. 80 - 12 = 68." 
+        },
+        { 
+            id: 166, cat: "PORTUGUÊS", 
+            q: "QUAL É O SUJEITO DA FRASE: 'SOARAM DEZ HORAS NO RELÓGIO'?", 
+            opts: ["INEXISTENTE", "DEZ HORAS", "RELÓGIO"], 
+            corr: 1, 
+            exp: "Pegadinha: Com horas, o verbo soar concorda com o número de horas. 'Dez horas' é o sujeito." 
+        },
+        { 
+            id: 167, cat: "PORTUGUÊS (REAL)", 
+            q: "NO TRECHO 'O CUSTO DE VIDA É ALTO', A PALAVRA 'ALTO' CLASSIFICA-SE COMO:", 
+            opts: ["SUBSTANTIVO", "ADJETIVO", "ADVÉRBIO"], 
+            corr: 1, 
+            exp: "Atenção: 'Alto' caracteriza o custo (substantivo), logo é ADJETIVO." 
+        },
+        { 
+            id: 168, cat: "PORTUGUÊS (REAL)", 
+            q: "ASSINALE A ALTERNATIVA ONDE A PALAVRA ESTÁ GRAFADA CORRETAMENTE:", 
+            opts: ["ANALIZAR", "ANALISAR", "ANALLIZAR"], 
+            corr: 1, 
+            exp: "Dica: Analisar vem de análise, por isso mantém o S." 
+        },
+        { 
+            id: 169, cat: "PORTUGUÊS (REAL)", 
+            q: "NA FRASE 'COMPROU-SE O EQUIPAMENTO', O 'SE' É:", 
+            opts: ["PARTÍCULA APASSIVADORA", "ÍNDICE DE INDETERMINAÇÃO", "PRONOME REFLEXIVO"], 
+            corr: 0, 
+            exp: "Inversão: 'O equipamento foi comprado'. Logo, o SE apassiva a frase." 
+        },
+        { 
+            id: 170, cat: "PORTUGUÊS (REAL)", 
+            q: "O SINÔNIMO DE 'REITERAR' É:", 
+            opts: ["DESISTIR", "REPETIR", "ESQUECER"], 
+            corr: 1, 
+            exp: "Vocabulário: Reiterar um pedido significa fazê-lo novamente, repetir." 
+        },
+        { 
+            id: 171, cat: "PORTUGUÊS (REAL)", 
+            q: "QUAL O SUJEITO DA ORAÇÃO: 'EXISTEM MUITOS PROBLEMAS NO SETOR'?", 
+            opts: ["INEXISTENTE", "MUITOS PROBLEMAS", "SETOR"], 
+            corr: 1, 
+            exp: "Cuidado: Diferente do verbo 'haver', o verbo 'existir' tem sujeito claro." 
+        },
+        { 
+            id: 172, cat: "R. LÓGICO (REAL)", 
+            q: "SE TODO ASSISTENTE É DEDICADO E JOÃO É ASSISTENTE, ENTÃO:", 
+            opts: ["JOÃO É DEDICADO", "JOÃO PODE SER DEDICADO", "TODO DEDICADO É ASSISTENTE"], 
+            corr: 0, 
+            exp: "Lógica de Conjuntos: Se João está no grupo A, e A está dentro de B, João está em B." 
+        },
+        { 
+            id: 173, cat: "R. LÓGICO (REAL)", 
+            q: "A NEGAÇÃO DA PROPOSIÇÃO 'PENSO E LOGO EXISTO' É:", 
+            opts: ["NÃO PENSO E NÃO EXISTO", "NÃO PENSO OU NÃO EXISTO", "NÃO PENSO OU EXISTO"], 
+            corr: 1, 
+            exp: "Lei de Morgan: Nega o primeiro, nega o segundo e troca o E pelo OU." 
+        },
+        { 
+            id: 174, cat: "R. LÓGICO (REAL)", 
+            q: "NUM CARDÁPIO COM 4 ENTRADAS E 5 PRATOS PRINCIPAIS, QUANTAS COMBINAÇÕES SÃO POSSÍVEIS?", 
+            opts: ["9", "20", "15"], 
+            corr: 1, 
+            exp: "Princípio Fundamental da Contagem: 4 x 5 = 20." 
+        },
+        { 
+            id: 175, cat: "R. LÓGICO (REAL)", 
+            q: "QUAL O PRÓXIMO NÚMERO DA SEQUÊNCIA: 2, 4, 8, 16, ...?", 
+            opts: ["20", "32", "24"], 
+            corr: 1, 
+            exp: "Lógica: Cada número é o dobro do anterior." 
+        },
+        { 
+            id: 176, cat: "R. LÓGICO (REAL)", 
+            q: "SE A PROPOSIÇÃO P É V E Q É F, O VALOR DE 'P OU Q' É:", 
+            opts: ["VERDADEIRO", "FALSO", "INCONCLUSIVO"], 
+            corr: 0, 
+            exp: "Regra do OU: Basta uma ser verdade para a frase ser Verdadeira." 
+        },
+        { 
+            id: 177, cat: "INFORMÁTICA (REAL)", 
+            q: "NO MICROSOFT WORD, QUAL ATALHO É UTILIZADO PARA CENTRALIZAR UM TEXTO?", 
+            opts: ["CTRL + C", "CTRL + E", "CTRL + G"], 
+            corr: 1, 
+            exp: "Dica: CTRL+C copia, CTRL+G alinha à direita. O CTRL+E centraliza (lembre de E-ixo)." 
+        },
+        { 
+            id: 178, cat: "INFORMÁTICA (REAL)", 
+            q: "QUAL DAS OPÇÕES ABAIXO É UM NAVEGADOR DE INTERNET (BROWSER)?", 
+            opts: ["EXCEL", "GOOGLE CHROME", "WINDOWS EXPLORER"], 
+            corr: 1, 
+            exp: "Navegadores são programas para ver sites, como Chrome, Edge e Firefox." 
+        },
+        { 
+            id: 179, cat: "INFORMÁTICA (REAL)", 
+            q: "NO EXCEL, A FUNÇÃO UTILIZADA PARA SOMAR UM INTERVALO DE CÉLULAS É:", 
+            opts: ["=TOTAL()", "=SOMA()", "=ADICIONAR()"], 
+            corr: 1, 
+            exp: "O Excel usa o comando =SOMA(A1:A10) para totalizar valores." 
+        },
+        { 
+            id: 180, cat: "INFORMÁTICA (REAL)", 
+            q: "O ATALHO 'CTRL + Z' NO WINDOWS TEM A FUNÇÃO DE:", 
+            opts: ["DESFAZER A ÚLTIMA AÇÃO", "REFAZER A ÚLTIMA AÇÃO", "RECORTAR"], 
+            corr: 0, 
+            exp: "Regra: Z de 'Zebra' (quando algo dá errado, você desfaz)." 
+        },
+        { 
+            id: 181, cat: "INFORMÁTICA (REAL)", 
+            q: "NA SEGURANÇA DA INFORMAÇÃO, UM 'FIREWALL' SERVE PARA:", 
+            opts: ["ACELERAR A INTERNET", "BLOQUEAR ACESSOS NÃO AUTORIZADOS", "LIMPAR VÍRUS DO DISCO"], 
+            corr: 1, 
+            exp: "Firewall funciona como um muro ou filtro contra invasões." 
+        },
+        { 
+            id: 182, cat: "ADMNISTRAÇÃO (REAL)", 
+            q: "O DOCUMENTO UTILIZADO PARA REQUERER ALGO A UMA AUTORIDADE É O:", 
+            opts: ["OFÍCIO", "REQUERIMENTO", "MEMORANDO"], 
+            corr: 1, 
+            exp: "Conceito: O próprio nome diz, se você quer algo, faz um Requerimento." 
+        },
+        { 
+            id: 183, cat: "REDAÇÃO OFICIAL (REAL)", 
+            q: "A QUALIDADE DO TEXTO OFICIAL QUE EVITA O USO DE GÍRIAS E EXPRESSÕES VAGAS É:", 
+            opts: ["CONCISÃO", "FORMALIDADE", "PROLIXIDADE"], 
+            corr: 1, 
+            exp: "Formalidade exige o uso da norma culta e tratamento adequado." 
+        },
+        { 
+            id: 184, cat: "INFORMÁTICA (REAL)", 
+            q: "QUAL COMPONENTE DO COMPUTADOR É CONSIDERADO O 'CÉREBRO' DO SISTEMA?", 
+            opts: ["MEMÓRIA RAM", "PROCESSADOR (CPU)", "DISCO RÍGIDO (HD)"], 
+            corr: 1, 
+            exp: "A CPU processa todas as informações e comandos do computador." 
+        },
+        { 
+            id: 185, cat: "ADMNISTRAÇÃO (REAL)", 
+            q: "NO ATENDIMENTO AO PÚBLICO, A EMPATIA SIGNIFICA:", 
+            opts: ["SER RÁPIDO NO SERVIÇO", "COLOCAR-SE NO LUGAR DO OUTRO", "IGNORAR RECLAMAÇÕES"], 
+            corr: 1, 
+            exp: "Empatia é a base do bom atendimento humanizado." 
+        },
+        { 
+            id: 186, cat: "INFORMÁTICA (REAL)", 
+            q: "PARA SELECIONAR TODO O CONTEÚDO DE UM DOCUMENTO NO WORD, USA-SE:", 
+            opts: ["CTRL + A", "CTRL + T", "CTRL + S"], 
+            corr: 1, 
+            exp: "Atenção: No Windows é CTRL+A, mas no Word em português é CTRL+T (T de Tudo)." 
+        },
+        { 
+            id: 187, cat: "REDAÇÃO OFICIAL (REAL)", 
+            q: "O FECHO 'ATENCIOSAMENTE' DEVE SER USADO PARA:", 
+            opts: ["AUTORIDADES SUPERIORES", "MESMA HIERARQUIA OU INFERIOR", "PRESIDENTE DA REPÚBLICA"], 
+            corr: 1, 
+            exp: "Para superiores usa-se Respeitosamente. Para os demais, Atenciosamente." 
+        },
+        { 
+            id: 188, cat: "ADMNISTRAÇÃO (REAL)", 
+            q: "O ARQUIVO QUE GUARDA DOCUMENTOS DE USO POUCO FREQUENTE É CHAMADO DE:", 
+            opts: ["ARQUIVO CORRENTE", "ARQUIVO INTERMEDIÁRIO", "ARQUIVO MORTO"], 
+            corr: 1, 
+            exp: "Uso frequente = Corrente. Uso pouco frequente = Intermediário." 
+        },
+        { 
+            id: 189, cat: "INFORMÁTICA (REAL)", 
+            q: "NO EXCEL, QUAL O RESULTADO DE =5+2*3 ?", 
+            opts: ["21", "11", "15"], 
+            corr: 1, 
+            exp: "Matemática: Primeiro a multiplicação (2*3=6), depois a soma (5+6=11)." 
+        },
+        { 
+            id: 190, cat: "INFORMÁTICA (REAL)", 
+            q: "QUAL DISPOSITIVO É APENAS DE ENTRADA DE DADOS?", 
+            opts: ["MONITOR", "TECLADO", "IMPRESSORA"], 
+            corr: 1, 
+            exp: "O teclado envia dados PARA o computador (Entrada)." 
+        },
+        { 
+            id: 191, cat: "ADMNISTRAÇÃO (REAL)", 
+            q: "A ÉTICA NO SERVIÇO PÚBLICO DETERMINA QUE O SERVIDOR DEVE PRIORIZAR:", 
+            opts: ["O INTERESSE PESSOAL", "O INTERESSE PÚBLICO", "O INTERESSE DA CHEFIA"], 
+            corr: 1, 
+            exp: "O bem comum e o interesse público sempre vêm primeiro." 
+        }
     ];
 
     function renderizar() {
@@ -571,16 +608,22 @@
         let totalRespostas = localStorage.getItem('total_tentativas') || 0;
 
         div.innerHTML = '';
-        questoes.forEach((q) => {
+        questoes.forEach((q, index) => {
             const lastTime = localStorage.getItem(`bloqueio_${q.id}`);
             const isBloqueado = lastTime && (agora - lastTime < COOLDOWN_HOURS * 3600000);
             
             div.innerHTML += `
                 <div class="questao ${isBloqueado ? 'bloqueado' : ''}" id="q-box-${q.id}">
                     <span class="badge">${q.cat}</span>
-                    <div>${q.q}</div>
+                    <div style="font-weight: bold; margin-bottom: 15px;">${q.q}</div>
+                    
                     <div class="timer-msg">⏳ Bloqueada por 4h após resposta.</div>
-                    ${q.opts.map((opt, i) => `<button class="opcao" onclick="verificar(${q.id}, ${i})">${opt}</button>`).join('')}
+                    
+                    ${q.opts.map((opt, i) => `
+                        <button class="opcao" onclick="verificar(${q.id}, ${i})">
+                            ${opt}
+                        </button>
+                    `).join('')}
                 </div>
             `;
         });
@@ -588,7 +631,9 @@
     }
 
     function verificar(qId, optIdx) {
+        // Encontra a questão pelo ID correto
         const q = questoes.find(x => x.id === qId);
+        
         let acertos = parseInt(localStorage.getItem('acertos_dia') || 0);
         let total = parseInt(localStorage.getItem('total_tentativas') || 0);
 
@@ -597,37 +642,38 @@
 
         if (optIdx === q.corr) {
             localStorage.setItem('acertos_dia', acertos + 1);
-            Swal.fire({ title: 'Boa!', text: q.exp, icon: 'success' }).then(renderizar);
+            Swal.fire({ 
+                title: 'Boa!', 
+                text: q.exp, 
+                icon: 'success',
+                confirmButtonColor: '#3b82f6'
+            }).then(renderizar);
         } else {
-            Swal.fire({ title: 'Errou!', text: 'Resposta certa: ' + q.opts[q.corr], icon: 'error' }).then(renderizar);
+            Swal.fire({ 
+                title: 'Errou!', 
+                text: `Resposta certa: ${q.opts[q.corr]}. \nExplicação: ${q.exp}`, 
+                icon: 'error',
+                confirmButtonColor: '#ef4444'
+            }).then(renderizar);
         }
     }
 
     function atualizarStats() {
         const acertos = localStorage.getItem('acertos_dia') || 0;
         const total = localStorage.getItem('total_tentativas') || 1;
+        // Evita divisão por zero visualmente se total for 0 (mas setamos 1 ali em cima se vazio)
+        const realTotal = total == 0 ? 1 : total; 
+        
         document.getElementById('total-hoje').innerText = acertos;
-        document.getElementById('percentual').innerText = Math.round((acertos / total) * 100) + '%';
+        
+        let pct = 0;
+        if (localStorage.getItem('total_tentativas')) {
+             pct = Math.round((acertos / localStorage.getItem('total_tentativas')) * 100);
+        }
+        document.getElementById('percentual').innerText = pct + '%';
     }
 
     renderizar();
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
