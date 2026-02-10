@@ -155,24 +155,43 @@
         <div class="card-header">
             <h3 style="color:#ec4899">🧮 Simulador Renda Fixa</h3>
         </div>
+        
         <div class="grid-3">
             <div>
-                <label style="font-size:0.8rem">Tipo</label>
-                <select id="sim-tipo">
-                    <option value="cdb">CDB</option>
-                    <option value="lci">LCI/LCA (Isento)</option>
+                <label style="font-size:0.8rem">Tipo de Investimento</label>
+                <select id="sim-tipo" onchange="ajustarCamposSimulacao()">
+                    <option value="pos">CDB / LC (Pós-fixado)</option>
+                    <option value="lci">LCI / LCA (Isento)</option>
                     <option value="tesouro">Tesouro Selic</option>
+                    <option value="pre">Pré-fixado (ex: 13%)</option>
+                    <option value="ipca">IPCA+ (Inflação)</option>
                 </select>
             </div>
-            <div>
+
+            <div id="campo-cdi">
                 <label style="font-size:0.8rem">% do CDI</label>
                 <input type="number" id="sim-pct" value="100">
             </div>
+            
+            <div id="campo-taxa" class="hidden">
+                <label style="font-size:0.8rem">Taxa Anual (%)</label>
+                <input type="number" id="sim-taxa-fixa" placeholder="Ex: 12.5">
+            </div>
+
+            <div id="campo-ipca" class="hidden">
+                <label style="font-size:0.8rem">Taxa Fixa + IPCA</label>
+                <div style="display:flex; gap:5px;">
+                    <input type="number" id="sim-taxa-ipca" placeholder="Taxa%" style="width:50%">
+                    <input type="number" id="sim-ipca-proj" value="4.5" placeholder="IPCA%" title="IPCA Projetado">
+                </div>
+            </div>
+
             <div>
                 <label style="font-size:0.8rem">Período (Meses)</label>
                 <input type="number" id="sim-meses" value="12">
             </div>
         </div>
+
         <div class="grid-3">
             <div>
                 <label style="font-size:0.8rem">Aporte Inicial</label>
@@ -183,12 +202,16 @@
                 <input type="number" id="sim-mensal" placeholder="R$">
             </div>
         </div>
+        
         <button class="btn-main" style="background:#ec4899" onclick="simular()">CALCULAR RESULTADO</button>
         
         <div id="res-simulacao" style="margin-top:15px; text-align:center; display:none; background:rgba(0,0,0,0.3); padding:15px; border-radius:10px;">
             <span style="color:#94a3b8; font-size:0.9rem;">Total Bruto Estimado:</span>
             <h2 style="color:#ec4899; margin:5px 0;" id="sim-total">R$ 0,00</h2>
-            <small style="color:#cbd5e1" id="sim-lucro">Rendimento: R$ 0,00</small>
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-top:10px; border-top:1px solid #475569; padding-top:5px;">
+                <span style="color:var(--success)" id="sim-liquido">Liq: R$ 0,00</span>
+                <span style="color:var(--warning)" id="sim-lucro">Rendimento: R$ 0,00</span>
+            </div>
         </div>
     </div>
 
@@ -207,7 +230,9 @@
     let userPath = null; 
     let chartInstance = null;
     let saldos = { trade: 0, reserva: 0, longo: 0 };
-    const CDI_ANUAL_ATUAL = 12.25; // Pode ajustar conforme a Selic atual
+    
+    // Taxa Base (Pode ser atualizada manualmente aqui)
+    const CDI_ANUAL_ATUAL = 12.25; 
 
     auth.onAuthStateChanged((user) => {
         if (user) {
@@ -282,7 +307,7 @@
         // A META É CALCULADA SOBRE O TOTAL (Trade + Reserva + Longo)
         const valorMeta = totalGeral * (pct / 100);
 
-        document.getElementById('contratos-qtd').innerText = Math.floor(totalGeral / 1000); // Ex: 1 contrato a cada 1k de patrimônio total
+        document.getElementById('contratos-qtd').innerText = Math.floor(totalGeral / 1000); 
         document.getElementById('meta-valor').innerText = `R$ ${valorMeta.toFixed(2)}`;
         document.getElementById('loss-limite').innerText = `R$ -${valorMeta.toFixed(2)}`;
         document.getElementById('label-meta').innerText = `Meta (${pct}%) do Total`;
@@ -360,42 +385,69 @@
         });
     }
 
-    // --- SIMULADOR RENDA FIXA ---
+    // --- SIMULADOR RENDA FIXA COMPLETO ---
+    function ajustarCamposSimulacao() {
+        const tipo = document.getElementById('sim-tipo').value;
+        
+        // Esconde todos
+        document.getElementById('campo-cdi').classList.add('hidden');
+        document.getElementById('campo-taxa').classList.add('hidden');
+        document.getElementById('campo-ipca').classList.add('hidden');
+
+        // Mostra o específico
+        if (tipo === 'pre') {
+            document.getElementById('campo-taxa').classList.remove('hidden');
+        } else if (tipo === 'ipca') {
+            document.getElementById('campo-ipca').classList.remove('hidden');
+        } else {
+            document.getElementById('campo-cdi').classList.remove('hidden');
+        }
+    }
+
     function simular() {
-        const pctCDI = parseFloat(document.getElementById('sim-pct').value) / 100;
+        const tipo = document.getElementById('sim-tipo').value;
         const meses = parseInt(document.getElementById('sim-meses').value);
         const inicial = parseFloat(document.getElementById('sim-inicial').value) || 0;
         const mensal = parseFloat(document.getElementById('sim-mensal').value) || 0;
-        const tipo = document.getElementById('sim-tipo').value;
 
-        // CDI Anual base (ex: 12.25%) -> CDI Mensal
-        const taxaAnual = CDI_ANUAL_ATUAL / 100;
-        const taxaMensal = Math.pow(1 + taxaAnual, 1/12) - 1;
-        const taxaAplicada = taxaMensal * pctCDI;
+        let taxaAnual = 0;
+
+        if (tipo === 'pre') {
+            taxaAnual = parseFloat(document.getElementById('sim-taxa-fixa').value) || 0;
+        } else if (tipo === 'ipca') {
+            const fixa = parseFloat(document.getElementById('sim-taxa-ipca').value) || 0;
+            const ipca = parseFloat(document.getElementById('sim-ipca-proj').value) || 0;
+            taxaAnual = fixa + ipca; 
+        } else {
+            const pct = parseFloat(document.getElementById('sim-pct').value) || 100;
+            taxaAnual = CDI_ANUAL_ATUAL * (pct / 100);
+        }
+
+        const taxaMensal = Math.pow(1 + (taxaAnual / 100), 1/12) - 1;
 
         let total = inicial;
         for (let i = 0; i < meses; i++) {
-            total = total * (1 + taxaAplicada) + mensal;
+            total = total * (1 + taxaMensal) + mensal;
         }
 
-        // Imposto de Renda Regressivo (Simplificado sobre o lucro)
-        let totalInvestido = inicial + (mensal * meses);
-        let lucroBruto = total - totalInvestido;
+        const totalInvestido = inicial + (mensal * meses);
+        const lucroBruto = total - totalInvestido;
+        
         let aliquota = 0;
-
-        if (tipo !== 'lci') { // LCI/LCA é isento
+        if (tipo !== 'lci') { 
             if (meses <= 6) aliquota = 0.225;
             else if (meses <= 12) aliquota = 0.20;
             else if (meses <= 24) aliquota = 0.175;
             else aliquota = 0.15;
         }
 
-        let imposto = lucroBruto * aliquota;
-        let liquido = total - imposto;
+        const imposto = lucroBruto * aliquota;
+        const liquido = total - imposto;
 
-        document.getElementById('sim-total').innerText = `R$ ${liquido.toFixed(2)}`;
-        document.getElementById('sim-lucro').innerText = `Lucro Líq: R$ ${(liquido - totalInvestido).toFixed(2)} (IR: ${aliquota*100}%)`;
         document.getElementById('res-simulacao').style.display = 'block';
+        document.getElementById('sim-total').innerText = `Bruto: R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        document.getElementById('sim-liquido').innerText = `Líquido: R$ ${liquido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        document.getElementById('sim-lucro').innerText = `Lucro: R$ ${(liquido - totalInvestido).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
     }
 </script>
 </body>
