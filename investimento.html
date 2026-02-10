@@ -307,7 +307,7 @@
         // A META É CALCULADA SOBRE O TOTAL (Trade + Reserva + Longo)
         const valorMeta = totalGeral * (pct / 100);
 
-        document.getElementById('contratos-qtd').innerText = Math.floor(totalGeral / 1000); 
+        document.getElementById('contratos-qtd').innerText = Math.floor(totalGeral / 10000); 
         document.getElementById('meta-valor').innerText = `R$ ${valorMeta.toFixed(2)}`;
         document.getElementById('loss-limite').innerText = `R$ -${valorMeta.toFixed(2)}`;
         document.getElementById('label-meta').innerText = `Meta (${pct}%) do Total`;
@@ -452,3 +452,4 @@
 </script>
 </body>
 </html>
+
