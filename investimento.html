@@ -3,101 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ares RPG - Investimento</title>
+    <title>Ares RPG - Gestão Financeira</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --primary: #3b82f6; --success: #22c55e; --danger: #ef4444; --bg: #0f172a; --card: #1e293b; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; padding: 15px; margin: 0; }
+        :root { --primary: #3b82f6; --success: #22c55e; --danger: #ef4444; --bg: #0f172a; --card: #1e293b; --warning: #f59e0b; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; padding: 15px; margin: 0; padding-bottom: 50px; }
         .container { max-width: 800px; margin: auto; }
-        .card { background: var(--card); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #334155; }
+        
+        .card { background: var(--card); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #334155; position: relative; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .card-header h3 { margin: 0; color: #cbd5e1; font-size: 1.1rem; }
+        
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .stat-box { background: #0f172a; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #475569; }
+        .stat-box small { color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; }
         .stat-box strong { font-size: 1.1rem; display: block; margin-top: 5px; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; }
+        
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; }
+        
         .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; }
+        button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        button:hover { opacity: 0.9; transform: scale(1.02); }
+        
         .btn-main { background: var(--primary); }
+        .btn-success { background: var(--success); }
         .btn-danger { background: var(--danger); }
-        button:hover { opacity: 0.8; }
+        .btn-toggle { background: #334155; width: 100%; margin-top: 10px; }
+        
         .gain { color: var(--success); }
         .loss { color: var(--danger); }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.85rem; }
+        .neutral { color: var(--warning); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; }
-        .user-info { text-align: right; font-size: 0.9rem; margin-bottom: 10px; color: #fbbf24; font-weight: bold; }
-        #grafico-container { position: relative; height: 200px; width: 100%; }
+        
+        .hidden { display: none; }
+        
+        /* Destaque do Patrimônio Total */
+        .total-patrimonio { text-align: center; margin-bottom: 20px; background: linear-gradient(45deg, #1e3a8a, #172554); padding: 20px; border-radius: 15px; border: 1px solid #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
+        .total-patrimonio h1 { margin: 0; font-size: 2.5rem; color: #fff; }
+        .total-patrimonio span { color: #93c5fd; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+
     </style>
 </head>
 <body>
 
 <div class="container">
-    <button onclick="window.location.href='./'" style="background: #475569; width: auto; padding: 10px 20px; margin-bottom: 15px; border-radius: 8px; border: none; cursor: pointer; display: block; color: white;">
-        ⬅ Voltar para o Ares RPG
+    <button onclick="window.location.href='./'" style="background: #475569; width: auto; padding: 10px 20px; margin-bottom: 15px;">
+        ⬅ Voltar ao Painel
     </button>
     
-    <div id="user-display" class="user-info">Carregando...</div>
+    <div class="total-patrimonio">
+        <span>Patrimônio Total Acumulado</span>
+        <h1 id="display-total-geral">R$ 0,00</h1>
+    </div>
     
-    <div class="card">
-        <h2>🚀 Investimento Trade GR</h2>
+    <div class="card" style="border-left: 4px solid var(--primary);">
+        <div class="card-header">
+            <h3>🚀 Trade GR (Day Trade)</h3>
+            <b id="saldo-trade-display" style="color:var(--primary)">R$ 0,00</b>
+        </div>
+
         <div class="grid-3">
             <div class="stat-box">
-                <small id="label-meta">Meta (0%)</small>
+                <small id="label-meta">Meta Diária</small>
                 <strong id="meta-valor" class="gain">R$ 0,00</strong>
             </div>
             <div class="stat-box">
-                <small>Contratos</small>
+                <small>Contratos Sugeridos</small>
                 <strong id="contratos-qtd" style="color: #fbbf24;">0</strong>
             </div>
             <div class="stat-box">
-                <small id="label-loss">Loss Diário (0%)</small>
+                <small id="label-loss">Loss Limite</small>
                 <strong id="loss-limite" class="loss">R$ 0,00</strong>
             </div>
         </div>
-    </div>
 
-    <div class="card">
-        <h3>📈 Evolução do Capital</h3>
-        <div id="grafico-container">
+        <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px;">
+            <label style="font-size:0.85rem; color:#94a3b8;">Data da Operação:</label>
+            <input type="date" id="data-operacao">
+            
+            <label style="font-size:0.85rem; color:#94a3b8;">Resultado do Dia (R$):</label>
+            <div style="display:flex; gap:10px">
+                <input type="number" id="resultado-input" placeholder="Ex: 150 ou -100">
+                <button class="btn-main" onclick="salvarOperacao()" style="max-width: 100px;">Salvar</button>
+            </div>
+            
+            <div style="margin-top: 15px; border-top: 1px solid #334155; padding-top: 10px;">
+                <label style="font-size:0.85rem; color:#94a3b8;">Configurar % Meta sobre TOTAL:</label>
+                <input type="number" id="porcentagem-meta" value="3" style="width: 80px; text-align: center;" onchange="salvarPreferenciaMeta()" oninput="atualizarCalculos()">
+                <span style="font-size: 0.9rem;">%</span>
+            </div>
+        </div>
+
+        <button class="btn-toggle" onclick="toggleHistorico()">📜 Abrir/Fechar Histórico Trade</button>
+        
+        <div id="historico-container" class="hidden">
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>Data</th><th>Res.</th><th>Saldo Trade</th></tr></thead>
+                    <tbody id="tabela-corpo"></tbody>
+                </table>
+            </div>
+            <button class="btn-danger" style="margin-top:10px; font-size: 0.8rem;" onclick="apagarUltimo('historico')">Desfazer Último</button>
+        </div>
+        
+        <div style="margin-top: 20px; height: 150px;">
             <canvas id="graficoEvolucao"></canvas>
         </div>
     </div>
 
-    <div class="card">
-        <h3>⚙️ Registro de Operação</h3>
-        <label>Data da Operação:</label>
-        <input type="date" id="data-operacao"> 
-        
-        <label>Sua Meta Diária (%):</label>
-        <input type="number" id="porcentagem-meta" value="10" onchange="salvarPreferenciaMeta()" oninput="atualizarCalculos()">
-
-        <label id="label-resultado">Resultado Financeiro (R$):</label>
-        <input type="number" id="resultado-input" placeholder="Ex: 100 ou -50">
-        
-        <input type="hidden" id="capital-input">
-
-        <div class="btn-group">
-            <button class="btn-main" id="btn-salvar" onclick="salvarOperacao()">REGISTRAR</button>
-            <button class="btn-danger" onclick="apagarUltimo()">CORRIGIR ÚLTIMO</button>
+    <div class="card" style="border-left: 4px solid var(--success);">
+        <div class="card-header">
+            <h3>🛡️ Reserva de Emergência</h3>
+            <b id="saldo-reserva-display" style="color:var(--success)">R$ 0,00</b>
         </div>
-        <p id="aviso-inicial" style="font-size: 0.8rem; color: #94a3b8; margin-top: 10px; display: none;">
-            ℹ️ O primeiro registro será seu <strong>Capital Inicial</strong>.
-        </p>
-    </div>
-
-    <div class="card">
-        <h3>📊 Histórico</h3>
-        <div style="overflow-x:auto;">
-            <table>
-                <thead>
-                    <tr><th>Data</th><th>Resultado</th><th>Capital Acumulado</th></tr>
-                </thead>
-                <tbody id="tabela-corpo"></tbody>
-            </table>
+        <p style="font-size: 0.85rem; color: #94a3b8;">Aporte para segurança financeira.</p>
+        <div style="display:flex; gap:10px">
+            <input type="number" id="input-reserva" placeholder="Valor do Aporte (R$)">
+            <button class="btn-success" onclick="salvarAporte('reserva')">Aportar</button>
+        </div>
+        <button class="btn-toggle" style="background: rgba(34, 197, 94, 0.1); color: var(--success);" onclick="toggleDiv('hist-reserva')">Ver Lançamentos</button>
+        <div id="hist-reserva" class="hidden">
+            <table id="table-reserva"><tbody></tbody></table>
+            <button class="btn-danger" style="margin-top:5px; font-size:0.8rem" onclick="apagarUltimo('reserva')">Desfazer</button>
         </div>
     </div>
+
+    <div class="card" style="border-left: 4px solid var(--warning);">
+        <div class="card-header">
+            <h3>💎 Investimento Longo Prazo</h3>
+            <b id="saldo-longo-display" style="color:var(--warning)">R$ 0,00</b>
+        </div>
+        <p style="font-size: 0.85rem; color: #94a3b8;">Ações, FIIs e Carteira Hold.</p>
+        <div style="display:flex; gap:10px">
+            <input type="number" id="input-longo" placeholder="Valor do Aporte (R$)">
+            <button class="btn-success" style="background:var(--warning); color: black;" onclick="salvarAporte('longo')">Aportar</button>
+        </div>
+        <button class="btn-toggle" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);" onclick="toggleDiv('hist-longo')">Ver Lançamentos</button>
+        <div id="hist-longo" class="hidden">
+            <table id="table-longo"><tbody></tbody></table>
+            <button class="btn-danger" style="margin-top:5px; font-size:0.8rem" onclick="apagarUltimo('longo')">Desfazer</button>
+        </div>
+    </div>
+
+    <div class="card" style="border-top: 3px solid #ec4899;">
+        <div class="card-header">
+            <h3 style="color:#ec4899">🧮 Simulador Renda Fixa</h3>
+        </div>
+        <div class="grid-3">
+            <div>
+                <label style="font-size:0.8rem">Tipo</label>
+                <select id="sim-tipo">
+                    <option value="cdb">CDB</option>
+                    <option value="lci">LCI/LCA (Isento)</option>
+                    <option value="tesouro">Tesouro Selic</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.8rem">% do CDI</label>
+                <input type="number" id="sim-pct" value="100">
+            </div>
+            <div>
+                <label style="font-size:0.8rem">Período (Meses)</label>
+                <input type="number" id="sim-meses" value="12">
+            </div>
+        </div>
+        <div class="grid-3">
+            <div>
+                <label style="font-size:0.8rem">Aporte Inicial</label>
+                <input type="number" id="sim-inicial" placeholder="R$">
+            </div>
+            <div style="grid-column: span 2;">
+                <label style="font-size:0.8rem">Aporte Mensal</label>
+                <input type="number" id="sim-mensal" placeholder="R$">
+            </div>
+        </div>
+        <button class="btn-main" style="background:#ec4899" onclick="simular()">CALCULAR RESULTADO</button>
+        
+        <div id="res-simulacao" style="margin-top:15px; text-align:center; display:none; background:rgba(0,0,0,0.3); padding:15px; border-radius:10px;">
+            <span style="color:#94a3b8; font-size:0.9rem;">Total Bruto Estimado:</span>
+            <h2 style="color:#ec4899; margin:5px 0;" id="sim-total">R$ 0,00</h2>
+            <small style="color:#cbd5e1" id="sim-lucro">Rendimento: R$ 0,00</small>
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -112,171 +206,196 @@
     
     let userPath = null; 
     let chartInstance = null;
-    let ultimoID = null;
-    let temHistorico = false;
+    let saldos = { trade: 0, reserva: 0, longo: 0 };
+    const CDI_ANUAL_ATUAL = 12.25; // Pode ajustar conforme a Selic atual
 
     auth.onAuthStateChanged((user) => {
         if (user) {
             userPath = user.uid;
             document.getElementById('data-operacao').valueAsDate = new Date();
             
-            // Carrega Nick e Preferência de Meta
-            db.ref(`usuarios/${userPath}/perfil`).on('value', (snapshot) => {
-                const perfil = snapshot.val();
-                document.getElementById('user-display').innerText = `Jogador: ${perfil?.nick || user.email.split('@')[0]}`;
-                
-                if(perfil?.metaInvestimento) {
-                    document.getElementById('porcentagem-meta').value = perfil.metaInvestimento;
-                }
+            // Carregar Preferência de Meta
+            db.ref(`usuarios/${userPath}/perfil/metaInvestimento`).on('value', s => {
+                if(s.val()) document.getElementById('porcentagem-meta').value = s.val();
                 atualizarCalculos();
             });
 
-            carregarDados(); 
+            carregarTrade();
+            carregarGeneric('reserva');
+            carregarGeneric('longo');
         } else {
             window.location.href = "index.html";
         }
     });
 
-    // Salva a porcentagem no banco para não resetar
-    function salvarPreferenciaMeta() {
-        if(!userPath) return;
-        const valor = document.getElementById('porcentagem-meta').value;
-        db.ref(`usuarios/${userPath}/perfil`).update({
-            metaInvestimento: valor
-        });
-    }
-
-    function atualizarCalculos() {
-        const capital = Number(document.getElementById('capital-input').value) || 0;
-        const porcento = Number(document.getElementById('porcentagem-meta').value) || 0;
-        const valor = capital * (porcento / 100);
-
-        document.getElementById('contratos-qtd').innerText = Math.floor(capital / 1000);
-        document.getElementById('meta-valor').innerText = `R$ ${valor.toFixed(2)}`;
-        document.getElementById('loss-limite').innerText = `R$ ${valor.toFixed(2)}`;
-        document.getElementById('label-meta').innerText = `Meta (${porcento}%)`;
-        document.getElementById('label-loss').innerText = `Loss Diário (${porcento}%)`;
-    }
-
-    function salvarOperacao() {
-        if (!userPath) return;
-        const res = Number(document.getElementById('resultado-input').value);
-        const dataInput = document.getElementById('data-operacao').value;
-
-        if (document.getElementById('resultado-input').value === "") {
-            return Swal.fire("Erro", "Preencha o valor!", "error");
-        }
-
-        let dataFormatada;
-        let timestampBase;
-
-        if (dataInput) {
-            const partes = dataInput.split('-');
-            dataFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
-            timestampBase = new Date(dataInput + "T12:00:00").getTime();
-        } else {
-            dataFormatada = new Date().toLocaleDateString('pt-BR');
-            timestampBase = Date.now();
-        }
-
-        db.ref(`investimentos/${userPath}/historico`).push({
-            data: dataFormatada,
-            resultado: res,
-            timestamp: timestampBase,
-            tipo: temHistorico ? "operacao" : "inicial"
-        }).then(() => {
-            document.getElementById('resultado-input').value = "";
-            Swal.fire("Sucesso!", "Dados atualizados!", "success");
-        });
-    }
-
-    function apagarUltimo() {
-        if (!ultimoID) return Swal.fire("Aviso", "Nada para apagar.", "info");
-        Swal.fire({
-            title: 'Remover registro?',
-            text: "O saldo será recalculado automaticamente.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Sim',
-            cancelButtonText: 'Não'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                db.ref(`investimentos/${userPath}/historico/${ultimoID}`).remove();
-            }
-        });
-    }
-
-    function carregarDados() {
+    // --- FUNÇÕES DE CARREGAMENTO ---
+    function carregarTrade() {
         db.ref(`investimentos/${userPath}/historico`).orderByChild('timestamp').on('value', snapshot => {
             const tbody = document.getElementById('tabela-corpo');
             tbody.innerHTML = "";
-            
-            let saldosProgresso = []; 
-            let datasGrafico = [];
             let acumulado = 0;
-            temHistorico = snapshot.exists();
-
-            if(!temHistorico) {
-                document.getElementById('label-resultado').innerText = "Capital Inicial (R$):";
-                document.getElementById('aviso-inicial').style.display = "block";
-            } else {
-                document.getElementById('label-resultado').innerText = "Resultado Financeiro (R$):";
-                document.getElementById('aviso-inicial').style.display = "none";
-            }
+            let dadosGrafico = []; 
+            let labelsGrafico = [];
 
             snapshot.forEach(doc => {
                 const item = doc.val();
-                ultimoID = doc.key;
-                acumulado += item.resultado;
-                
-                saldosProgresso.push(acumulado);
-                datasGrafico.push(item.data.slice(0, 5));
+                acumulado += parseFloat(item.resultado);
+                dadosGrafico.push(acumulado);
+                labelsGrafico.push(item.data.slice(0,5));
 
                 const cor = item.resultado >= 0 ? "gain" : "loss";
-                const sinal = item.resultado >= 0 ? "+" : "";
-                
-                tbody.insertAdjacentHTML('afterbegin', `
-                    <tr>
-                        <td>${item.data}</td>
-                        <td class="${cor}">${item.tipo === 'inicial' ? '' : sinal} R$ ${item.resultado.toFixed(2)}</td>
-                        <td>R$ ${acumulado.toFixed(2)}</td>
-                    </tr>
-                `);
+                tbody.insertAdjacentHTML('afterbegin', `<tr><td>${item.data}</td><td class="${cor}">R$ ${item.resultado}</td><td>R$ ${acumulado.toFixed(2)}</td></tr>`);
             });
 
-            document.getElementById('capital-input').value = acumulado.toFixed(2);
+            saldos.trade = acumulado;
+            document.getElementById('saldo-trade-display').innerText = `R$ ${acumulado.toFixed(2)}`;
             atualizarCalculos();
-            renderizarGrafico(saldosProgresso, datasGrafico);
+            renderizarGrafico(dadosGrafico, labelsGrafico);
         });
     }
 
-    function renderizarGrafico(saldos, datas) {
+    function carregarGeneric(tipo) {
+        db.ref(`investimentos/${userPath}/${tipo}`).on('value', snapshot => {
+            const tbody = document.getElementById(`table-${tipo}`).querySelector('tbody');
+            tbody.innerHTML = "";
+            let total = 0;
+
+            snapshot.forEach(doc => {
+                const item = doc.val();
+                total += parseFloat(item.valor);
+                tbody.insertAdjacentHTML('afterbegin', `<tr><td>${item.data}</td><td class="gain">+ R$ ${item.valor}</td></tr>`);
+            });
+
+            saldos[tipo] = total;
+            document.getElementById(`saldo-${tipo}-display`).innerText = `R$ ${total.toFixed(2)}`;
+            atualizarCalculos();
+        });
+    }
+
+    // --- CÁLCULOS UNIFICADOS ---
+    function atualizarCalculos() {
+        const totalGeral = saldos.trade + saldos.reserva + saldos.longo;
+        document.getElementById('display-total-geral').innerText = `R$ ${totalGeral.toFixed(2)}`;
+
+        const pct = parseFloat(document.getElementById('porcentagem-meta').value) || 0;
+        
+        // A META É CALCULADA SOBRE O TOTAL (Trade + Reserva + Longo)
+        const valorMeta = totalGeral * (pct / 100);
+
+        document.getElementById('contratos-qtd').innerText = Math.floor(totalGeral / 1000); // Ex: 1 contrato a cada 1k de patrimônio total
+        document.getElementById('meta-valor').innerText = `R$ ${valorMeta.toFixed(2)}`;
+        document.getElementById('loss-limite').innerText = `R$ -${valorMeta.toFixed(2)}`;
+        document.getElementById('label-meta').innerText = `Meta (${pct}%) do Total`;
+    }
+
+    // --- SALVAR DADOS ---
+    function salvarOperacao() {
+        const res = parseFloat(document.getElementById('resultado-input').value);
+        if (!res && res !== 0) return Swal.fire("Erro", "Digite o valor!", "error");
+        
+        const dataInput = document.getElementById('data-operacao').value;
+        const partes = dataInput.split('-');
+        const dataFmt = `${partes[2]}/${partes[1]}`;
+
+        db.ref(`investimentos/${userPath}/historico`).push({
+            data: dataFmt,
+            resultado: res,
+            timestamp: new Date(dataInput).getTime()
+        });
+        document.getElementById('resultado-input').value = "";
+    }
+
+    function salvarAporte(tipo) {
+        const val = parseFloat(document.getElementById(`input-${tipo}`).value);
+        if (!val) return Swal.fire("Erro", "Digite o valor!", "error");
+
+        db.ref(`investimentos/${userPath}/${tipo}`).push({
+            data: new Date().toLocaleDateString('pt-BR'),
+            valor: val,
+            timestamp: Date.now()
+        });
+        document.getElementById(`input-${tipo}`).value = "";
+        Swal.fire("Sucesso", "Aporte realizado!", "success");
+    }
+
+    function salvarPreferenciaMeta() {
+        db.ref(`usuarios/${userPath}/perfil`).update({ metaInvestimento: document.getElementById('porcentagem-meta').value });
+    }
+
+    // --- UTILITÁRIOS ---
+    function apagarUltimo(tipo) {
+        let path = tipo === 'historico' ? `investimentos/${userPath}/historico` : `investimentos/${userPath}/${tipo}`;
+        db.ref(path).orderByKey().limitToLast(1).once('value', s => {
+            s.forEach(k => k.ref.remove());
+        });
+    }
+
+    function toggleHistorico() {
+        const el = document.getElementById('historico-container');
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+    
+    function toggleDiv(id) {
+        const el = document.getElementById(id);
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function renderizarGrafico(data, labels) {
         const ctx = document.getElementById('graficoEvolucao').getContext('2d');
         if (chartInstance) chartInstance.destroy();
         chartInstance = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: datas,
+                labels: labels,
                 datasets: [{
-                    data: saldos,
+                    data: data,
                     borderColor: '#3b82f6',
                     backgroundColor: 'rgba(59, 130, 246, 0.1)',
                     fill: true,
                     tension: 0.3,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#3b82f6'
+                    pointRadius: 3
                 }]
             },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
-                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
-                }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#334155' } } } }
         });
+    }
+
+    // --- SIMULADOR RENDA FIXA ---
+    function simular() {
+        const pctCDI = parseFloat(document.getElementById('sim-pct').value) / 100;
+        const meses = parseInt(document.getElementById('sim-meses').value);
+        const inicial = parseFloat(document.getElementById('sim-inicial').value) || 0;
+        const mensal = parseFloat(document.getElementById('sim-mensal').value) || 0;
+        const tipo = document.getElementById('sim-tipo').value;
+
+        // CDI Anual base (ex: 12.25%) -> CDI Mensal
+        const taxaAnual = CDI_ANUAL_ATUAL / 100;
+        const taxaMensal = Math.pow(1 + taxaAnual, 1/12) - 1;
+        const taxaAplicada = taxaMensal * pctCDI;
+
+        let total = inicial;
+        for (let i = 0; i < meses; i++) {
+            total = total * (1 + taxaAplicada) + mensal;
+        }
+
+        // Imposto de Renda Regressivo (Simplificado sobre o lucro)
+        let totalInvestido = inicial + (mensal * meses);
+        let lucroBruto = total - totalInvestido;
+        let aliquota = 0;
+
+        if (tipo !== 'lci') { // LCI/LCA é isento
+            if (meses <= 6) aliquota = 0.225;
+            else if (meses <= 12) aliquota = 0.20;
+            else if (meses <= 24) aliquota = 0.175;
+            else aliquota = 0.15;
+        }
+
+        let imposto = lucroBruto * aliquota;
+        let liquido = total - imposto;
+
+        document.getElementById('sim-total').innerText = `R$ ${liquido.toFixed(2)}`;
+        document.getElementById('sim-lucro').innerText = `Lucro Líq: R$ ${(liquido - totalInvestido).toFixed(2)} (IR: ${aliquota*100}%)`;
+        document.getElementById('res-simulacao').style.display = 'block';
     }
 </script>
 </body>
