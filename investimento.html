@@ -62,7 +62,7 @@
     
     <div class="card" style="border-left: 4px solid var(--primary);">
         <div class="card-header">
-            <h3>🚀 Trade GR (Day Trade)</h3>
+            <h3>🚀 Trade GR (Day Trade ou seu Negócio)</h3>
             <b id="saldo-trade-display" style="color:var(--primary)">R$ 0,00</b>
         </div>
 
@@ -294,8 +294,8 @@
         const pct = parseFloat(document.getElementById('porcentagem-meta').value) || 0;
         const valorMeta = totalGeral * (pct / 100);
         
-        // REGRA DE CONTRATOS (1 A CADA 1000)
-        document.getElementById('contratos-qtd').innerText = Math.floor(totalGeral / 1000); 
+        // REGRA DE CONTRATOS (1 A CADA 10000)
+        document.getElementById('contratos-qtd').innerText = Math.floor(totalGeral / 10000); 
         
         document.getElementById('meta-valor').innerText = `R$ ${valorMeta.toFixed(2)}`;
         document.getElementById('loss-limite').innerText = `R$ -${valorMeta.toFixed(2)}`;
@@ -430,3 +430,4 @@
 </script>
 </body>
 </html>
+
