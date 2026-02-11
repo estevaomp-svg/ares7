@@ -45,7 +45,7 @@
         .total-patrimonio h1 { margin: 0; font-size: 2.5rem; color: #fff; }
         .total-patrimonio span { color: #93c5fd; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
 
-        .compass-box { margin-top: 10px; padding: 10px; border-radius: 8px; font-size: 0.85rem; text-align: center; border: 1px dotted #475569; }
+        .compass-box { margin-top: 10px; padding: 10px; border-radius: 8px; font-size: 0.85rem; text-align: center; border: 1px dotted #475569; background: rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
@@ -99,14 +99,11 @@
         </div>
 
         <button class="btn-toggle" onclick="toggleHistorico()">📜 Abrir/Fechar Histórico Trade</button>
-        
         <div id="historico-container" class="hidden">
-            <div style="overflow-x:auto;">
-                <table>
-                    <thead><tr><th>Data</th><th>Res.</th><th>Saldo Trade</th></tr></thead>
-                    <tbody id="tabela-corpo"></tbody>
-                </table>
-            </div>
+            <table>
+                <thead><tr><th>Data</th><th>Res.</th><th>Saldo Trade</th></tr></thead>
+                <tbody id="tabela-corpo"></tbody>
+            </table>
             <button class="btn-danger" style="margin-top:10px; font-size: 0.8rem;" onclick="apagarUltimo('historico')">Desfazer Último</button>
         </div>
         
@@ -149,23 +146,32 @@
 
     <div class="card" style="border-top: 3px solid #ec4899;">
         <div class="card-header">
-            <h3 style="color:#ec4899">🧮 Simulador Renda Fixa</h3>
+            <h3 style="color:#ec4899">🧮 Simulador Renda Fixa Completo</h3>
         </div>
         
         <div class="grid-3">
             <div>
-                <label style="font-size:0.8rem">Tipo de Investimento</label>
+                <label style="font-size:0.8rem">Ativo / Título</label>
                 <select id="sim-tipo" onchange="ajustarCamposSimulacao()">
-                    <option value="pos">CDB / LC (Pós-fixado)</option>
-                    <option value="lci">LCI / LCA (Isento de IR)</option>
-                    <option value="tesouro">Tesouro Selic (100%)</option>
-                    <option value="pre">Pré-fixado (Taxa Fixa)</option>
-                    <option value="ipca">IPCA+ (Inflação)</option>
+                    <optgroup label="Pós-Fixados (Indexados ao CDI)">
+                        <option value="pos">CDB / LC / RDB (Pós)</option>
+                        <option value="lci-pos">LCI / LCA (Pós - Isento)</option>
+                        <option value="tesouro-selic">Tesouro Selic (100%)</option>
+                    </optgroup>
+                    <optgroup label="Pré-Fixados (Taxa Fixa)">
+                        <option value="pre">CDB / LC (Pré)</option>
+                        <option value="lci-pre">LCI / LCA (Pré - Isento)</option>
+                        <option value="tesouro-pre">Tesouro Prefixado</option>
+                    </optgroup>
+                    <optgroup label="Híbridos (Inflação)">
+                        <option value="ipca">Tesouro IPCA+ / CDB IPCA</option>
+                        <option value="cri-cra">CRI / CRA / Debênture (Isento)</option>
+                    </optgroup>
                 </select>
             </div>
 
             <div id="campo-cdi">
-                <label style="font-size:0.8rem">% do CDI / Selic</label>
+                <label style="font-size:0.8rem">% do CDI</label>
                 <input type="number" id="sim-pct" value="100">
             </div>
             
@@ -178,12 +184,12 @@
                 <label style="font-size:0.8rem">Taxa Fixa + IPCA</label>
                 <div style="display:flex; gap:5px;">
                     <input type="number" id="sim-taxa-ipca" placeholder="Taxa%" style="width:50%">
-                    <input type="number" id="sim-ipca-proj" value="4.5" placeholder="IPCA%" title="IPCA Projetado">
+                    <input type="number" id="sim-ipca-proj" value="4.5" title="IPCA Projetado">
                 </div>
             </div>
 
             <div>
-                <label style="font-size:0.8rem">Período (Meses)</label>
+                <label style="font-size:0.8rem">Prazo (Meses)</label>
                 <input type="number" id="sim-meses" value="12">
             </div>
         </div>
@@ -194,27 +200,26 @@
                 <input type="number" id="sim-inicial" placeholder="R$">
             </div>
             <div style="grid-column: span 2;">
-                <label style="font-size:0.8rem">Aporte Mensal</label>
+                <label style="font-size:0.8rem">Aportes Mensais</label>
                 <input type="number" id="sim-mensal" placeholder="R$">
             </div>
         </div>
         
-        <button class="btn-main" style="background:#ec4899" onclick="simular()">CALCULAR RESULTADO</button>
+        <button class="btn-main" style="background:#ec4899" onclick="simular()">SIMULAR INVESTIMENTO</button>
 
         <div id="compass-ipca" class="compass-box hidden">
-            🧭 <span id="compass-text">Analise a taxa fixa para decidir...</span>
+            🧭 <span id="compass-text"></span>
         </div>
         
         <div id="res-simulacao" style="margin-top:15px; text-align:center; display:none; background:rgba(0,0,0,0.3); padding:15px; border-radius:10px;">
-            <span style="color:#94a3b8; font-size:0.9rem;">Total Bruto Estimado:</span>
+            <span style="color:#94a3b8; font-size:0.9rem;">Resultado Estimado:</span>
             <h2 style="color:#ec4899; margin:5px 0;" id="sim-total">R$ 0,00</h2>
             <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-top:10px; border-top:1px solid #475569; padding-top:5px;">
-                <span style="color:var(--success)" id="sim-liquido">Liq: R$ 0,00</span>
-                <span style="color:var(--warning)" id="sim-lucro">Rendimento: R$ 0,00</span>
+                <span style="color:var(--success)" id="sim-liquido">Líquido: R$ 0,00</span>
+                <span style="color:var(--warning)" id="sim-lucro">Lucro Líq: R$ 0,00</span>
             </div>
         </div>
     </div>
-
 </div>
 
 <script>
@@ -288,7 +293,10 @@
         document.getElementById('display-total-geral').innerText = `R$ ${totalGeral.toFixed(2)}`;
         const pct = parseFloat(document.getElementById('porcentagem-meta').value) || 0;
         const valorMeta = totalGeral * (pct / 100);
+        
+        // REGRA DE CONTRATOS (1 A CADA 1000)
         document.getElementById('contratos-qtd').innerText = Math.floor(totalGeral / 1000); 
+        
         document.getElementById('meta-valor').innerText = `R$ ${valorMeta.toFixed(2)}`;
         document.getElementById('loss-limite').innerText = `R$ -${valorMeta.toFixed(2)}`;
         document.getElementById('label-meta').innerText = `Meta (${pct}%) do Total`;
@@ -360,15 +368,13 @@
         document.getElementById('campo-ipca').classList.add('hidden');
         document.getElementById('compass-ipca').classList.add('hidden');
 
-        if (tipo === 'pre') {
+        if (tipo.includes('pos')) {
+            document.getElementById('campo-cdi').classList.remove('hidden');
+        } else if (tipo.includes('pre') || tipo === 'tesouro-pre') {
             document.getElementById('campo-taxa').classList.remove('hidden');
-        } else if (tipo === 'ipca') {
+        } else if (tipo === 'ipca' || tipo === 'cri-cra') {
             document.getElementById('campo-ipca').classList.remove('hidden');
             document.getElementById('compass-ipca').classList.remove('hidden');
-        } else if (tipo === 'tesouro') {
-            document.getElementById('campo-cdi').classList.add('hidden');
-        } else {
-            document.getElementById('campo-cdi').classList.remove('hidden');
         }
     }
 
@@ -379,23 +385,17 @@
         const mensal = parseFloat(document.getElementById('sim-mensal').value) || 0;
 
         let taxaAnual = 0;
-        if (tipo === 'pre') {
+        if (tipo.includes('pre') || tipo === 'tesouro-pre') {
             taxaAnual = parseFloat(document.getElementById('sim-taxa-fixa').value) || 0;
-        } else if (tipo === 'ipca') {
+        } else if (tipo === 'ipca' || tipo === 'cri-cra') {
             const fixa = parseFloat(document.getElementById('sim-taxa-ipca').value) || 0;
-            const ipca = parseFloat(document.getElementById('sim-ipca-proj').value) || 0;
+            const ipca = parseFloat(document.getElementById('sim-ipca-proj').value) || 4.5;
             taxaAnual = fixa + ipca; 
 
-            // Lógica da Bússola
-            let msg = ""; let cor = "";
-            if (fixa >= 6.5) { msg = "Taxa Incrível! Momento histórico para travar."; cor = "#22c55e"; }
-            else if (fixa >= 5.8) { msg = "Taxa Ótima. Acima da média histórica."; cor = "#3b82f6"; }
-            else if (fixa >= 5.0) { msg = "Taxa Justa para proteção de carteira."; cor = "#f59e0b"; }
-            else { msg = "Taxa Baixa. Pode valer esperar juros subirem."; cor = "#94a3b8"; }
-            document.getElementById('compass-text').innerText = msg;
-            document.getElementById('compass-text').style.color = cor;
-
-        } else if (tipo === 'tesouro') {
+            let msg = fixa >= 6.5 ? "Taxa Incrível!" : fixa >= 5.8 ? "Taxa Ótima." : "Taxa Regular.";
+            document.getElementById('compass-text').innerText = `Juro Real de ${fixa}%: ${msg}`;
+            document.getElementById('compass-text').style.color = fixa >= 6 ? "#22c55e" : "#f59e0b";
+        } else if (tipo === 'tesouro-selic') {
             taxaAnual = CDI_ANUAL_ATUAL; 
         } else {
             const pct = parseFloat(document.getElementById('sim-pct').value) || 100;
@@ -410,8 +410,9 @@
 
         const totalInvestido = inicial + (mensal * meses);
         const lucroBruto = total - totalInvestido;
+        const isento = (tipo.includes('lci') || tipo === 'cri-cra');
         let aliquota = 0;
-        if (tipo !== 'lci') { 
+        if (!isento) {
             if (meses <= 6) aliquota = 0.225;
             else if (meses <= 12) aliquota = 0.20;
             else if (meses <= 24) aliquota = 0.175;
@@ -424,7 +425,7 @@
         document.getElementById('res-simulacao').style.display = 'block';
         document.getElementById('sim-total').innerText = `Bruto: R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
         document.getElementById('sim-liquido').innerText = `Líquido: R$ ${liquido.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-        document.getElementById('sim-lucro').innerText = `Lucro: R$ ${(liquido - totalInvestido).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        document.getElementById('sim-lucro').innerText = `Lucro Líq: R$ ${(liquido - totalInvestido).toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
     }
 </script>
 </body>
