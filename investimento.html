@@ -25,7 +25,6 @@
         
         input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; }
         
-        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
         button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; }
         button:hover { opacity: 0.9; transform: scale(1.02); }
         
@@ -46,6 +45,7 @@
         .total-patrimonio h1 { margin: 0; font-size: 2.5rem; color: #fff; }
         .total-patrimonio span { color: #93c5fd; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
 
+        .compass-box { margin-top: 10px; padding: 10px; border-radius: 8px; font-size: 0.85rem; text-align: center; border: 1px dotted #475569; }
     </style>
 </head>
 <body>
@@ -62,7 +62,7 @@
     
     <div class="card" style="border-left: 4px solid var(--primary);">
         <div class="card-header">
-            <h3>🚀 Trade GR (Day Trade ou seu Negócio)</h3>
+            <h3>🚀 Trade GR (Day Trade)</h3>
             <b id="saldo-trade-display" style="color:var(--primary)">R$ 0,00</b>
         </div>
 
@@ -200,6 +200,10 @@
         </div>
         
         <button class="btn-main" style="background:#ec4899" onclick="simular()">CALCULAR RESULTADO</button>
+
+        <div id="compass-ipca" class="compass-box hidden">
+            🧭 <span id="compass-text">Analise a taxa fixa para decidir...</span>
+        </div>
         
         <div id="res-simulacao" style="margin-top:15px; text-align:center; display:none; background:rgba(0,0,0,0.3); padding:15px; border-radius:10px;">
             <span style="color:#94a3b8; font-size:0.9rem;">Total Bruto Estimado:</span>
@@ -232,18 +236,14 @@
         if (user) {
             userPath = user.uid;
             document.getElementById('data-operacao').valueAsDate = new Date();
-            
             db.ref(`usuarios/${userPath}/perfil/metaInvestimento`).on('value', s => {
                 if(s.val()) document.getElementById('porcentagem-meta').value = s.val();
                 atualizarCalculos();
             });
-
             carregarTrade();
             carregarGeneric('reserva');
             carregarGeneric('longo');
-        } else {
-            window.location.href = "index.html";
-        }
+        } else { window.location.href = "index.html"; }
     });
 
     function carregarTrade() {
@@ -251,19 +251,15 @@
             const tbody = document.getElementById('tabela-corpo');
             tbody.innerHTML = "";
             let acumulado = 0;
-            let dadosGrafico = []; 
-            let labelsGrafico = [];
-
+            let dadosGrafico = []; let labelsGrafico = [];
             snapshot.forEach(doc => {
                 const item = doc.val();
                 acumulado += parseFloat(item.resultado);
                 dadosGrafico.push(acumulado);
                 labelsGrafico.push(item.data.slice(0,5));
-
                 const cor = item.resultado >= 0 ? "gain" : "loss";
                 tbody.insertAdjacentHTML('afterbegin', `<tr><td>${item.data}</td><td class="${cor}">R$ ${item.resultado}</td><td>R$ ${acumulado.toFixed(2)}</td></tr>`);
             });
-
             saldos.trade = acumulado;
             document.getElementById('saldo-trade-display').innerText = `R$ ${acumulado.toFixed(2)}`;
             atualizarCalculos();
@@ -276,13 +272,11 @@
             const tbody = document.getElementById(`table-${tipo}`).querySelector('tbody');
             tbody.innerHTML = "";
             let total = 0;
-
             snapshot.forEach(doc => {
                 const item = doc.val();
                 total += parseFloat(item.valor);
                 tbody.insertAdjacentHTML('afterbegin', `<tr><td>${item.data}</td><td class="gain">+ R$ ${item.valor}</td></tr>`);
             });
-
             saldos[tipo] = total;
             document.getElementById(`saldo-${tipo}-display`).innerText = `R$ ${total.toFixed(2)}`;
             atualizarCalculos();
@@ -292,13 +286,9 @@
     function atualizarCalculos() {
         const totalGeral = saldos.trade + saldos.reserva + saldos.longo;
         document.getElementById('display-total-geral').innerText = `R$ ${totalGeral.toFixed(2)}`;
-
         const pct = parseFloat(document.getElementById('porcentagem-meta').value) || 0;
         const valorMeta = totalGeral * (pct / 100);
-
-        // REGRA DE CONTRATOS (1 a cada 10000)
-        document.getElementById('contratos-qtd').innerText = Math.floor(totalGeral / 10000); 
-        
+        document.getElementById('contratos-qtd').innerText = Math.floor(totalGeral / 1000); 
         document.getElementById('meta-valor').innerText = `R$ ${valorMeta.toFixed(2)}`;
         document.getElementById('loss-limite').innerText = `R$ -${valorMeta.toFixed(2)}`;
         document.getElementById('label-meta').innerText = `Meta (${pct}%) do Total`;
@@ -355,12 +345,7 @@
             data: {
                 labels: labels,
                 datasets: [{
-                    data: data,
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    fill: true,
-                    tension: 0.3,
-                    pointRadius: 3
+                    data: data, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.3, pointRadius: 3
                 }]
             },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#334155' } } } }
@@ -373,16 +358,16 @@
         document.getElementById('campo-cdi').classList.add('hidden');
         document.getElementById('campo-taxa').classList.add('hidden');
         document.getElementById('campo-ipca').classList.add('hidden');
+        document.getElementById('compass-ipca').classList.add('hidden');
 
         if (tipo === 'pre') {
             document.getElementById('campo-taxa').classList.remove('hidden');
         } else if (tipo === 'ipca') {
             document.getElementById('campo-ipca').classList.remove('hidden');
+            document.getElementById('compass-ipca').classList.remove('hidden');
         } else if (tipo === 'tesouro') {
-            // Escondido para Tesouro Selic (assume 100%)
             document.getElementById('campo-cdi').classList.add('hidden');
         } else {
-            // CDB e LCI mostram % do CDI
             document.getElementById('campo-cdi').classList.remove('hidden');
         }
     }
@@ -400,6 +385,16 @@
             const fixa = parseFloat(document.getElementById('sim-taxa-ipca').value) || 0;
             const ipca = parseFloat(document.getElementById('sim-ipca-proj').value) || 0;
             taxaAnual = fixa + ipca; 
+
+            // Lógica da Bússola
+            let msg = ""; let cor = "";
+            if (fixa >= 6.5) { msg = "Taxa Incrível! Momento histórico para travar."; cor = "#22c55e"; }
+            else if (fixa >= 5.8) { msg = "Taxa Ótima. Acima da média histórica."; cor = "#3b82f6"; }
+            else if (fixa >= 5.0) { msg = "Taxa Justa para proteção de carteira."; cor = "#f59e0b"; }
+            else { msg = "Taxa Baixa. Pode valer esperar juros subirem."; cor = "#94a3b8"; }
+            document.getElementById('compass-text').innerText = msg;
+            document.getElementById('compass-text').style.color = cor;
+
         } else if (tipo === 'tesouro') {
             taxaAnual = CDI_ANUAL_ATUAL; 
         } else {
@@ -434,4 +429,3 @@
 </script>
 </body>
 </html>
-
