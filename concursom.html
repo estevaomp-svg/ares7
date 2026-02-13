@@ -2261,40 +2261,45 @@
     ];
 
     function renderizar() {
-        const div = document.getElementById('quiz');
-        const agora = Date.now();
-        let acertos = localStorage.getItem('acertos_dia') || 0;
-        let totalRespostas = localStorage.getItem('total_tentativas') || 0;
-
-        div.innerHTML = '';
-        questoes.forEach((q, index) => {
-            const lastTime = localStorage.getItem(`bloqueio_${q.id}`);
-            const isBloqueado = lastTime && (agora - lastTime < COOLDOWN_HOURS * 3600000);
-            
-            div.innerHTML += `
-                <div class="questao ${isBloqueado ? 'bloqueado' : ''}" id="q-box-${q.id}">
-                    <span class="badge">${q.cat}</span>
-                    <div style="font-weight: bold; margin-bottom: 15px;">${q.q}</div>
-                    
-                    <div class="timer-msg">⏳ Bloqueada por 4h após resposta.</div>
-                    
-                    ${q.opts.map((opt, i) => `
-                        <button class="opcao" onclick="verificar(${q.id}, ${i})">
-                            ${opt}
-                        </button>
-                    `).join('')}
-                </div>
-            `;
-        });
+        const quiz = document.getElementById('quiz');
+        quiz.innerHTML = '';
         atualizarStats();
+
+        questoes.forEach(q => {
+            const bloqueio = localStorage.getItem(`bloqueio_${q.id}`);
+            let isBloqueado = false;
+            let tempoRestante = "";
+
+            if (bloqueio) {
+                const diff = (Date.now() - parseInt(bloqueio)) / (1000 * 60 * 60);
+                if (diff < COOLDOWN_HOURS) {
+                    isBloqueado = true;
+                    const minRestantes = Math.ceil((COOLDOWN_HOURS - diff) * 60);
+                    tempoRestante = minRestantes > 60 
+                        ? `${Math.floor(minRestantes/60)}h ${minRestantes%60}min` 
+                        : `${minRestantes}min`;
+                }
+            }
+
+            const div = document.createElement('div');
+            div.className = `questao ${isBloqueado ? 'bloqueado' : ''}`;
+            div.innerHTML = `
+                <span class="badge">Questão #${q.id}</span>
+                <p style="font-weight: 600; line-height: 1.4;">${q.q}</p>
+                <div class="timer-msg">🔒 Disponível em: ${tempoRestante}</div>
+                ${q.opts.map((opt, i) => `
+                    <button class="opcao" onclick="verificar(${q.id}, ${i})">${opt}</button>
+                `).join('')}
+            `;
+            quiz.appendChild(div);
+        });
     }
 
+    // --- FUNÇÃO AJUSTADA PARA SER RÁPIDA ---
     function verificar(qId, optIdx) {
-        // Encontra a questão pelo ID correto
-        const q = questoes.find(x => x.id === qId);
-        
-        let acertos = parseInt(localStorage.getItem('acertos_dia') || 0);
-        let total = parseInt(localStorage.getItem('total_tentativas') || 0);
+        const q = questoes.find(item => item.id === qId);
+        const acertos = parseInt(localStorage.getItem('acertos_dia') || 0);
+        const total = parseInt(localStorage.getItem('total_tentativas') || 0);
 
         localStorage.setItem(`bloqueio_${qId}`, Date.now());
         localStorage.setItem('total_tentativas', total + 1);
@@ -2306,36 +2311,40 @@
                 text: q.exp, 
                 icon: 'success',
                 confirmButtonColor: '#3b82f6'
-            }).then(renderizar);
+            });
         } else {
             Swal.fire({ 
                 title: 'Errou!', 
                 text: `Resposta certa: ${q.opts[q.corr]}. \nExplicação: ${q.exp}`, 
                 icon: 'error',
                 confirmButtonColor: '#ef4444'
-            }).then(renderizar);
+            });
         }
+
+        // AGORA O "OK" É RÁPIDO:
+        // Chamamos a renderização logo após o clique, mas sem prender o botão do Alerta
+        setTimeout(renderizar, 100);
     }
 
     function atualizarStats() {
-        const acertos = localStorage.getItem('acertos_dia') || 0;
-        const total = localStorage.getItem('total_tentativas') || 1;
-        // Evita divisão por zero visualmente se total for 0 (mas setamos 1 ali em cima se vazio)
-        const realTotal = total == 0 ? 1 : total; 
+        const acertos = parseInt(localStorage.getItem('acertos_dia') || 0);
+        const total = parseInt(localStorage.getItem('total_tentativas') || 0);
         
         document.getElementById('total-hoje').innerText = acertos;
         
         let pct = 0;
-        if (localStorage.getItem('total_tentativas')) {
-             pct = Math.round((acertos / localStorage.getItem('total_tentativas')) * 100);
+        if (total > 0) {
+            pct = Math.round((acertos / total) * 100);
         }
-        document.getElementById('percentual').innerText = pct + '%';
+        document.getElementById('percentual').innerText = `${pct}%`;
     }
 
     renderizar();
 </script>
+
 </body>
 </html>
+
 
 
 
