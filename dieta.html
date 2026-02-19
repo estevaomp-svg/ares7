@@ -28,16 +28,9 @@
             width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; 
             background: #1e293b; color: white; box-sizing: border-box; font-size: 14px;
         }
-        button { 
-            cursor: pointer; padding: 12px; border: none; border-radius: 8px; 
-            color: white; font-weight: bold; width: 100%; transition: 0.3s; margin-top: 10px;
-        }
+        button { cursor: pointer; padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; width: 100%; transition: 0.3s; margin-top: 10px; }
         button:hover { opacity: 0.9; transform: scale(1.02); }
-        .btn-back { 
-            background: var(--primary); text-decoration: none; display: block; 
-            text-align: center; padding: 12px; border-radius: 8px; color: white; 
-            margin-bottom: 15px; font-weight: bold; 
-        }
+        .btn-back { background: var(--primary); text-decoration: none; display: block; text-align: center; padding: 12px; border-radius: 8px; color: white; margin-bottom: 15px; font-weight: bold; }
         
         .kcal-container { margin: 20px 0; text-align: center; }
         .progress-bg { background: #334155; height: 20px; border-radius: 10px; overflow: hidden; position: relative; }
@@ -74,7 +67,7 @@
                 <div style="color: #f87171;">G: <span id="total-g">0</span>g</div>
             </div>
 
-            <p id="kcal-aviso" style="font-size:12px; color:#fca5a5; margin-top:5px; display:none;">⚠️ Você excedeu sua meta!</p>
+            <p id="kcal-aviso" style="font-size:12px; color:#fca5a5; margin-top:5px; display:none;">⚠️ Meta Excedida!</p>
         </div>
 
         <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px;">
@@ -88,14 +81,12 @@
         </div>
         <button onclick="adicionarAlimento()" style="background: var(--success);">➕ ADICIONAR AO PRATO</button>
 
-        <h4 style="margin-bottom:10px; margin-top:20px; border-bottom:1px solid #334155; padding-bottom:5px;">Refeições de Hoje:</h4>
-        <div id="lista-alimentos">
-            <p style="text-align:center; color:#64748b; font-size:13px;">Nenhum alimento registrado hoje.</p>
-        </div>
+        <h4 style="margin-bottom:10px; margin-top:20px; border-bottom:1px solid #334155; padding-bottom:5px;">Refeições:</h4>
+        <div id="lista-alimentos"></div>
     </div>
 
     <div class="card" style="border-top: 3px solid #ec4899;">
-        <h3 style="text-align:center; color: #ec4899; margin-top: 0;">📊 Configurar Bioestatística</h3>
+        <h3 style="text-align:center; color: #ec4899; margin-top: 0;">📊 Bioestatística</h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div><label>Sexo:</label><select id="calc-sexo"><option value="m">Masculino</option><option value="f">Feminino</option></select></div>
             <div><label>Idade:</label><input type="number" id="calc-idade" placeholder="Anos"></div>
@@ -104,9 +95,9 @@
             <div><label>Atividade:</label>
                 <select id="calc-fator">
                     <option value="1.2">Sedentário</option>
-                    <option value="1.375" selected>Leve (1-3 dias)</option>
-                    <option value="1.55">Moderado (3-5 dias)</option>
-                    <option value="1.725">Intenso (6-7 dias)</option>
+                    <option value="1.375" selected>Leve</option>
+                    <option value="1.55">Moderado</option>
+                    <option value="1.725">Intenso</option>
                 </select>
             </div>
             <div><label>Objetivo:</label>
@@ -124,22 +115,19 @@
                 <input type="number" id="calc-quadril" placeholder="Quadril">
             </div>
         </div>
-        <button style="background: #ec4899;" onclick="calcularSalvarBio()">💾 CALCULAR E SALVAR PERFIL</button>
+        <button style="background: #ec4899;" onclick="calcularSalvarBio()">💾 CALCULAR E SALVAR</button>
+        
         <div id="resultado-bio" style="display:none; margin-top: 15px; background: rgba(0,0,0,0.2); padding:10px; border-radius:10px;">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align:center;">
-                <div><span style="font-size:10px; color:#cbd5e1;">Meta Sugerida</span><br><b style="color:#22c55e; font-size:18px;" id="res-meta">--</b></div>
-                <div><span style="font-size:10px; color:#cbd5e1;">% Gordura</span><br><b style="color:#f59e0b; font-size:18px;" id="res-bf">--</b></div>
-                <div><span style="font-size:10px; color:#cbd5e1;">Peso Ideal</span><br><b style="color:#3b82f6; font-size:18px;" id="res-peso-ideal">--</b></div>
-                <div><span style="font-size:10px; color:#cbd5e1;">Basal (Repouso)</span><br><b style="color:#94a3b8; font-size:18px;" id="res-basal">--</b></div>
+                <div><span style="font-size:10px; color:#cbd5e1;">Meta Sugerida</span><br><b style="color:#22c55e; font-size:16px;" id="res-meta">--</b></div>
+                <div><span style="font-size:10px; color:#cbd5e1;">% Gordura (BF)</span><br><b style="color:#f59e0b; font-size:16px;" id="res-bf">--</b></div>
+                <div><span style="font-size:10px; color:#cbd5e1;">Peso Ideal</span><br><b style="color:#3b82f6; font-size:16px;" id="res-peso-ideal">--</b></div>
+                <div><span style="font-size:10px; color:#cbd5e1;">Basal (TMB)</span><br><b style="color:#94a3b8; font-size:16px;" id="res-basal">--</b></div>
             </div>
         </div>
     </div>
 
     <script>
-        window.alert = function(msg) {
-            Swal.fire({ text: msg, confirmButtonColor: '#3b82f6', background: '#1e293b', color: '#fff' });
-        };
-
         const firebaseConfig = {
             apiKey: "AIzaSyBanevR51ejaTE0ccqlmlU6VRh7Qg4EETs",
             authDomain: "aresrpg-7daf4.firebaseapp.com",
@@ -152,12 +140,9 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database(), auth = firebase.auth();
         let jogador = "";
-        
-        const hojeRaw = new Date();
-        const dataKey = hojeRaw.toISOString().split('T')[0]; 
-        document.getElementById('data-hoje').innerText = hojeRaw.toLocaleDateString('pt-BR');
+        const dataKey = new Date().toISOString().split('T')[0];
+        document.getElementById('data-hoje').innerText = new Date().toLocaleDateString('pt-BR');
 
-        // BANCO DE DADOS DE ALIMENTOS
         const bancoAlimentos = {
             "carne_bovina": { nome: "Carne Bovina", p: 23, g: 21, c: 0 },
             "banana_prata": { nome: "Banana Prata", p: 1.3, g: 0.4, c: 22.8 },
@@ -168,75 +153,63 @@
             if(u) {
                 jogador = u.email.split('@')[0].replace(/[.#$[\]]/g, "_");
                 carregarDados();
-            } else {
-                window.location.href = './';
-            }
+            } else { window.location.href = './'; }
         });
 
         function carregarDados() {
             db.ref('rpg_data/' + jogador + '/bio').on('value', s => {
                 const d = s.val();
                 if(d) {
-                    if(d.metaDiaria) document.getElementById('kcal-meta').innerText = d.metaDiaria;
+                    document.getElementById('kcal-meta').innerText = d.metaDiaria || 2000;
                     exibirResultadosVisuais(d);
                 }
             });
-
-            db.ref('rpg_data/' + jogador + '/dieta/' + dataKey).on('value', s => {
-                renderizarDieta(s.val() || {});
-            });
+            db.ref('rpg_data/' + jogador + '/dieta/' + dataKey).on('value', s => renderizarDieta(s.val()));
         }
 
         function adicionarAlimento() {
-            const foodKey = document.getElementById('food-select').value;
+            const key = document.getElementById('food-select').value;
             const qtd = parseFloat(document.getElementById('food-qtd').value);
-            if(!foodKey || !qtd) return alert("Selecione um alimento e a quantidade!");
+            if(!key || !qtd) return;
 
-            const base = bancoAlimentos[foodKey];
+            const base = bancoAlimentos[key];
             const fator = qtd / 100;
-            const pPortion = base.p * fator;
-            const cPortion = base.c * fator;
-            const gPortion = base.g * fator;
-            const kcalCalculada = Math.round((pPortion * 4) + (cPortion * 4) + (gPortion * 9));
+            const p = base.p * fator, c = base.c * fator, g = base.g * fator;
+            const cal = Math.round((p * 4) + (c * 4) + (g * 9));
 
             db.ref('rpg_data/' + jogador + '/dieta/' + dataKey).push({
-                nome: `${base.nome} (${qtd}g)`,
-                cal: kcalCalculada,
-                p: pPortion, c: cPortion, g: gPortion,
-                horario: Date.now()
+                nome: `${base.nome} (${qtd}g)`, cal, p, c, g
             });
-            document.getElementById('food-select').value = "";
         }
 
-        function renderizarDieta(dadosDia) {
+        function renderizarDieta(dados) {
             const lista = document.getElementById('lista-alimentos');
             lista.innerHTML = "";
-            let totalCal = 0, totalP = 0, totalC = 0, totalG = 0;
+            let tCal = 0, tP = 0, tC = 0, tG = 0;
 
-            Object.keys(dadosDia).forEach(key => {
-                const item = dadosDia[key];
-                totalCal += (item.cal || 0);
-                totalP += (item.p || 0); totalC += (item.c || 0); totalG += (item.g || 0);
-                lista.innerHTML += `
-                    <div class="food-item">
-                        <div><b>${item.nome}</b><span style="font-size:11px; color:#94a3b8; display:block;">${item.cal} kcal | P:${item.p?.toFixed(1)} C:${item.c?.toFixed(1)} G:${item.g?.toFixed(1)}</span></div>
-                        <button class="btn-mini-del" onclick="removerAlimento('${key}')">✕</button>
+            if(dados) {
+                Object.keys(dados).forEach(k => {
+                    const i = dados[k];
+                    tCal += i.cal; tP += (i.p||0); tC += (i.c||0); tG += (i.g||0);
+                    lista.innerHTML += `<div class="food-item">
+                        <div><b>${i.nome}</b><br><small>${i.cal}kcal | P:${i.p?.toFixed(1)} C:${i.c?.toFixed(1)} G:${i.g?.toFixed(1)}</small></div>
+                        <button class="btn-mini-del" onclick="remover('${k}')">✕</button>
                     </div>`;
-            });
+                });
+            }
+            document.getElementById('kcal-consumidas').innerText = tCal;
+            document.getElementById('total-p').innerText = tP.toFixed(1);
+            document.getElementById('total-c').innerText = tC.toFixed(1);
+            document.getElementById('total-g').innerText = tG.toFixed(1);
 
-            document.getElementById('kcal-consumidas').innerText = totalCal;
-            document.getElementById('total-p').innerText = totalP.toFixed(1);
-            document.getElementById('total-c').innerText = totalC.toFixed(1);
-            document.getElementById('total-g').innerText = totalG.toFixed(1);
-            
-            const meta = parseInt(document.getElementById('kcal-meta').innerText) || 2000;
-            const bar = document.getElementById('kcal-bar');
-            bar.style.width = Math.min((totalCal / meta) * 100, 100) + "%";
-            document.getElementById('kcal-aviso').style.display = totalCal > meta ? "block" : "none";
+            const meta = parseInt(document.getElementById('kcal-meta').innerText);
+            document.getElementById('kcal-bar').style.width = Math.min((tCal/meta)*100, 100) + "%";
+            document.getElementById('kcal-aviso').style.display = tCal > meta ? 'block' : 'none';
         }
 
-        function removerAlimento(key) { db.ref('rpg_data/' + jogador + '/dieta/' + dataKey + '/' + key).remove(); }
+        function remover(key) { db.ref('rpg_data/' + jogador + '/dieta/' + dataKey + '/' + key).remove(); }
 
+        // LÓGICA DE BIOESTATÍSTICA COMPLETA (IGUAL À ORIGINAL)
         function calcularSalvarBio() {
             const peso = parseFloat(document.getElementById('calc-peso').value);
             const altura = parseFloat(document.getElementById('calc-altura').value);
@@ -244,19 +217,36 @@
             const sexo = document.getElementById('calc-sexo').value;
             const fator = parseFloat(document.getElementById('calc-fator').value);
             const obj = parseInt(document.getElementById('calc-obj').value);
-            if (!peso || !altura || !idade) return alert("Preencha Peso, Altura e Idade!");
+            const pescoco = parseFloat(document.getElementById('calc-pescoco').value);
+            const cintura = parseFloat(document.getElementById('calc-cintura').value);
+            const quadril = parseFloat(document.getElementById('calc-quadril').value);
+
+            if (!peso || !altura || !idade) return;
 
             let tmb = (sexo === 'm') ? (10 * peso) + (6.25 * altura) - (5 * idade) + 5 : (10 * peso) + (6.25 * altura) - (5 * idade) - 161;
             let metaFinal = Math.round((tmb * fator) + obj);
+            let pesoIdeal = (sexo === 'm') ? 22 * ((altura/100)**2) : 21 * ((altura/100)**2);
 
-            db.ref('rpg_data/' + jogador + '/bio').update({ peso, altura, idade, sexo, fator, objetivo: obj, metaDiaria: metaFinal, basal: Math.round(tmb) }).then(() => {
-                Swal.fire({ title: 'Perfil Atualizado!', text: `Sua meta é ${metaFinal} kcal.`, icon: 'success', background: '#1e293b', color: '#fff' });
+            let bf = null;
+            if (pescoco && cintura) {
+                if (sexo === 'm') {
+                    bf = 495 / (1.0324 - 0.19077 * Math.log10(cintura - pescoco) + 0.15456 * Math.log10(altura)) - 450;
+                } else if (quadril) {
+                    bf = 495 / (1.29579 - 0.35004 * Math.log10(cintura + quadril - pescoco) + 0.22100 * Math.log10(altura)) - 450;
+                }
+            }
+
+            const dadosBio = { peso, altura, idade, sexo, fator, objetivo: obj, metaDiaria: metaFinal, basal: Math.round(tmb), pesoIdeal: Math.round(pesoIdeal), bf: bf ? bf.toFixed(1) : null, pescoco, cintura, quadril };
+            db.ref('rpg_data/' + jogador + '/bio').set(dadosBio).then(() => {
+                Swal.fire({ title: 'Perfil Atualizado!', text: `Sua meta é ${metaFinal} kcal.`, icon: 'success' });
             });
         }
 
         function exibirResultadosVisuais(d) {
             document.getElementById('resultado-bio').style.display = 'block';
-            document.getElementById('res-meta').innerText = (d.metaDiaria || "--") + " kcal";
+            document.getElementById('res-meta').innerText = d.metaDiaria + " kcal";
+            document.getElementById('res-bf').innerText = (d.bf || "--") + "%";
+            document.getElementById('res-peso-ideal').innerText = (d.pesoIdeal || "--") + " kg";
             document.getElementById('res-basal').innerText = (d.basal || "--") + " kcal";
         }
     </script>
