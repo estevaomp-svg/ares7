@@ -89,6 +89,21 @@
                 <option value="carne_bovina">Carne Bovina (100g)</option>
                 <option value="banana_prata">Banana Prata (100g)</option>
                 <option value="tapioca">Tapioca Hidratada (100g)</option>
+                <option value="whey_protein">Whey Nutrata (100g)</option>
+                <option value="coracao_bovino">Coração Bovino (100g)</option>
+                <option value="coxa_sobrecoxa">Coxa e Sobrecoxa (100g)</option>
+                <option value="peito_de_frango">Peito de Frango (cozido ou grelhado) (100g)</option>
+                <option value="carne_de_porco">Pernil Carne de Porco (100g)</option>
+                <option value="bebida_alcoolica">Bebida ALcoólica (100g)</option>
+                <option value="feijao">Feijão cozido (100g)</option>
+                <option value="oleo_de_coco">Óleo de coco (100g)</option>
+                <option value="figado_bovino">Figado Bovino (100g)</option>
+                <option value="abacate">Abacate (100g)</option>
+                <option value="leite_integral">Leite integral (100g)</option>
+                <option value="pedaço_de_bolo">Pedaço padrão de Bolo (100g)</option>
+                <option value="refrigerante">Refrigerante (100g)</option>
+                <option value="ovo_cozido">Ovo cozido (100g)</option>
+                
             </select>
             <input type="number" id="food-qtd" placeholder="Qtd" value="100">
         </div>
@@ -132,7 +147,21 @@
         const bancoAlimentos = {
             "carne_bovina": { nome: "Carne Bovina", p: 23, g: 21, c: 0 },
             "banana_prata": { nome: "Banana Prata", p: 1.3, g: 0.4, c: 22.8 },
-            "tapioca": { nome: "Tapioca Hidratada", p: 0, g: 0, c: 16.5 }
+            "tapioca": { nome: "Tapioca Hidratada", p: 0, g: 0, c: 16.5 },
+            "whey_protein": { nome: "Whey Nutrata", p: 50, g: 5, c: 32.5 },
+            "coracao_bovino": { nome: "Coração Bovino", p: 17, g: 2.5, c: 0 },
+            "coxa_sobrecoxa": { nome: "Coxa e Sobrecoxa", p: 17, g: 14, c: 0 },
+            "peito_de_frango": { nome: "Peito de Frango (cozido ou grelhado)", p: 29, g: 3, c: 0 },
+            "carne_de_porco": { nome: "Pernil Carne de Porco", p: 29, g: 13.9, c: 0 },
+            "bebida_alcoolica": { nome: "Bebida ALcoólica", p: 0.5, g: 0, c: 3.8 },
+            "feijao": { nome: "Feijão cozido", p: 9, g: 0.7, c: 26 },
+            "oleo_de_coco": { nome: "Óleo de coco", p: 0, g: 106,4, c: 0 },
+            "figado_bovino": { nome: "Figado Bovino", p: 26.5, g: 4.7, c: 5.2 },
+            "abacate": { nome: "Abacate", p: 2, g: 15.3, c: 16 },
+            "leite_integral": { nome: "Leite integral", p: 3, g: 3, c: 5 },
+            "pedaço_de_bolo": { nome: "Pedaço padrão de Bolo", p: 5.6, g: 27.2, c: 52.8 },
+            "refrigerante": { nome: "Refrigerante", p: 0, g: 0, c: 21 },
+            "ovo_cozido": { nome: "Ovo cozido", p: 11.5, g: 10.4, c: 1 }
         };
 
         auth.onAuthStateChanged(u => {
@@ -261,3 +290,4 @@
     </script>
 </body>
 </html>
+
