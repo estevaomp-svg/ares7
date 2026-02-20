@@ -76,10 +76,12 @@
         <div class="kcal-container">
             <div class="kcal-text"><span id="kcal-consumidas">0</span> / <span id="kcal-meta">2000</span> kcal</div>
             <div class="progress-bg"><div id="kcal-bar" class="progress-fill"></div></div>
-            <div style="display: flex; justify-content: space-around; margin-top: 15px; font-size: 13px; font-weight: bold;">
+            
+            <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 8px; margin-top: 15px; font-size: 13px; font-weight: bold;">
                 <div style="color: #60a5fa;">Proteína: <span id="total-p">0</span>g</div>
                 <div style="color: #fbbf24;">Carboidrato: <span id="total-c">0</span>g</div>
                 <div style="color: #f87171;">Gordura: <span id="total-g">0</span>g</div>
+                <div style="color: #38bdf8;">💧 Meta Água: <span id="meta-agua">0</span>ml</div>
             </div>
         </div>
 
@@ -94,7 +96,7 @@
                 <option value="coxa_sobrecoxa">Coxa e Sobrecoxa (100g)</option>
                 <option value="peito_de_frango">Peito de Frango (cozido ou grelhado) (100g)</option>
                 <option value="carne_de_porco">Pernil Carne de Porco (100g)</option>
-                <option value="bebida_alcoolica">Bebida ALcoólica (100g)</option>
+                <option value="bebida_alcoolica">Bebida Alcoólica (100g)</option>
                 <option value="feijao">Feijão cozido (100g)</option>
                 <option value="oleo_de_coco">Óleo de coco (100g)</option>
                 <option value="figado_bovino">Figado Bovino (100g)</option>
@@ -163,7 +165,7 @@
             "coxa_sobrecoxa": { nome: "Coxa e Sobrecoxa", p: 17, g: 14, c: 0 },
             "peito_de_frango": { nome: "Peito de Frango (cozido ou grelhado)", p: 29, g: 3, c: 0 },
             "carne_de_porco": { nome: "Pernil Carne de Porco", p: 29, g: 13.9, c: 0 },
-            "bebida_alcoolica": { nome: "Bebida ALcoólica", p: 0.5, g: 0, c: 3.8 },
+            "bebida_alcoolica": { nome: "Bebida Alcoólica", p: 0.5, g: 0, c: 3.8 },
             "feijao": { nome: "Feijão cozido", p: 9, g: 0.7, c: 26 },
             "oleo_de_coco": { nome: "Óleo de coco (1 colher de chá = 5g)", p: 0, g: 106.4, c: 0 },
             "figado_bovino": { nome: "Figado Bovino", p: 26.5, g: 4.7, c: 5.2 },
@@ -179,7 +181,7 @@
             "pao_fatia_forma": { nome: "Pão Integral", p: 3, g: 2, c: 13 },
             "acai": { nome: "Açaí", p: 0.8, g: 3.9, c: 6 },
             "iogurte_natural": { nome: "Iogurte Natural", p: 4.1, g: 3.9, c: 5.9 },
-            "amendoin_torrado": { nome: "Amendoim Torrado", P: 26, g: 49, c: 9 },
+            "amendoin_torrado": { nome: "Amendoim Torrado", p: 26, g: 49, c: 9 },
             "maca": { nome: "Maçã", p: 0.29, g: 0.17, c: 15.7 },
             "agua": { nome: "Água", p: 0, g: 0, c: 0 }
         };
@@ -199,8 +201,13 @@
                     document.getElementById('kcal-meta').innerText = d.metaDiaria || 2000;
                     document.getElementById('val-idade').innerText = d.idade || 0;
                     document.getElementById('val-altura').innerText = d.altura || 0;
-                    document.getElementById('val-peso').innerText = (d.peso || 0).toFixed(1);
+                    
+                    const pesoAtual = d.peso || 0;
+                    document.getElementById('val-peso').innerText = pesoAtual.toFixed(1);
                     document.getElementById('val-bf').innerText = (d.bf || 0) + "%";
+
+                    // ALTERAÇÃO AQUI: Calcula e atualiza a meta de água
+                    document.getElementById('meta-agua').innerText = (pesoAtual * 40).toLocaleString('pt-BR');
                 }
             });
 
@@ -310,17 +317,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
