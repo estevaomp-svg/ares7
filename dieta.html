@@ -78,10 +78,10 @@
             <div class="progress-bg"><div id="kcal-bar" class="progress-fill"></div></div>
             
             <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 8px; margin-top: 15px; font-size: 13px; font-weight: bold;">
-                <div style="color: #60a5fa;">Proteína: <span id="total-p">0</span>g</div>
+                <div style="color: #60a5fa;">Proteína: <span id="total-p">0</span> / <span id="meta-p">0</span>g</div>
                 <div style="color: #fbbf24;">Carboidrato: <span id="total-c">0</span>g</div>
                 <div style="color: #f87171;">Gordura: <span id="total-g">0</span>g</div>
-                <div style="color: #38bdf8;">💧 Meta Água: <span id="meta-agua">0</span>ml</div>
+                <div style="color: #38bdf8;">💧 Água: <span id="total-a">0</span> / <span id="meta-agua">0</span>ml</div>
             </div>
         </div>
 
@@ -115,7 +115,6 @@
                 <option value="amendoin_torrado">Amendoim Torrado (100g)</option>
                 <option value="maca">Maçã (100g)</option>
                 <option value="agua">Água (100g)</option>
-                
             </select>
             <input type="number" id="food-qtd" placeholder="Qtd" value="100">
         </div>
@@ -156,34 +155,35 @@
         let jogador = "", myChart = null;
         const dataKey = new Date().toISOString().split('T')[0];
 
+        // Adicionado 'a: 0' na maioria e 'a: 100' na Água
         const bancoAlimentos = {
-            "carne_bovina": { nome: "Carne Bovina", p: 23, g: 21, c: 0 },
-            "banana_prata": { nome: "Banana Prata", p: 1.3, g: 0.4, c: 22.8 },
-            "tapioca": { nome: "Tapioca Hidratada", p: 0, g: 0, c: 16.5 },
-            "whey_protein": { nome: "Whey Nutrata", p: 50, g: 5, c: 32.5 },
-            "coracao_bovino": { nome: "Coração Bovino", p: 17, g: 2.5, c: 0 },
-            "coxa_sobrecoxa": { nome: "Coxa e Sobrecoxa", p: 17, g: 14, c: 0 },
-            "peito_de_frango": { nome: "Peito de Frango (cozido ou grelhado)", p: 29, g: 3, c: 0 },
-            "carne_de_porco": { nome: "Pernil Carne de Porco", p: 29, g: 13.9, c: 0 },
-            "bebida_alcoolica": { nome: "Bebida Alcoólica", p: 0.5, g: 0, c: 3.8 },
-            "feijao": { nome: "Feijão cozido", p: 9, g: 0.7, c: 26 },
-            "oleo_de_coco": { nome: "Óleo de coco (1 colher de chá = 5g)", p: 0, g: 106.4, c: 0 },
-            "figado_bovino": { nome: "Figado Bovino", p: 26.5, g: 4.7, c: 5.2 },
-            "abacate": { nome: "Abacate", p: 2, g: 15.3, c: 16 },
-            "leite_integral": { nome: "Leite integral", p: 3, g: 3, c: 5 },
-            "pedaço_de_bolo": { nome: "Pedaço padrão de Bolo", p: 5.6, g: 27.2, c: 52.8 },
-            "refrigerante": { nome: "Refrigerante", p: 0, g: 0, c: 21 },
-            "ovo_cozido": { nome: "Ovo cozido (1 ovo = 50g)", p: 11.5, g: 10.4, c: 1 },
-            "requeijao": { nome: "Requeijão Light", p: 11, g: 7, c: 0 },
-            "creme_de_ricota": { nome: "Creme de Ricota", p: 13, g: 13, c: 0 },
-            "manteiga": { nome: "Manteiga", p: 0, g: 82, c: 0 },
-            "formula": { nome: "Leite Fórmula (0-12)", p: 11, g: 26, c: 55 },
-            "pao_fatia_forma": { nome: "Pão Integral", p: 3, g: 2, c: 13 },
-            "acai": { nome: "Açaí", p: 0.8, g: 3.9, c: 6 },
-            "iogurte_natural": { nome: "Iogurte Natural", p: 4.1, g: 3.9, c: 5.9 },
-            "amendoin_torrado": { nome: "Amendoim Torrado", p: 26, g: 49, c: 9 },
-            "maca": { nome: "Maçã", p: 0.29, g: 0.17, c: 15.7 },
-            "agua": { nome: "Água", p: 0, g: 0, c: 0 }
+            "carne_bovina": { nome: "Carne Bovina", p: 23, g: 21, c: 0, a: 0 },
+            "banana_prata": { nome: "Banana Prata", p: 1.3, g: 0.4, c: 22.8, a: 0 },
+            "tapioca": { nome: "Tapioca Hidratada", p: 0, g: 0, c: 16.5, a: 0 },
+            "whey_protein": { nome: "Whey Nutrata", p: 50, g: 5, c: 32.5, a: 0 },
+            "coracao_bovino": { nome: "Coração Bovino", p: 17, g: 2.5, c: 0, a: 0 },
+            "coxa_sobrecoxa": { nome: "Coxa e Sobrecoxa", p: 17, g: 14, c: 0, a: 0 },
+            "peito_de_frango": { nome: "Peito de Frango (cozido ou grelhado)", p: 29, g: 3, c: 0, a: 0 },
+            "carne_de_porco": { nome: "Pernil Carne de Porco", p: 29, g: 13.9, c: 0, a: 0 },
+            "bebida_alcoolica": { nome: "Bebida Alcoólica", p: 0.5, g: 0, c: 3.8, a: 0 },
+            "feijao": { nome: "Feijão cozido", p: 9, g: 0.7, c: 26, a: 0 },
+            "oleo_de_coco": { nome: "Óleo de coco (1 colher de chá = 5g)", p: 0, g: 106.4, c: 0, a: 0 },
+            "figado_bovino": { nome: "Figado Bovino", p: 26.5, g: 4.7, c: 5.2, a: 0 },
+            "abacate": { nome: "Abacate", p: 2, g: 15.3, c: 16, a: 0 },
+            "leite_integral": { nome: "Leite integral", p: 3, g: 3, c: 5, a: 0 },
+            "pedaço_de_bolo": { nome: "Pedaço padrão de Bolo", p: 5.6, g: 27.2, c: 52.8, a: 0 },
+            "refrigerante": { nome: "Refrigerante", p: 0, g: 0, c: 21, a: 0 },
+            "ovo_cozido": { nome: "Ovo cozido (1 ovo = 50g)", p: 11.5, g: 10.4, c: 1, a: 0 },
+            "requeijao": { nome: "Requeijão Light", p: 11, g: 7, c: 0, a: 0 },
+            "creme_de_ricota": { nome: "Creme de Ricota", p: 13, g: 13, c: 0, a: 0 },
+            "manteiga": { nome: "Manteiga", p: 0, g: 82, c: 0, a: 0 },
+            "formula": { nome: "Leite Fórmula (0-12)", p: 11, g: 26, c: 55, a: 0 },
+            "pao_fatia_forma": { nome: "Pão Integral", p: 3, g: 2, c: 13, a: 0 },
+            "acai": { nome: "Açaí", p: 0.8, g: 3.9, c: 6, a: 0 },
+            "iogurte_natural": { nome: "Iogurte Natural", p: 4.1, g: 3.9, c: 5.9, a: 0 },
+            "amendoin_torrado": { nome: "Amendoim Torrado", p: 26, g: 49, c: 9, a: 0 },
+            "maca": { nome: "Maçã", p: 0.29, g: 0.17, c: 15.7, a: 0 },
+            "agua": { nome: "Água", p: 0, g: 0, c: 0, a: 100 }
         };
 
         auth.onAuthStateChanged(u => {
@@ -194,7 +194,6 @@
         });
 
         function carregarDados() {
-            // Carrega Dados Atuais
             db.ref('rpg_data/' + jogador + '/bio').on('value', s => {
                 const d = s.val();
                 if(d) {
@@ -206,12 +205,12 @@
                     document.getElementById('val-peso').innerText = pesoAtual.toFixed(1);
                     document.getElementById('val-bf').innerText = (d.bf || 0) + "%";
 
-                    // ALTERAÇÃO AQUI: Calcula e atualiza a meta de água
-                    document.getElementById('meta-agua').innerText = (pesoAtual * 40).toLocaleString('pt-BR');
+                    // Metas de Água e Proteína baseadas no peso
+                    document.getElementById('meta-agua').innerText = (pesoAtual * 40).toFixed(0);
+                    document.getElementById('meta-p').innerText = (pesoAtual * 1.5).toFixed(1);
                 }
             });
 
-            // Carrega Histórico para o Gráfico
             db.ref('rpg_data/' + jogador + '/historico').on('value', s => {
                 const hist = s.val();
                 if(hist) renderizarGrafico(hist);
@@ -229,7 +228,7 @@
             myChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels.map(l => l.split('-').reverse().slice(0,2).join('/')), // Formato DD/MM
+                    labels: labels.map(l => l.split('-').reverse().slice(0,2).join('/')),
                     datasets: [{
                         label: 'Peso (kg)',
                         data: weights,
@@ -258,21 +257,22 @@
             if(!key || !qtd) return;
             const base = bancoAlimentos[key];
             const fator = qtd / 100;
-            const p = base.p * fator, c = base.c * fator, g = base.g * fator;
+            // Cálculo da água (a) incluído
+            const p = base.p * fator, c = base.c * fator, g = base.g * fator, a = (base.a || 0) * fator;
             const cal = Math.round((p * 4) + (c * 4) + (g * 9));
-            db.ref('rpg_data/' + jogador + '/dieta/' + dataKey).push({ nome: `${base.nome} (${qtd}g)`, cal, p, c, g });
+            db.ref('rpg_data/' + jogador + '/dieta/' + dataKey).push({ nome: `${base.nome} (${qtd}g)`, cal, p, c, g, a });
         }
 
         function renderizarDieta(dados) {
             const lista = document.getElementById('lista-alimentos');
             lista.innerHTML = "";
-            let tCal = 0, tP = 0, tC = 0, tG = 0;
+            let tCal = 0, tP = 0, tC = 0, tG = 0, tA = 0; // Inicia total de água
             if(dados) {
                 Object.keys(dados).forEach(k => {
                     const i = dados[k];
-                    tCal += i.cal; tP += (i.p||0); tC += (i.c||0); tG += (i.g||0);
+                    tCal += i.cal; tP += (i.p||0); tC += (i.c||0); tG += (i.g||0); tA += (i.a||0); // Soma a água
                     lista.innerHTML += `<div class="food-item">
-                        <div><b>${i.nome}</b><br><small>${i.cal}kcal | P:${i.p?.toFixed(1)} C:${i.c?.toFixed(1)} G:${i.g?.toFixed(1)}</small></div>
+                        <div><b>${i.nome}</b><br><small>${i.cal}kcal | P:${(i.p||0).toFixed(1)} C:${(i.c||0).toFixed(1)} G:${(i.g||0).toFixed(1)} A:${(i.a||0).toFixed(0)}ml</small></div>
                         <button class="btn-mini-del" onclick="remover('${k}')">✕</button>
                     </div>`;
                 });
@@ -281,6 +281,8 @@
             document.getElementById('total-p').innerText = tP.toFixed(1);
             document.getElementById('total-c').innerText = tC.toFixed(1);
             document.getElementById('total-g').innerText = tG.toFixed(1);
+            document.getElementById('total-a').innerText = tA.toFixed(0); // Atualiza na tela
+            
             const meta = parseInt(document.getElementById('kcal-meta').innerText);
             document.getElementById('kcal-bar').style.width = Math.min((tCal/meta)*100, 100) + "%";
         }
@@ -306,10 +308,7 @@
 
             const dadosBio = { peso, altura, idade, sexo, fator, objetivo: obj, metaDiaria: metaFinal, bf: bf ? bf.toFixed(1) : 0 };
             
-            // Salva dados Atuais
             db.ref('rpg_data/' + jogador + '/bio').update(dadosBio);
-            
-            // Registra no Histórico para o Gráfico
             db.ref('rpg_data/' + jogador + '/historico/' + dataKey).set({ peso, bf: bf ? bf.toFixed(1) : 0 });
 
             Swal.fire("Sucesso!", "Dados salvos e evolução registrada!", "success");
