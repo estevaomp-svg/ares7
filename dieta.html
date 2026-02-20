@@ -201,6 +201,7 @@
         });
 
         function carregarDados() {
+            document.getElementById('nome-jogador-display').innerText = jogador.replace(/_/g, " ");
             db.ref('rpg_data/' + jogador + '/bio').on('value', s => {
                 const d = s.val();
                 if(d) {
@@ -305,4 +306,5 @@
     </script>
 </body>
 </html>
+
 
