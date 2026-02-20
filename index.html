@@ -323,9 +323,11 @@
                 <div style="display: flex; align-items: center; gap: 10px;">
     <div class="lvl-badge">LEVEL <span id="lvl">1</span></div>
     
-    <div class="online-counter-box" onclick="abrirRankingHonra()" style="cursor: pointer;">
-    <span id="global-online-count">13</span>
-    <span style="margin-left: 5px; font-weight: normal; font-size: 0.9em;">online</span>
+    <div class="online-counter-box" 
+     onclick="event.stopPropagation(); abrirRankingHonra();" 
+     style="cursor: pointer; position: relative; z-index: 9999;">
+    <span id="global-online-count" style="pointer-events: none;">13</span>
+    <span style="margin-left: 5px; font-weight: normal; font-size: 0.9em; pointer-events: none;">online</span>
 </div>
               </div>
 
@@ -1021,6 +1023,7 @@ aplicarBloqueioDeRecuo();
     </script>
 </body>
 </html>
+
 
 
 
