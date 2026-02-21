@@ -47,9 +47,8 @@
         .progress-fill { background: linear-gradient(90deg, #22c55e, #86efac); height: 100%; width: 0%; transition: width 0.5s ease; }
         .kcal-text { font-size: 22px; font-weight: 900; margin: 10px 0; }
         
-        /* Destaques de cores para os números consumidos */
-        .highlight-p { color: #a3e635; font-size: 1.1em; } /* Verde Lima */
-        .highlight-a { color: #22d3ee; font-size: 1.1em; } /* Ciano Turquesa */
+        .highlight-p { color: #a3e635; font-size: 1.1em; } 
+        .highlight-a { color: #22d3ee; font-size: 1.1em; } 
 
         .food-item {
             display: flex; justify-content: space-between; align-items: center;
@@ -70,10 +69,10 @@
 
     <div class="card" style="border-top: 3px solid var(--pink);">
         <div class="status-header">
-            <div class="status-item"><span id="st-idade">--</span><span>Idade</span><b id="val-idade">0</b></div>
-            <div class="status-item"><span id="st-altura">--</span><span>Altura</span><b id="val-altura">0</b></div>
-            <div class="status-item"><span id="st-peso">--</span><span>Peso</span><b id="val-peso">0.0</b></div>
-            <div class="status-item"><span id="st-bf">--</span><span>BF%</span><b id="val-bf">0%</b></div>
+            <div class="status-item"><span>Idade</span><b id="val-idade">0</b></div>
+            <div class="status-item"><span>Altura</span><b id="val-altura">0</b></div>
+            <div class="status-item"><span>Peso</span><b id="val-peso">0.0</b></div>
+            <div class="status-item"><span>BF%</span><b id="val-bf">0%</b></div>
         </div>
         <h4 style="margin: 0 0 10px 0; font-size: 0.8rem; color: #94a3b8; text-align: center;">CURVA DE EVOLUÇÃO (PESO)</h4>
         <canvas id="evolutionChart" style="max-height: 150px;"></canvas>
@@ -87,8 +86,8 @@
             
             <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 8px; margin-top: 15px; font-size: 13px; font-weight: bold;">
                 <div style="color: #94a3b8;">Proteína: <span id="total-p" class="highlight-p">0</span> / <span id="meta-p">0</span>g</div>
-                <div style="color: #94a3b8;">Carboidrato: <span id="total-c" style="color:#fbbf24">0</span>g</div>
-                <div style="color: #94a3b8;">Gordura: <span id="total-g" style="color:#f87171">0</span>g</div>
+                <div style="color: #94a3b8;">Carb: <span id="total-c" style="color:#fbbf24">0</span>g</div>
+                <div style="color: #94a3b8;">Gord: <span id="total-g" style="color:#f87171">0</span>g</div>
                 <div style="color: #94a3b8;">💧 Água: <span id="total-a" class="highlight-a">0</span> / <span id="meta-agua">0</span>ml</div>
             </div>
         </div>
@@ -96,36 +95,7 @@
         <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px;">
             <select id="food-select">
                 <option value="">Escolha um alimento...</option>
-                <option value="carne_bovina">Carne Bovina (100g)</option>
-                <option value="banana_prata">Banana Prata (100g)</option>
-                <option value="tapioca">Tapioca Hidratada (100g)</option>
-                <option value="whey_protein">Whey Nutrata (100g)</option>
-                <option value="coracao_bovino">Coração Bovino (100g)</option>
-                <option value="coxa_sobrecoxa">Coxa e Sobrecoxa (100g)</option>
-                <option value="peito_de_frango">Peito de Frango (cozido ou grelhado) (100g)</option>
-                <option value="carne_de_porco">Pernil Carne de Porco (100g)</option>
-                <option value="bebida_alcoolica">Bebida Alcoólica (100g)</option>
-                <option value="feijao">Feijão cozido (100g)</option>
-                <option value="oleo_de_coco">Óleo de coco (100g)</option>
-                <option value="figado_bovino">Figado Bovino (100g)</option>
-                <option value="abacate">Abacate (100g)</option>
-                <option value="leite_integral">Leite integral (100g)</option>
-                <option value="pedaço_de_bolo">Pedaço padrão de Bolo (100g)</option>
-                <option value="refrigerante">Refrigerante (100g)</option>
-                <option value="ovo_cozido">Ovo cozido (100g)</option>
-                <option value="requeijao">Requeijão Light (100g)</option>
-                <option value="creme_de_ricota">Creme de Ricota (100g)</option>
-                <option value="manteiga">Manteiga (100g)</option>
-                <option value="formula">Leite Fórmula (100g)</option>
-                <option value="pao_fatia_forma">Pão Integral (100g)</option>
-                <option value="acai">Açaí (100g)</option>
-                <option value="iogurte_natural">Iogurte Natural (100g)</option>
-                <option value="amendoin_torrado">Amendoim Torrado (100g)</option>
-                <option value="maca">Maçã (100g)</option>
-                <option value="agua">Água (100g)</option>
-                <option value="xup_leite">Xup Leite Oliveira (100g)</option>
-                <option value="suco">Suco de Laranja (100g)</option>
-            </select>
+                </select>
             <input type="number" id="food-qtd" placeholder="Qtd" value="100">
         </div>
         <button onclick="adicionarAlimento()" style="background: var(--success);">➕ ADICIONAR AO PRATO</button>
@@ -163,8 +133,8 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database(), auth = firebase.auth();
         let jogador = "", myChart = null;
-        const dataKey = new Date().toLocaleDateString('en-CA');
 
+        // BANCO DE ALIMENTOS COMPLETO (DO SEU ARQUIVO)
         const bancoAlimentos = {
             "carne_bovina": { nome: "Carne Bovina", p: 23, g: 21, c: 0, a: 0 },
             "banana_prata": { nome: "Banana Prata", p: 1.3, g: 0.4, c: 22.8, a: 0 },
@@ -172,7 +142,7 @@
             "whey_protein": { nome: "Whey Nutrata", p: 50, g: 5, c: 32.5, a: 0 },
             "coracao_bovino": { nome: "Coração Bovino", p: 17, g: 2.5, c: 0, a: 0 },
             "coxa_sobrecoxa": { nome: "Coxa e Sobrecoxa", p: 17, g: 14, c: 0, a: 0 },
-            "peito_de_frango": { nome: "Peito de Frango (cozido ou grelhado)", p: 29, g: 3, c: 0, a: 0 },
+            "peito_de_frango": { nome: "Peito de Frango", p: 29, g: 3, c: 0, a: 0 },
             "carne_de_porco": { nome: "Pernil Carne de Porco", p: 29, g: 13.9, c: 0, a: 0 },
             "bebida_alcoolica": { nome: "Bebida Alcoólica", p: 0.5, g: 0, c: 3.8, a: 0 },
             "feijao": { nome: "Feijão cozido", p: 9, g: 0.7, c: 26, a: 0 },
@@ -197,6 +167,15 @@
             "suco": { nome: "Suco de Laranja", p: 0.5, g: 0, c: 8.9, a: 0 }
         };
 
+        // Popular o select automaticamente
+        const sel = document.getElementById('food-select');
+        Object.keys(bancoAlimentos).forEach(key => {
+            let opt = document.createElement('option');
+            opt.value = key;
+            opt.innerText = bancoAlimentos[key].nome + " (100g)";
+            sel.appendChild(opt);
+        });
+
         auth.onAuthStateChanged(u => {
             if(u) {
                 jogador = u.email.split('@')[0].replace(/[.#$[\]]/g, "_");
@@ -205,7 +184,12 @@
         });
 
         function carregarDados() {
-            document.getElementById('nome-jogador-display').innerText = jogador.replace(/_/g, " ");
+            const dataHoje = new Date().toLocaleDateString('en-CA');
+            
+            // FORMATAÇÃO DO NOME NO TOPO
+            const nomeBonito = jogador.charAt(0).toUpperCase() + jogador.slice(1).replace(/_/g, " ");
+            document.getElementById('nome-jogador-display').innerText = nomeBonito;
+
             db.ref('rpg_data/' + jogador + '/bio').on('value', s => {
                 const d = s.val();
                 if(d) {
@@ -225,7 +209,7 @@
                 if(hist) renderizarGrafico(hist);
             });
 
-            db.ref('rpg_data/' + jogador + '/dieta/' + dataKey).on('value', s => renderizarDieta(s.val()));
+            db.ref('rpg_data/' + jogador + '/dieta/' + dataHoje).on('value', s => renderizarDieta(s.val()));
         }
 
         function renderizarGrafico(historico) {
@@ -242,10 +226,7 @@
                         data: weights,
                         borderColor: '#ec4899',
                         backgroundColor: 'rgba(236, 72, 153, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        borderWidth: 2,
-                        pointRadius: 3
+                        fill: true, tension: 0.4, borderWidth: 2, pointRadius: 3
                     }]
                 },
                 options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', font: { size: 10 } } }, x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 } } } } }
@@ -260,7 +241,8 @@
             const fator = qtd / 100;
             const p = base.p * fator, c = base.c * fator, g = base.g * fator, a = (base.a || 0) * fator;
             const cal = Math.round((p * 4) + (c * 4) + (g * 9));
-            db.ref('rpg_data/' + jogador + '/dieta/' + dataKey).push({ nome: `${base.nome} (${qtd}g)`, cal, p, c, g, a });
+            const dataHoje = new Date().toLocaleDateString('en-CA');
+            db.ref('rpg_data/' + jogador + '/dieta/' + dataHoje).push({ nome: `${base.nome} (${qtd}g)`, cal, p, c, g, a });
         }
 
         function renderizarDieta(dados) {
@@ -286,7 +268,10 @@
             document.getElementById('kcal-bar').style.width = Math.min((tCal/meta)*100, 100) + "%";
         }
 
-        function remover(key) { db.ref('rpg_data/' + jogador + '/dieta/' + dataKey + '/' + key).remove(); }
+        function remover(key) { 
+            const dataHoje = new Date().toLocaleDateString('en-CA');
+            db.ref('rpg_data/' + jogador + '/dieta/' + dataHoje + '/' + key).remove(); 
+        }
 
         function calcularSalvarBio() {
             const peso = parseFloat(document.getElementById('calc-peso').value);
@@ -302,15 +287,12 @@
                 if (sexo === 'm') bf = 495 / (1.0324 - 0.19077 * Math.log10(cintura - pescoco) + 0.15456 * Math.log10(altura)) - 450;
                 else if (quadril) bf = 495 / (1.29579 - 0.35004 * Math.log10(cintura + quadril - pescoco) + 0.22100 * Math.log10(altura)) - 450;
             }
+            const dataHoje = new Date().toLocaleDateString('en-CA');
             const dadosBio = { peso, altura, idade, sexo, fator, objetivo: obj, metaDiaria: metaFinal, bf: bf ? bf.toFixed(1) : 0 };
             db.ref('rpg_data/' + jogador + '/bio').update(dadosBio);
-            db.ref('rpg_data/' + jogador + '/historico/' + dataKey).set({ peso, bf: bf ? bf.toFixed(1) : 0 });
+            db.ref('rpg_data/' + jogador + '/historico/' + dataHoje).set({ peso, bf: bf ? bf.toFixed(1) : 0 });
             Swal.fire("Sucesso!", "Dados salvos e evolução registrada!", "success");
         }
     </script>
 </body>
 </html>
-
-
-
-
