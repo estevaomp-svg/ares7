@@ -176,7 +176,6 @@
 
         auth.onAuthStateChanged(u => {
             if(u) {
-                // Aqui só guardamos o ID do jogador, sem escrever no HTML ainda
                 jogador = u.email.split('@')[0].replace(/[.#$[\]]/g, "_");
                 carregarDados();
             } else { window.location.href = './'; }
@@ -193,7 +192,6 @@
                     if(d.nome_rpg) {
                         document.getElementById('nome-jogador-display').innerText = d.nome_rpg;
                     } else {
-                        // CASO NÃO TENHA, MOSTRA O NOME LIMPO DO EMAIL
                         document.getElementById('nome-jogador-display').innerText = jogador.split('_')[0];
                     }
 
@@ -295,7 +293,7 @@
             const dataHoje = new Date().toLocaleDateString('en-CA');
             const dadosBio = { peso, altura, idade, sexo, fator, objetivo: obj, metaDiaria: metaFinal, bf: bf ? bf.toFixed(1) : 0 };
             
-            // USA UPDATE PARA NÃO APAGAR O NOME RPG QUE JÁ EXISTE
+            // USA UPDATE PARA NÃO APAGAR O NOME RPG QUE JÁ EXISTE NO BANCO
             db.ref('rpg_data/' + jogador + '/bio').update(dadosBio);
             db.ref('rpg_data/' + jogador + '/historico/' + dataHoje).set({ peso, bf: bf ? bf.toFixed(1) : 0 });
             Swal.fire("Sucesso!", "Dados atualizados!", "success");
