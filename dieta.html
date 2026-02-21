@@ -64,7 +64,7 @@
 
     <div style="text-align: center; margin-top: 10px; margin-bottom: 20px;">
         <span style="color: #94a3b8; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 3px; display: block;">Guerreiro(a)</span>
-        <h2 id="nome-jogador-display" style="margin: 0; color: var(--pink); text-shadow: 0 0 10px rgba(236, 72, 153, 0.4); font-size: 1.8rem;">Carregando...</h2>
+        <h2 id="nome-jogador-display" style="margin: 0; color: var(--pink); text-shadow: 0 0 10px rgba(236, 72, 153, 0.4); font-size: 1.8rem;">---</h2>
     </div>
 
     <div class="card" style="border-top: 3px solid var(--pink);">
@@ -184,16 +184,12 @@
         function carregarDados() {
             const dataHoje = new Date().toLocaleDateString('en-CA');
             
-            // BUSCA O NOME NO BANCO (Exatamente igual à Evolução Física)
-            db.ref('rpg_data/' + jogador + '/bio').on('value', s => {
-                const d = s.val();
+            // ESTA É A LÓGICA QUE FUNCIONA NA EVOLUÇÃO FÍSICA
+            db.ref('rpg_data/' + jogador + '/bio').on('value', snap => {
+                const d = snap.val();
                 if(d) {
-                    // SE TIVER O NOME RPG SALVO PELA INDEX, MOSTRA ELE
-                    if(d.nome_rpg) {
-                        document.getElementById('nome-jogador-display').innerText = d.nome_rpg;
-                    } else {
-                        document.getElementById('nome-jogador-display').innerText = jogador.split('_')[0];
-                    }
+                    // SE TIVER NOME_RPG, MOSTRA. SE NÃO, MOSTRA O ID.
+                    document.getElementById('nome-jogador-display').innerText = d.nome_rpg || jogador;
 
                     document.getElementById('kcal-meta').innerText = d.metaDiaria || 2000;
                     document.getElementById('val-idade').innerText = d.idade || 0;
@@ -293,10 +289,10 @@
             const dataHoje = new Date().toLocaleDateString('en-CA');
             const dadosBio = { peso, altura, idade, sexo, fator, objetivo: obj, metaDiaria: metaFinal, bf: bf ? bf.toFixed(1) : 0 };
             
-            // USA UPDATE PARA NÃO APAGAR O NOME RPG QUE JÁ EXISTE NO BANCO
+            // USA UPDATE PARA NÃO APAGAR O NOME_RPG QUE JÁ ESTÁ LÁ
             db.ref('rpg_data/' + jogador + '/bio').update(dadosBio);
             db.ref('rpg_data/' + jogador + '/historico/' + dataHoje).set({ peso, bf: bf ? bf.toFixed(1) : 0 });
-            Swal.fire("Sucesso!", "Dados atualizados!", "success");
+            Swal.fire("Sucesso!", "Dados salvos!", "success");
         }
     </script>
 </body>
