@@ -181,6 +181,7 @@
             } else { window.location.href = './'; }
         });
 
+        // Função de data para fuso horário local
         function getHoje() {
             return new Date().toLocaleDateString('en-CA');
         }
@@ -188,14 +189,15 @@
         function carregarDados() {
             const dataHoje = getHoje();
             
-            // BUSCA NOME DO BANCO (Lógica copiada da index/evolucao)
+            // LÓGICA DE BUSCA DE NOME (IDÊNTICA À EVOLUÇÃO FÍSICA)
             db.ref('rpg_data/' + jogador + '/bio').on('value', s => {
                 const d = s.val();
                 if(d) {
-                    // Atualiza o nome no topo
+                    // Preenche o nome escolhido na Index
                     if(d.nome_rpg) {
                         document.getElementById('nome-jogador-display').innerText = d.nome_rpg;
                     } else {
+                        // Reserva caso não tenha nome (limpa o email)
                         document.getElementById('nome-jogador-display').innerText = jogador.split('_')[0];
                     }
 
@@ -284,6 +286,7 @@
             const sexo = document.getElementById('calc-sexo').value, fator = parseFloat(document.getElementById('calc-fator').value), obj = parseInt(document.getElementById('calc-obj').value);
             const pescoco = parseFloat(document.getElementById('calc-pescoco').value), cintura = parseFloat(document.getElementById('calc-cintura').value), quadril = parseFloat(document.getElementById('calc-quadril').value);
             if (!peso || !altura || !idade) return Swal.fire("Atenção", "Preencha os campos básicos!", "warning");
+            
             let tmb = (sexo === 'm') ? (10 * peso) + (6.25 * altura) - (5 * idade) + 5 : (10 * peso) + (6.25 * altura) - (5 * idade) - 161;
             let metaFinal = Math.round((tmb * fator) + obj);
             let bf = null;
@@ -292,10 +295,12 @@
                 else if (quadril) bf = 495 / (1.29579 - 0.35004 * Math.log10(cintura + quadril - pescoco) + 0.22100 * Math.log10(altura)) - 450;
             }
             const dataHoje = getHoje();
+            
+            // ATENÇÃO: Aqui usamos UPDATE para não apagar o nome_rpg que já existe lá!
             const dadosBio = { peso, altura, idade, sexo, fator, objetivo: obj, metaDiaria: metaFinal, bf: bf ? bf.toFixed(1) : 0 };
             db.ref('rpg_data/' + jogador + '/bio').update(dadosBio);
             db.ref('rpg_data/' + jogador + '/historico/' + dataHoje).set({ peso, bf: bf ? bf.toFixed(1) : 0 });
-            Swal.fire("Sucesso!", "Dados salvos!", "success");
+            Swal.fire("Sucesso!", "Dados atualizados!", "success");
         }
     </script>
 </body>
