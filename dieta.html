@@ -163,7 +163,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database(), auth = firebase.auth();
         let jogador = "", myChart = null;
-        const dataKey = new Date().toISOString().split('T')[0];
+        const dataKey = new Date().toLocaleDateString('en-CA');
 
         const bancoAlimentos = {
             "carne_bovina": { nome: "Carne Bovina", p: 23, g: 21, c: 0, a: 0 },
@@ -310,6 +310,7 @@
     </script>
 </body>
 </html>
+
 
 
 
