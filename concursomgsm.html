@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treino MGS - Nível Médio</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root { --primary: #3b82f6; --success: #22c55e; --danger: #ef4444; --bg: #0f172a; --card: #1e293b; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #f8fafc; padding: 15px; margin: 0; }
+        .container { max-width: 600px; margin: auto; }
+        .stats-bar { background: var(--card); padding: 15px; border-radius: 12px; display: flex; justify-content: space-around; margin-bottom: 20px; border: 1px solid var(--primary); }
+        .stat-item { text-align: center; }
+        .stat-value { display: block; font-size: 1.2rem; font-weight: bold; color: var(--primary); }
+        .questao { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid rgba(51, 65, 85, 0.5); margin-bottom: 20px; }
+        .badge { background: var(--primary); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; margin-bottom: 10px; display: inline-block; }
+        .opcao { display: block; width: 100%; padding: 14px; margin: 10px 0; background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; color: #cbd5e1; cursor: pointer; text-align: left; transition: 0.2s; }
+        .opcao:hover { background: var(--primary); color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="stats-bar">
+        <div class="stat-item"><span class="stat-value" id="acertos-cont">0</span>Acertos</div>
+        <div class="stat-item"><span class="stat-value" id="total-cont">0</span>Respondidas</div>
+    </div>
+    <div id="quiz"></div>
+</div>
+
+<script>
+    let acertos = 0;
+    let total = 0;
+
+    const questoes = [
+        // --- RACIOCÍNIO LÓGICO & MATEMÁTICA ---
+        { id: 1, cat: "LÓGICA", q: "Se o conjunto A tem 4 elementos, quantos subconjuntos ele possui?", opts: ["8", "16", "32"], corr: 1, exp: "Fórmula: 2^n. Como n=4, temos 2x2x2x2 = 16." },
+        { id: 2, cat: "LÓGICA", q: "Qual o próximo número da sequência: 2, 4, 8, 16, ...?", opts: ["20", "24", "32"], corr: 2, exp: "A sequência dobra a cada passo (PG de razão 2)." },
+        { id: 3, cat: "MATEMÁTICA", q: "Um desconto de 20% sobre R$ 150,00 resulta em qual valor?", opts: ["R$ 120,00", "R$ 130,00", "R$ 110,00"], corr: 0, exp: "10% de 150 é 15. 20% é 30. 150 - 30 = 120." },
+        { id: 4, cat: "LÓGICA", q: "Se 'Todo A é B' e 'Todo B é C', podemos afirmar que:", opts: ["Todo C é A", "Todo A é C", "Nenhum B é A"], corr: 1, exp: "Regra do silogismo: se A está dentro de B e B dentro de C, A está dentro de C." },
+        { id: 5, cat: "MATEMÁTICA", q: "Quanto é 3/4 de 200?", opts: ["100", "150", "175"], corr: 1, exp: "200 dividido por 4 é 50. 50 vezes 3 é 150." },
+        { id: 6, cat: "LÓGICA", q: "A negação da frase 'O céu é azul e o mar é verde' é:", opts: ["O céu não é azul e o mar não é verde", "O céu não é azul ou o mar não é verde", "O céu é verde e o mar é azul"], corr: 1, exp: "Lei de De Morgan: Nega o primeiro, troca o 'E' pelo 'OU' e nega o segundo." },
+        { id: 7, cat: "MATEMÁTICA", q: "Um carro percorre 300km em 4 horas. Qual sua velocidade média?", opts: ["75 km/h", "80 km/h", "70 km/h"], corr: 0, exp: "300 / 4 = 75 km/h." },
+        { id: 8, cat: "LÓGICA", q: "Se o amanhã de ontem é terça, que dia é hoje?", opts: ["Segunda", "Terça", "Quarta"], corr: 1, exp: "O amanhã de ontem é o dia de hoje. Logo, hoje é terça." },
+        { id: 9, cat: "MATEMÁTICA", q: "Qual a raiz quadrada de 144?", opts: ["10", "12", "14"], corr: 1, exp: "12 x 12 = 144." },
+        { id: 10, cat: "LÓGICA", q: "Em um grupo de 30 pessoas, 20 falam inglês e 15 falam espanhol. Se todos falam pelo menos um, quantos falam os dois?", opts: ["5", "10", "15"], corr: 0, exp: "(20 + 15) - 30 = 5. A interseção é o que passa do total." },
+
+        // --- INFORMÁTICA ---
+        { id: 11, cat: "INFORMÁTICA", q: "Qual atalho fecha a janela ativa no Windows?", opts: ["Alt + F4", "Ctrl + W", "Alt + Tab"], corr: 0, exp: "Alt + F4 encerra o programa ou janela ativa." },
+        { id: 12, cat: "INFORMÁTICA", q: "No Excel, qual função soma um intervalo de células?", opts: ["=ADICIONAR()", "=TOTAL()", "=SOMA()"], corr: 2, exp: "=SOMA(A1:A10) é a função padrão brasileira." },
+        { id: 13, cat: "INFORMÁTICA", q: "O que significa a sigla USB?", opts: ["Universal Serial Bus", "Unit System Base", "Universal Service Blue"], corr: 0, exp: "Universal Serial Bus é o padrão de conexão de periféricos." },
+        { id: 14, cat: "INFORMÁTICA", q: "Qual destes é um sistema operacional?", opts: ["Google Chrome", "Linux", "Microsoft Office"], corr: 1, exp: "Linux é o sistema, os outros são navegador e suíte de escritório." },
+        { id: 15, cat: "INFORMÁTICA", q: "Qual o atalho para imprimir um documento no Windows?", opts: ["Ctrl + I", "Ctrl + P", "Ctrl + S"], corr: 1, exp: "Ctrl + P (de Print)." },
+        { id: 16, cat: "INFORMÁTICA", q: "A 'nuvem' (Cloud) serve principalmente para:", opts: ["Limpar o computador", "Armazenar dados na internet", "Aumentar a velocidade do processador"], corr: 1, exp: "Cloud é o armazenamento e processamento remoto via internet." },
+        { id: 17, cat: "INFORMÁTICA", q: "Qual programa é usado para criar planilhas eletrônicas?", opts: ["Word", "PowerPoint", "Excel"], corr: 2, exp: "Excel é o padrão para planilhas e cálculos." },
+        { id: 18, cat: "INFORMÁTICA", q: "O 'Cadeado' na barra de endereços do navegador indica:", opts: ["Site bloqueado", "Conexão segura (HTTPS)", "Site com vírus"], corr: 1, exp: "O cadeado indica que os dados trocados são criptografados." },
+        { id: 19, cat: "INFORMÁTICA", q: "Qual atalho de teclado seleciona TODO o texto de um documento?", opts: ["Ctrl + A", "Ctrl + T", "Ctrl + S"], corr: 1, exp: "No Windows/Office em português, Ctrl + T seleciona Tudo." },
+        { id: 20, cat: "INFORMÁTICA", q: "A lixeira do Windows armazena arquivos apagados de:", opts: ["Pendrives", "Disco Rígido (HD)", "Rede"], corr: 1, exp: "Arquivos de pendrives ou rede são apagados permanentemente, não vão para a lixeira." },
+
+        // --- PORTUGUÊS ---
+        { id: 21, cat: "PORTUGUÊS", q: "Qual a forma correta?", opts: ["Agente vamos", "A gente vai", "A gente vamos"], corr: 1, exp: "'A gente' equivale a 'nós', mas o verbo concorda na 3ª pessoa do singular." },
+        { id: 22, cat: "PORTUGUÊS", q: "Qual palavra está escrita corretamente?", opts: ["Ancioso", "Ansioso", "Anciozo"], corr: 1, exp: "Ansioso vem de ânsia (com S)." },
+        { id: 23, cat: "PORTUGUÊS", q: "O plural de 'Cidadão' é:", opts: ["Cidadões", "Cidadães", "Cidadãos"], corr: 2, exp: "Plural de cidadão é cidadãos." },
+        { id: 24, cat: "PORTUGUÊS", q: "Indique o erro de acentuação:", opts: ["Saída", "Ítem", "Baú"], corr: 1, exp: "Item não leva acento." },
+        { id: 25, cat: "PORTUGUÊS", q: "Qual frase está na voz passiva?", opts: ["O gato comeu o rato", "O rato foi comido pelo gato", "O gato e o rato correm"], corr: 1, exp: "Voz passiva foca em quem sofre a ação (o rato)." },
+        { id: 26, cat: "PORTUGUÊS", q: "Sinônimo de 'Efeméride':", opts: ["Passageiro", "Data comemorativa", "Eterno"], corr: 1, exp: "Efeméride é um evento que ocorre em data específica." },
+        { id: 27, cat: "PORTUGUÊS", q: "Complete: '___ muito tempo não o vejo'.", opts: ["Há", "A", "Ah"], corr: 0, exp: "Há (do verbo haver) indica tempo decorrido." },
+        { id: 28, cat: "PORTUGUÊS", q: "O antônimo de 'Efêmero' é:", opts: ["Curto", "Rápido", "Duradouro"], corr: 2, exp: "Efêmero é passageiro; Duradouro é o oposto." },
+        { id: 29, cat: "PORTUGUÊS", q: "Qual o coletivo de 'Peixes'?", opts: ["Cardume", "Enxame", "Rebanho"], corr: 0, exp: "Cardume é o coletivo de peixes." },
+        { id: 30, cat: "PORTUGUÊS", q: "A vírgula é obrigatória em:", opts: ["Enumerações", "Antes do verbo", "Depois do sujeito"], corr: 0, exp: "Usa-se vírgula para separar itens em uma lista." },
+
+        // --- REFORÇO MISTO ---
+        { id: 31, cat: "LÓGICA", q: "Se 3 gatos pegam 3 ratos em 3 minutos, quanto tempo 100 gatos levam para pegar 100 ratos?", opts: ["100 min", "33 min", "3 min"], corr: 2, exp: "Cada gato leva 3 minutos para pegar o seu rato. O tempo é o mesmo." },
+        { id: 32, cat: "INFORMÁTICA", q: "Qual atalho cria uma nova pasta no Windows?", opts: ["Ctrl + N", "Ctrl + Shift + N", "Alt + N"], corr: 1, exp: "Ctrl + Shift + N é o padrão no Windows 10/11." },
+        { id: 33, cat: "PORTUGUÊS", q: "Indique a palavra oxítona:", opts: ["Café", "Escola", "Lâmpada"], corr: 0, exp: "Oxítona tem a última sílaba tônica (Ca-FÉ)." },
+        { id: 34, cat: "MATEMÁTICA", q: "Um ângulo de 90 graus é chamado de:", opts: ["Agudo", "Obtuso", "Reto"], corr: 2, exp: "Ângulo reto = 90 graus." },
+        { id: 35, cat: "INFORMÁTICA", q: "Qual o componente 'cérebro' do computador?", opts: ["HD", "RAM", "CPU"], corr: 2, exp: "CPU (Unidade Central de Processamento) é o cérebro." },
+        { id: 36, cat: "LÓGICA", q: "O pai de Maria tem 5 filhas: Lala, Lele, Lili, Lolo. Qual o nome da 5ª?", opts: ["Lulu", "Maria", "Leila"], corr: 1, exp: "A pergunta começa dizendo: 'O pai de MARIA'." },
+        { id: 37, cat: "PORTUGUÊS", q: "Qual frase tem erro de concordância?", opts: ["Fazem dois anos", "Há dois anos", "Deveria haver dez pessoas"], corr: 0, exp: "Verbo Fazer indicando tempo é impessoal: 'Faz dois anos'." },
+        { id: 38, cat: "MATEMÁTICA", q: "O perímetro de um quadrado de lado 5cm é:", opts: ["25cm", "20cm", "10cm"], corr: 1, exp: "Perímetro é a soma dos lados: 5+5+5+5 = 20." },
+        { id: 39, cat: "INFORMÁTICA", q: "O que é um 'Hardware'?", opts: ["Parte lógica (programas)", "Parte física (peças)", "Um tipo de vírus"], corr: 1, exp: "Hardware é o que você chuta; Software é o que você xinga (parte física)." },
+        { id: 40, cat: "LÓGICA", q: "Em um conjunto de 10 elementos, quantos subconjuntos vazios existem?", opts: ["0", "1", "10"], corr: 1, exp: "Todo conjunto tem exatamente UM subconjunto vazio." }
+    ];
+
+    function renderizar() {
+        const container = document.getElementById('quiz');
+        container.innerHTML = '';
+        questoes.forEach(q => {
+            container.innerHTML += `
+                <div class="questao">
+                    <span class="badge">${q.cat}</span>
+                    <div>${q.q}</div>
+                    ${q.opts.map((opt, i) => `<button class="opcao" onclick="verificar(${q.id}, ${i})">${opt}</button>`).join('')}
+                </div>
+            `;
+        });
+    }
+
+    function verificar(qId, optIdx) {
+        const q = questoes.find(x => x.id === qId);
+        total++;
+        if (optIdx === q.corr) {
+            acertos++;
+            Swal.fire({ title: 'Boa!', text: q.exp, icon: 'success' });
+        } else {
+            Swal.fire({ title: 'Atenção!', text: 'A correta é: ' + q.opts[q.corr] + '. ' + q.exp, icon: 'error' });
+        }
+        document.getElementById('acertos-cont').innerText = acertos;
+        document.getElementById('total-cont').innerText = total;
+    }
+
+    renderizar();
+</script>
+</body>
+</html>
