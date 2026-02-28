@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ares RPG - Simulador Elite MGS</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root { --primary: #3b82f6; --success: #22c55e; --danger: #ef4444; --bg: #0f172a; --card: #1e293b; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #f8fafc; padding: 15px; margin: 0; }
+        .container { max-width: 600px; margin: auto; padding-bottom: 50px; }
+        
+        .stats-bar { 
+            background: var(--card); padding: 15px; border-radius: 12px; 
+            display: flex; justify-content: space-around; margin-bottom: 20px; 
+            border: 1px solid var(--primary); box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            position: sticky; top: 10px; z-index: 100;
+        }
+        .stat-item { text-align: center; }
+        .stat-value { display: block; font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+        .stat-label { font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; }
+
+        .questao { 
+            background: var(--card); padding: 20px; border-radius: 15px; 
+            border: 1px solid rgba(51, 65, 85, 0.5); margin-bottom: 20px; 
+            transition: transform 0.2s;
+        }
+        .questao:hover { border-color: var(--primary); }
+        
+        .bloqueado { opacity: 0.4; pointer-events: none; filter: grayscale(0.8); }
+        .timer-msg { color: var(--danger); font-size: 0.85rem; margin-top: 10px; display: none; font-weight: bold; }
+        .bloqueado .timer-msg { display: block; }
+
+        .badge { 
+            background: var(--primary); padding: 4px 10px; border-radius: 6px; 
+            font-size: 0.75rem; font-weight: bold; margin-bottom: 10px; 
+            display: inline-block; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .cat-mat { background: #eab308; color: #000; }
+        .cat-inf { background: #3b82f6; color: #fff; }
+        .cat-por { background: #ef4444; color: #fff; }
+
+        .opcao { 
+            display: block; width: 100%; padding: 15px; margin: 10px 0; 
+            background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; 
+            border-radius: 10px; color: #cbd5e1; cursor: pointer; text-align: left; 
+            transition: 0.2s; font-size: 1rem;
+        }
+        .opcao:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .opcao:active { transform: scale(0.98); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="stats-bar">
+        <div class="stat-item">
+            <span class="stat-value" id="total-hoje">0</span>
+            <span class="stat-label">Acertos</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value" id="percentual">0%</span>
+            <span class="stat-label">Precisão</span>
+        </div>
+    </div>
+
+    <div id="quiz"></div>
+</div>
+
+<script>
+    const COOLDOWN_HOURS = 4;
+
+    // BANCO DE QUESTÕES FILTRADO E SEM REPETIÇÕES (Apenas MAT, INF e POR)
+    const questoes = [
+        // ================= PORTUGUÊS =================
+        { id: 1, cat: "PORTUGUÊS", class: "cat-por", q: "Qual o plural correto de 'Cidadão' e 'Pão'?", opts: ["Cidadões e Pães", "Cidadãos e Pães", "Cidadães e Pãos", "Cidadãos e Pãoes"], corr: 1, exp: "Cidadão -> Cidadãos | Pão -> Pães. (Regra de ouro da IBFC)." },
+        { id: 2, cat: "PORTUGUÊS", class: "cat-por", q: "Na frase 'O trabalho foi EXCELENTE', a palavra em destaque classifica-se como:", opts: ["Substantivo", "Adjetivo", "Verbo", "Advérbio"], corr: 1, exp: "Adjetivo qualifica o substantivo (trabalho)." },
+        { id: 3, cat: "PORTUGUÊS", class: "cat-por", q: "Na frase 'A RAPIDEZ do vigilante ajudou na ocorrência', a palavra rapidez é:", opts: ["Adjetivo", "Substantivo", "Verbo", "Conjunção"], corr: 1, exp: "Rapidez é o NOME da qualidade, logo é substantivo. O adjetivo seria 'rápido'." },
+        { id: 4, cat: "PORTUGUÊS", class: "cat-por", q: "Assinale a alternativa onde a grafia está CORRETA:", opts: ["Exceção", "Excessão", "Esceção", "Excensão"], corr: 0, exp: "Exceção se escreve com XC e Ç." },
+        { id: 5, cat: "PORTUGUÊS", class: "cat-por", q: "Na frase 'Faz cinco anos que trabalho aqui', o verbo está no singular porque:", opts: ["Concorda com o sujeito", "Indica tempo decorrido", "Estava no plural", "É um verbo de ação"], corr: 1, exp: "O verbo FAZER indicando tempo passado é impessoal e fica no singular." },
+        { id: 6, cat: "PORTUGUÊS", class: "cat-por", q: "Qual o coletivo de 'Mapas'?", opts: ["Pinacoteca", "Alcateia", "Atlas", "Cardume"], corr: 2, exp: "Atlas é o coletivo de mapas." },
+        { id: 7, cat: "PORTUGUÊS", class: "cat-por", q: "Qual o antônimo de 'Efêmero'?", opts: ["Passageiro", "Duradouro", "Curto", "Frágil"], corr: 1, exp: "Efêmero é o que dura pouco; Duradouro é o oposto." },
+        { id: 8, cat: "PORTUGUÊS", class: "cat-por", q: "Assinale a alternativa onde o uso da crase é OBRIGATÓRIO:", opts: ["Fui a padaria", "Fui a pé", "Entreguei a você", "Comprei a prazo"], corr: 0, exp: "Quem vai A e volta DA, crase há! (Fui à padaria / Voltei da padaria). Não se usa crase antes de palavra masculina (pé, prazo) ou pronome." },
+        { id: 9, cat: "PORTUGUÊS", class: "cat-por", q: "Em 'Ele agiu cautelosamente', a palavra indica:", opts: ["Tempo", "Modo", "Lugar", "Intensidade"], corr: 1, exp: "Terminações em '-mente' geralmente indicam advérbio de modo." },
+        { id: 10, cat: "PORTUGUÊS", class: "cat-por", q: "Qual palavra está acentuada por ser uma PROPAROXÍTONA?", opts: ["Café", "Lâmpada", "Ideia", "Relógio"], corr: 1, exp: "Lâm-pa-da tem a antepenúltima sílaba tônica. Todas as proparoxítonas são acentuadas." },
+        { id: 11, cat: "PORTUGUÊS", class: "cat-por", q: "A palavra 'BRASILEIRO' é um adjetivo:", opts: ["Composto", "Próprio", "Pátrio", "Primitivo"], corr: 2, exp: "Adjetivos pátrios indicam origem ou nacionalidade." },
+        { id: 12, cat: "PORTUGUÊS", class: "cat-por", q: "Qual o sinônimo de 'Retificar'?", opts: ["Confirmar", "Corrigir", "Repetir", "Esquecer"], corr: 1, exp: "Retificar = Corrigir. Ratificar = Confirmar." },
+        { id: 13, cat: "PORTUGUÊS", class: "cat-por", q: "Na frase 'Vende-se casas', há um erro de concordância. O correto seria:", opts: ["Vende-se casas (está correto)", "Vendem-se casas", "Vende-se de casas", "Venderam casas"], corr: 1, exp: "Se 'casas' está no plural, o verbo deve concordar: Vendem-se casas." },
+        { id: 14, cat: "PORTUGUÊS", class: "cat-por", q: "O plural de 'Chapéu' é:", opts: ["Chapéis", "Chapéus", "Chapezes", "Chapéuses"], corr: 1, exp: "Palavras terminadas em 'eu' fazem o plural apenas acrescentando 's'." },
+        { id: 15, cat: "PORTUGUÊS", class: "cat-por", q: "Assinale a alternativa com erro de ortografia:", opts: ["Analisar", "Paralizar", "Pesquisar", "Avisar"], corr: 1, exp: "O correto é PARALISAR (com S), pois vem de paralisia." },
+
+        // ================= MATEMÁTICA E LÓGICA =================
+        { id: 16, cat: "MATEMÁTICA", class: "cat-mat", q: "Soma de 1/2 com 1/4:", opts: ["2/6", "3/4", "1/6", "1/4"], corr: 1, exp: "0,50 + 0,25 = 0,75, que equivale a 3/4." },
+        { id: 17, cat: "MATEMÁTICA", class: "cat-mat", q: "Perímetro de um quadrado de lado 8m:", opts: ["16m", "32m", "64m", "24m"], corr: 1, exp: "Perímetro é a soma dos 4 lados: 8+8+8+8 = 32m. (Área seria 64m)." },
+        { id: 18, cat: "MATEMÁTICA", class: "cat-mat", q: "Se 3 funcionários limpam 6 salas em um dia, quantos funcionários são necessários para limpar 10 salas no mesmo tempo?", opts: ["4", "5", "6", "8"], corr: 1, exp: "Regra de três: 3/6 = x/10. Logo, x = 5." },
+        { id: 19, cat: "MATEMÁTICA", class: "cat-mat", q: "Um produto custa R$ 200,00 e sofre um desconto de 15%. Qual o valor final?", opts: ["R$ 170,00", "R$ 185,00", "R$ 150,00", "R$ 175,00"], corr: 0, exp: "10% de 200 é 20. 5% é 10. Desconto = 30. Valor final: 200 - 30 = 170." },
+        { id: 20, cat: "MATEMÁTICA", class: "cat-mat", q: "Quanto é 2/5 de R$ 1.000,00?", opts: ["R$ 200", "R$ 400", "R$ 500", "R$ 600"], corr: 1, exp: "Divida pelo de baixo e multiplique pelo de cima: 1000/5 = 200. 200 x 2 = 400." },
+        { id: 21, cat: "MATEMÁTICA", class: "cat-mat", q: "Na sequência lógica 2, 5, 11, 23... qual o próximo número?", opts: ["30", "45", "47", "50"], corr: 2, exp: "A lógica é: (Anterior x 2) + 1. Exemplo: (23 x 2) + 1 = 47." },
+        { id: 22, cat: "MATEMÁTICA", class: "cat-mat", q: "Um conjunto possui 5 elementos. Quantos subconjuntos ele tem ao todo?", opts: ["10", "25", "32", "16"], corr: 2, exp: "A fórmula é 2 elevado a 'n'. 2 x 2 x 2 x 2 x 2 = 32." },
+        { id: 23, cat: "MATEMÁTICA", class: "cat-mat", q: "Qual o resultado de 2 + 3 * 5?", opts: ["25", "17", "15", "10"], corr: 1, exp: "Sempre faça a multiplicação primeiro! 3*5=15. Depois 15+2=17." },
+        { id: 24, cat: "MATEMÁTICA", class: "cat-mat", q: "Se 15% de um valor é R$ 45,00, qual o valor total (100%)?", opts: ["R$ 300,00", "R$ 450,00", "R$ 150,00", "R$ 200,00"], corr: 0, exp: "Regra de três: Se 15% = 45, então 1% = 3. Logo 100% = 300." },
+        { id: 25, cat: "MATEMÁTICA", class: "cat-mat", q: "Em uma caixa há 12 bolas brancas e 18 bolas pretas. Qual a razão entre brancas e o total?", opts: ["12/18", "12/30", "18/30", "1/2"], corr: 1, exp: "Razão é a parte pelo todo. Total = 12+18=30. Logo, 12 sobre 30." },
+        { id: 26, cat: "MATEMÁTICA", class: "cat-mat", q: "Qual a negação lógica da frase 'João é médico E Maria é dentista'?", opts: ["João não é médico e Maria não é dentista", "João não é médico OU Maria não é dentista", "João é dentista", "Maria não é dentista"], corr: 1, exp: "Leis de De Morgan: Nega o 'E' transformando em 'OU' e nega as duas partes." },
+        { id: 27, cat: "MATEMÁTICA", class: "cat-mat", q: "Se 'Todo vigilante usa uniforme' e 'Marcos é vigilante', logo:", opts: ["Marcos não usa uniforme", "Marcos usa uniforme", "Quem usa uniforme é vigilante", "Marcos é policial"], corr: 1, exp: "Silogismo lógico. Se ele pertence ao grupo, a regra do grupo se aplica a ele." },
+        { id: 28, cat: "MATEMÁTICA", class: "cat-mat", q: "Quanto é 50% de 50% de 100?", opts: ["50", "25", "10", "5"], corr: 1, exp: "A metade de 100 é 50. A metade de 50 é 25." },
+        { id: 29, cat: "MATEMÁTICA", class: "cat-mat", q: "Qual a raiz quadrada de 144 menos a raiz quadrada de 49?", opts: ["5", "7", "12", "10"], corr: 0, exp: "Raiz de 144 é 12. Raiz de 49 é 7. 12 - 7 = 5." },
+        { id: 30, cat: "MATEMÁTICA", class: "cat-mat", q: "Se uma lâmpada consome 60W por hora, quanto ela consumirá em um turno de 12 horas?", opts: ["600W", "660W", "720W", "800W"], corr: 2, exp: "60 x 12 = 720W." },
+
+        // ================= INFORMÁTICA =================
+        { id: 31, cat: "INFORMÁTICA", class: "cat-inf", q: "No Microsoft Word (versão em português), qual o atalho para SALVAR um documento?", opts: ["Ctrl + S", "Ctrl + B", "Ctrl + O", "Ctrl + P"], corr: 1, exp: "No Word BR: Ctrl + B (B de Backup/Salvar). No Windows geral é Ctrl + S." },
+        { id: 32, cat: "INFORMÁTICA", class: "cat-inf", q: "No Windows 10, o atalho para 'Minimizar todas as janelas' e mostrar a Área de Trabalho é:", opts: ["Win + M", "Win + D", "Win + E", "Win + L"], corr: 1, exp: "Win + D (Desktop) mostra a área de trabalho." },
+        { id: 33, cat: "INFORMÁTICA", class: "cat-inf", q: "Qual comando abre o Gerenciador de Tarefas DIRETAMENTE?", opts: ["Ctrl + Alt + Del", "Ctrl + Shift + Esc", "Win + L", "Alt + F4"], corr: 1, exp: "Ctrl + Shift + Esc abre direto sem passar pela tela de segurança azul." },
+        { id: 34, cat: "INFORMÁTICA", class: "cat-inf", q: "O que é 'Phishing'?", opts: ["Um tipo de antivírus", "Técnica de roubo de dados via links ou e-mails falsos", "Programa que trava o teclado", "Propaganda que aparece na tela"], corr: 1, exp: "Phishing vem de 'pescar' informações de usuários distraídos." },
+        { id: 35, cat: "INFORMÁTICA", class: "cat-inf", q: "No Excel, toda fórmula começa com qual símbolo?", opts: ["+", "@", "=", "#"], corr: 2, exp: "O sinal de igual (=) é obrigatório antes de qualquer conta ou função." },
+        { id: 36, cat: "INFORMÁTICA", class: "cat-inf", q: "Qual atalho fecha a janela ativa no Windows?", opts: ["Alt + Tab", "Ctrl + F4", "Alt + F4", "Win + D"], corr: 2, exp: "Alt + F4 é o comando universal para fechar programas." },
+        { id: 37, cat: "INFORMÁTICA", class: "cat-inf", q: "O componente físico do computador (as peças que você pode tocar) é chamado de:", opts: ["Software", "Hardware", "Firmware", "Browser"], corr: 1, exp: "Hardware é a parte física (Monitor, teclado, HD). Software são os programas." },
+        { id: 38, cat: "INFORMÁTICA", class: "cat-inf", q: "No Excel, qual função retorna o maior valor de um conjunto de células?", opts: ["=MAIOR()", "=MÁXIMO()", "=SOMA()", "=GRANDE()"], corr: 1, exp: "=MÁXIMO(A1:A10) retorna o valor mais alto da lista." },
+        { id: 39, cat: "INFORMÁTICA", class: "cat-inf", q: "O que é um 'Ransomware'?", opts: ["Software que melhora a internet", "Software malicioso que sequestra dados e cobra resgate", "Antivírus gratuito", "Um tipo de impressora"], corr: 1, exp: "Ransom = Resgate. Ele criptografa arquivos e pede dinheiro para liberar." },
+        { id: 40, cat: "INFORMÁTICA", class: "cat-inf", q: "No Windows 10, o atalho 'Win + L' serve para:", opts: ["Abrir o Explorador de Arquivos", "Bloquear o computador", "Abrir o navegador", "Desligar o PC"], corr: 1, exp: "Win + L (Lock) bloqueia a tela e volta para a página de login." },
+        { id: 41, cat: "INFORMÁTICA", class: "cat-inf", q: "A função de um 'Firewall' é:", opts: ["Aumentar o sinal do Wi-Fi", "Proteger a rede contra acessos não autorizados", "Limpar o disco rígido", "Fazer backup na nuvem"], corr: 1, exp: "Firewall (Parede de Fogo) é a barreira que filtra o tráfego da rede." },
+        { id: 42, cat: "INFORMÁTICA", class: "cat-inf", q: "No Word, o atalho Ctrl + E serve para:", opts: ["Salvar", "Centralizar o texto", "Justificar o texto", "Colocar em Negrito"], corr: 1, exp: "Ctrl + E centraliza (lembre de E-ixo). Ctrl + J justifica." },
+        { id: 43, cat: "INFORMÁTICA", class: "cat-inf", q: "Qual atalho de teclado é usado para RENOMEAR um arquivo no Windows?", opts: ["F1", "F2", "F5", "Ctrl + R"], corr: 1, exp: "F2 é o botão padrão para renomear." },
+        { id: 44, cat: "INFORMÁTICA", class: "cat-inf", q: "Qual das memórias abaixo perde seus dados quando o computador é desligado?", opts: ["HD (Disco Rígido)", "SSD", "Memória RAM", "Pen Drive"], corr: 2, exp: "A memória RAM é volátil (apaga sem energia)." },
+        { id: 45, cat: "INFORMÁTICA", class: "cat-inf", q: "No Windows 10, o atalho 'Win + E' abre o:", opts: ["Menu Iniciar", "Configurações", "Explorador de Arquivos", "Navegador de Internet"], corr: 2, exp: "Win + E (Explorer) abre as pastas do computador." },
+{ id: 101, cat: "PORTUGUÊS", q: "Na frase 'O trabalho foi EXCELENTE', a palavra em destaque classifica-se como:", opts: ["Substantivo", "Adjetivo", "Verbo", "Advérbio"], corr: 1, exp: "Adjetivo qualifica o substantivo (trabalho)." },
+        { id: 102, cat: "PORTUGUÊS", q: "Na frase 'A RAPIDEZ do vigilante ajudou na ocorrência', a palavra rapidez é:", opts: ["Adjetivo", "Substantivo", "Verbo", "Conjunção"], corr: 1, exp: "Rapidez é o NOME da qualidade, logo é substantivo." },
+        { id: 103, cat: "PORTUGUÊS", q: "Qual o plural correto de 'Cidadão'?", opts: ["Cidadões", "Cidadães", "Cidadãos"], corr: 2, exp: "Cidadão -> Cidadãos. É uma das 'pegadinhas' mais comuns da IBFC." },
+        { id: 104, cat: "PORTUGUÊS", q: "Qual a alternativa apresenta a grafia CORRETA da palavra?", opts: ["Excessão", "Exceção", "Esceção"], corr: 1, exp: "Exceção (XC e Ç)." },
+        { id: 105, cat: "PORTUGUÊS", q: "Na frase 'O funcionário solicitou o relatório', o termo 'O funcionário' é o:", opts: ["Objeto Direto", "Sujeito", "Verbo"], corr: 1, exp: "Sujeito é quem pratica a ação." },
+        { id: 106, cat: "PORTUGUÊS", q: "Qual o antônimo de 'Efêmero'?", opts: ["Passageiro", "Curto", "Duradouro"], corr: 2, exp: "Efêmero é passageiro; Duradouro é o oposto." },
+        { id: 107, cat: "PORTUGUÊS", q: "Assinale a alternativa com erro de concordância:", opts: ["Faz cinco anos que trabalho aqui", "Fazem cinco anos que trabalho aqui", "Havia muitas pessoas"], corr: 1, exp: "Verbo FAZER indicando tempo é impessoal (singular)." },
+        { id: 108, cat: "PORTUGUÊS", q: "Em 'O vigilante agiu com PRUDÊNCIA', a palavra destacada é:", opts: ["Adjetivo", "Substantivo", "Advérbio"], corr: 1, exp: "Prudência é o nome da virtude (substantivo)." },
+        { id: 109, cat: "PORTUGUÊS", q: "Na frase 'O vigilante é MUITO ATENTO', a palavra 'ATENTO' é um:", opts: ["Substantivo", "Adjetivo", "Advérbio"], corr: 1, exp: "Atento é característica (Adjetivo)." },
+
+        // MATEMÁTICA E LÓGICA
+        { id: 201, cat: "MATEMÁTICA", q: "Um lote com 200 caixas tem 10% com erro. Quantas caixas estão com erro?", opts: ["10 caixas", "20 caixas", "2 caixas"], corr: 1, exp: "10% de 200 = 20." },
+        { id: 202, cat: "MATEMÁTICA", q: "Se 5 vigilantes fazem a ronda em 40 min, 10 vigilantes levariam:", opts: ["80 minutos", "40 minutos", "20 minutos"], corr: 2, exp: "Dobro de pessoas = metade do tempo." },
+        { id: 203, cat: "MATEMÁTICA", q: "Um produto de R$ 120 com 15% de desconto custa:", opts: ["R$ 102,00", "R$ 105,00", "R$ 108,00"], corr: 0, exp: "15% de 120 é 18. 120-18=102." },
+        { id: 204, cat: "LÓGICA", q: "Qual o próximo número: 2, 4, 8, 16...?", opts: ["20", "24", "32"], corr: 2, exp: "Lógica: dobro do anterior (x2)." },
+        { id: 205, cat: "LÓGICA", q: "Qual o próximo número: 1, 3, 6, 10, 15...?", opts: ["19", "21", "25"], corr: 1, exp: "Soma-se +2, +3, +4, +5... o próximo é +6 (15+6=21)." },
+        { id: 206, cat: "LÓGICA", q: "A negação de 'Todo homem é mortal' é:", opts: ["Nenhum homem é mortal", "Pelo menos um homem não é mortal", "Todo homem é imortal"], corr: 1, exp: "Negação de TODO é 'Pelo menos um NÃO'." },
+        { id: 207, cat: "MATEMÁTICA", q: "Razão entre 12 bolas brancas e total de 30 bolas:", opts: ["12/18", "12/30", "18/30"], corr: 1, exp: "Razão = parte/total." },
+        { id: 208, cat: "MATEMÁTICA", q: "Lâmpada de 60W ligada por 12 horas consome:", opts: ["600W", "660W", "720W"], corr: 2, exp: "60 x 12 = 720." },
+
+        // INFORMÁTICA
+        { id: 301, cat: "INFORMÁTICA", q: "Atalho para SALVAR no Word BR:", opts: ["Ctrl + S", "Ctrl + B", "Ctrl + P"], corr: 1, exp: "Word BR utiliza Ctrl + B (Backup/Salvar)." },
+        { id: 302, cat: "INFORMÁTICA", q: "Atalho para selecionar TUDO no Word BR:", opts: ["Ctrl + A", "Ctrl + T", "Ctrl + S"], corr: 1, exp: "Word BR: Ctrl + T (Tudo)." },
+        { id: 303, cat: "INFORMÁTICA", q: "Tecla para RENOMEAR arquivo no Windows:", opts: ["F1", "F2", "F5"], corr: 1, exp: "F2 é renomear." },
+        { id: 304, cat: "INFORMÁTICA", q: "Atalho para fechar janela ativa:", opts: ["Alt + F4", "Ctrl + W", "As duas estão corretas"], corr: 2, exp: "Ambas fecham janelas/programas." },
+        { id: 305, cat: "INFORMÁTICA", q: "Atalho para abrir as CONFIGURAÇÕES do Windows 10:", opts: ["Win + C", "Win + I", "Win + S"], corr: 1, exp: "Win + I (Settings/Informações)." },
+        { id: 306, cat: "INFORMÁTICA", q: "O que é Phishing?", opts: ["Um tipo de antivírus", "E-mail falso para 'pescar' senhas", "Um componente do hardware"], corr: 1, exp: "Isca digital para roubar dados." },
+        { id: 307, cat: "INFORMÁTICA", q: "Quantos bits existem em 1 Byte?", opts: ["4 bits", "8 bits", "16 bits"], corr: 1, exp: "1 Byte = 8 bits." },
+        { id: 308, cat: "INFORMÁTICA", q: "Atalho para minimizar todas as janelas (Desktop):", opts: ["Win + M", "Win + D", "Win + E"], corr: 1, exp: "Win + D (Desktop)." },
+        { id: 309, cat: "INFORMÁTICA", q: "Função do Pincel de Formatação no Word:", opts: ["Pintar o fundo", "Copiar formatação", "Mudar fonte"], corr: 1, exp: "Copia o estilo de um texto para outro." },
+        { id: 310, cat: "INFORMÁTICA", q: "O que é um Ransomware?", opts: ["Acelera o PC", "Sequestra dados e cobra resgate", "Exibe anúncios"], corr: 1, exp: "Ransom = Resgate." },
+        { id: 311, cat: "INFORMÁTICA", q: "Atalho para alternar entre janelas abertas:", opts: ["Alt + Tab", "Ctrl + Tab", "Win + L"], corr: 0, exp: "Alt + Tab alterna programas." }
+    ];
+
+    function renderizar() {
+        const quiz = document.getElementById('quiz');
+        quiz.innerHTML = '';
+        atualizarStats();
+
+        const agora = Date.now();
+
+        questoes.forEach(q => {
+            const bloqueio = localStorage.getItem(`bloqueio_${q.id}`);
+            let isBloqueado = false;
+            let tempoRestante = "";
+
+            if (bloqueio) {
+                const diff = (agora - parseInt(bloqueio)) / (1000 * 60 * 60);
+                if (diff < COOLDOWN_HOURS) {
+                    isBloqueado = true;
+                    const minRestantes = Math.ceil((COOLDOWN_HOURS - diff) * 60);
+                    tempoRestante = minRestantes > 60 
+                        ? `${Math.floor(minRestantes/60)}h ${minRestantes%60}min` 
+                        : `${minRestantes}min`;
+                }
+            }
+
+            const div = document.createElement('div');
+            div.className = `questao ${isBloqueado ? 'bloqueado' : ''}`;
+            div.innerHTML = `
+                <span class="badge ${q.class}">${q.cat}</span>
+                <p style="font-weight: 600; line-height: 1.4; font-size: 1.1rem;">${q.q}</p>
+                <div class="timer-msg">🔒 Disponível em: ${tempoRestante}</div>
+                ${q.opts.map((opt, i) => `
+                    <button class="opcao" onclick="verificar(${q.id}, ${i})">${opt}</button>
+                `).join('')}
+            `;
+            quiz.appendChild(div);
+        });
+    }
+
+    function verificar(qId, optIdx) {
+        const q = questoes.find(item => item.id === qId);
+        let acertos = parseInt(localStorage.getItem('acertos_dia') || 0);
+        let total = parseInt(localStorage.getItem('total_tentativas') || 0);
+
+        localStorage.setItem(`bloqueio_${qId}`, Date.now());
+        localStorage.setItem('total_tentativas', total + 1);
+
+        if (optIdx === q.corr) {
+            localStorage.setItem('acertos_dia', acertos + 1);
+            Swal.fire({ 
+                title: 'Excelente!', 
+                text: q.exp, 
+                icon: 'success',
+                confirmButtonColor: '#22c55e'
+            });
+        } else {
+            Swal.fire({ 
+                title: 'Atenção!', 
+                text: `Resposta certa: ${q.opts[q.corr]}. \nDica: ${q.exp}`, 
+                icon: 'error',
+                confirmButtonColor: '#ef4444'
+            });
+        }
+
+        setTimeout(renderizar, 150);
+    }
+
+    function atualizarStats() {
+        const acertos = parseInt(localStorage.getItem('acertos_dia') || 0);
+        const total = parseInt(localStorage.getItem('total_tentativas') || 0);
+        
+        document.getElementById('total-hoje').innerText = acertos;
+        
+        let pct = 0;
+        if (total > 0) {
+            pct = Math.round((acertos / total) * 100);
+        }
+        document.getElementById('percentual').innerText = `${pct}%`;
+    }
+
+    renderizar();
+</script>
+
+</body>
+</html>
