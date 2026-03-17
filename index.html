@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real Life RPG - Oficial</title>
     
-    <meta property="og:title" content="Ares RPG - Oficial">
+    <meta property="og:title" content="Real Life RPG - Oficial">
     <meta property="og:description" content="Evolua seu personagem na vida real! Treine, estude e conquiste recompensas.">
     <meta property="og:image" content="https://i.ibb.co/X3vDgg/image.png">
     <meta property="og:type" content="website">
@@ -527,7 +527,7 @@
 
         // Notificação de Sistema (Estilo E-mail)
         if (Notification.permission === "granted") {
-            new Notification("Ares RPG: Alerta de Atraso!", {
+            new Notification("Real Life RPG: Alerta de Atraso!", {
                 body: mensagem,
                 icon: "https://raw.githubusercontent.com/estevaomp-svg/ares7/119426d0aaf457595e258cb0551302679e4afa32/logo.png"
             });
@@ -1007,7 +1007,7 @@ function aplicarBloqueioDeRecuo() {
     window.addEventListener('popstate', function (event) {
         history.pushState(null, null, window.location.pathname);
         Swal.fire({
-            title: 'Sair do Ares RPG?',
+            title: 'Sair do Real Life RPG?',
             text: "Deseja fechar o jogo agora?",
             icon: 'warning',
             showCancelButton: true,
