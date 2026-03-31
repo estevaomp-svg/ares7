@@ -421,26 +421,53 @@
             </div>
             </div> <div id="tab-profile" class="hidden">
             <div class="card" style="text-align:center">
-        <div id="aba-profile" class="aba-conteudo" style="display:none; text-align: center; padding: 20px;">
-    <h2>🎭 Editar Perfil</h2>
-    <img id="p-img-large" style="width:120px; height:120px; border-radius:50%; border:3px solid #3b82f6; margin-bottom:15px; object-fit:cover; background:#1e293b;" src="">
-    
-    <input type="text" id="edit-nick" placeholder="Novo Nick" style="width: 100%; margin-bottom: 10px;">
-    <input type="text" id="edit-photo" placeholder="Link da Foto" style="width: 100%;">
-    
-    <button onclick="salvarPerfil()" style="background:#22c55e; width:100%; margin-top:15px; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;">
-        Salvar
-    </button>
-</div> <nav class="bottom-nav">
-    <div class="nav-item active" id="nav-home" onclick="mudarAba('home')">
-        <span>🏠</span>
-        <span>Início</span>
-    </div>
-    <div class="nav-item" id="nav-profile" onclick="mudarAba('profile')">
-        <span>👤</span>
-        <span>Perfil</span>
-    </div>
+        <h2>🎭 Editar Perfil</h2>
+        <img id="p-img-large" style="width:120px; height:120px; border-radius:50%; border:3px solid #3b82f6; margin-bottom:15px; object-fit:cover; background:#1e293b;" src="">
+        <input type="text" id="edit-nick" placeholder="Novo Nick">
+        <input type="text" id="edit-photo" placeholder="Link da Foto">
+        <button onclick="salvarPerfil()" style="background:#22c55e; width:100%; margin-top:15px">Salvar</button>
+
+        <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; border: 1px solid rgba(59, 130, 246, 0.3);">
+            <h4 style="color: var(--warning); margin-top: 0; text-align: center;">Momento de Gratidão</h4>
+            <p style="font-size: 0.9rem; line-height: 1.5; color: #cbd5e1; font-style: italic; text-align: center;">
+                "Sou profundamente grato por toda a força e clareza que já possuo, que guiam meus passos todos os dias. 
+                Agradeço pela abundância que já se manifesta em minha vida e por todas as novas conquistas, saúde e prosperidade que estão agora se concretizando. 
+                Sinto alegria por cada meta alcançada e pela evolução contínua que me torna alguém cada vez mais pleno e realizado. 
+                Assim é, e assim se mantém."
+            </p>
+
+            <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
+                <div onclick="window.location.href='https://ares7.com.br/kids'" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; font-size:0.7rem; color:#94a3b8;">
+                    <span style="font-size: 1.2rem;">📚</span>
+                    <span>Estudar lv 1</span>
+                </div>
+                <div onclick="window.location.href='https://ares7.com.br/concurso'" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; font-size:0.7rem; color:#94a3b8;">
+                    <span style="font-size: 1.2rem;">📖</span>
+                    <span>Estudar lv 2</span>
+                </div>
+                <div onclick="window.location.href='https://ares7.com.br/concursom'" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; font-size:0.7rem; color:#94a3b8;">
+                    <span style="font-size: 1.2rem;">🧠</span>
+                    <span>Estudar lv 3</span>
+                </div>
+                <div onclick="window.location.href='https://ares7.com.br/concursomgsm'" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; font-size:0.7rem; color:#94a3b8;">
+                    <span style="font-size: 1.2rem;">📖</span>
+                    <span>Estudar lv 4</span>
+                </div>
+                <div onclick="window.location.href='https://ares7.com.br/mgs'" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; font-size:0.7rem; color:#94a3b8;">
+                    <span style="font-size: 1.2rem;">📖</span>
+                    <span>Estudar lv 5</span>
+                </div>
+            </div>
+        </div> </div> </div> <nav class="bottom-nav">
+    <div class="nav-item active" id="nav-home" onclick="mudarAba('home')"><span>🏠</span><span>Início</span></div>
+    <div class="nav-item" id="nav-profile" onclick="mudarAba('profile')"><span>👤</span><span>Perfil</span></div>
 </nav>
+
+        <nav class="bottom-nav">
+            <div class="nav-item active" id="nav-home" onclick="mudarAba('home')"><span>🏠</span><span>Início</span></div>
+            <div class="nav-item" id="nav-profile" onclick="mudarAba('profile')"><span>👤</span><span>Perfil</span></div>
+        </nav>
+    </div>
 
     <script>
     const firebaseConfig = {
