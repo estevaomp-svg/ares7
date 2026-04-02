@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MP-ES 2026 - 60 Questões (80 Pontos)</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root { --primary: #6366f1; --secondary: #a855f7; --success: #22c55e; --danger: #ef4444; --bg: #0f172a; --card: #1e293b; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #f8fafc; padding: 15px; margin: 0; }
+        .container { max-width: 800px; margin: auto; padding-bottom: 50px; }
+        .stats-bar { 
+            background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid var(--primary);
+            display: flex; justify-content: space-around; margin-bottom: 20px; position: sticky; top: 10px; z-index: 100;
+        }
+        .stat-item { text-align: center; }
+        .stat-value { display: block; font-size: 1.2rem; font-weight: bold; color: #fff; }
+        .stat-label { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; }
+        .modulo-title { background: #334155; padding: 12px; border-radius: 8px; margin: 30px 0 10px; color: var(--secondary); font-weight: bold; font-size: 0.8rem; border-left: 5px solid var(--secondary); }
+        .questao { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid rgba(51, 65, 85, 0.5); margin-bottom: 20px; }
+        .badge { padding: 4px 8px; border-radius: 5px; font-size: 0.65rem; font-weight: bold; margin-bottom: 10px; display: inline-block; }
+        .cat-basic { background: #94a3b8; color: #000; }
+        .cat-especific { background: #a855f7; color: #fff; }
+        .opcao { display: block; width: 100%; padding: 12px; margin: 8px 0; background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 8px; color: #cbd5e1; cursor: pointer; text-align: left; transition: 0.2s; }
+        .opcao:hover { background: var(--primary); color: white; }
+        .bloqueado { opacity: 0.4; pointer-events: none; border-color: var(--success); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="stats-bar">
+        <div class="stat-item"><span class="stat-value" id="score">0.0</span><span class="stat-label">PONTOS / 80</span></div>
+        <div class="stat-item"><span class="stat-value" id="acertos">0/60</span><span class="stat-label">QUESTÕES</span></div>
+        <div class="stat-item"><span class="stat-value" id="percent">0%</span><span class="stat-label">PRECISÃO</span></div>
+    </div>
+    <div id="quiz-container"></div>
+</div>
+
+<script>
+    const questoes = [
+        // PORTUGUÊS (1 a 15) - Peso 1.0
+        { id: 1, mod: 1, cat: "PORTUGUÊS", q: "Qual a função da linguagem focada no receptor?", opts: ["Fática", "Conativa (Apelativa)", "Metalinguística", "Referencial"], corr: 1, exp: "A função conativa foca em convencer ou dar ordens ao receptor." },
+        { id: 2, mod: 1, cat: "PORTUGUÊS", q: "Assinale a opção em que há erro de acentuação:", opts: ["Herói", "Idéia", "Saúde", "Jiboia"], corr: 1, exp: "Após o novo acordo, ditongos abertos em paroxítonas (Ideia) não têm acento." },
+        { id: 3, mod: 1, cat: "PORTUGUÊS", q: "O termo 'embora' indica valor de:", opts: ["Causa", "Concessão", "Condição", "Tempo"], corr: 1, exp: "Embora é uma conjunção subordinativa concessiva." },
+        { id: 4, mod: 1, cat: "PORTUGUÊS", q: "Qual a figura de linguagem em 'O jardim olhava as crianças'?", opts: ["Metonímia", "Personificação", "Hipérbole", "Antítese"], corr: 1, exp: "Dar características humanas a seres inanimados é personificação." },
+        { id: 5, mod: 1, cat: "PORTUGUÊS", q: "Escolha a grafia correta:", opts: ["Exceção", "Excessão", "Esceção"], corr: 0, exp: "Grafia correta: Exceção." },
+        { id: 6, mod: 1, cat: "PORTUGUÊS", q: "Sinônimo de 'Efêmero':", opts: ["Duradouro", "Passageiro", "Importante"], corr: 1, exp: "Efêmero é o que dura pouco tempo." },
+        { id: 7, mod: 1, cat: "PORTUGUÊS", q: "Antônimo de 'Benevolente':", opts: ["Bondoso", "Malévolo", "Calmo"], corr: 1, exp: "Malévolo é o oposto de benevolente." },
+        { id: 8, mod: 1, cat: "PORTUGUÊS", q: "Na frase 'Comprei frutas', o termo 'frutas' é:", opts: ["Sujeito", "Objeto Direto", "Objeto Indireto"], corr: 1, exp: "Quem compra, compra algo (VTD)." },
+        { id: 9, mod: 1, cat: "PORTUGUÊS", q: "Pronome de tratamento para Juízes:", opts: ["Vossa Excelência", "Vossa Senhoria", "Vossa Alteza"], corr: 0, exp: "Autoridades do judiciário são chamadas de Vossa Excelência." },
+        { id: 10, mod: 1, cat: "PORTUGUÊS", q: "Plural de 'Mal':", opts: ["Mals", "Males", "Malzes"], corr: 1, exp: "Plural de mal (substantivo) é males." },
+        { id: 11, mod: 1, cat: "PORTUGUÊS", q: "Uso do 'Por que' em perguntas diretas:", opts: ["Porque", "Por que", "Por quê"], corr: 1, exp: "Início de pergunta usa-se separado e sem acento." },
+        { id: 12, mod: 1, cat: "PORTUGUÊS", q: "Crase antes de nome de cidade que não admite artigo:", opts: ["Vou à Vitória", "Vou a Vitória", "Vou à a Vitória"], corr: 1, exp: "Quem vai a, volta de (Vou a Vitória, volto de Vitória), não há crase." },
+        { id: 13, mod: 1, cat: "PORTUGUÊS", q: "Coletivo de lobos:", opts: ["Alcateia", "Cardume", "Vara"], corr: 0, exp: "Alcateia é o coletivo de lobos." },
+        { id: 14, mod: 1, cat: "PORTUGUÊS", q: "Verbo no infinitivo:", opts: ["Correndo", "Correr", "Correu"], corr: 1, exp: "Infinitivo termina em R." },
+        { id: 15, mod: 1, cat: "PORTUGUÊS", q: "Adjetivo pátrio de quem nasce no ES:", opts: ["Capixaba ou Espirito-santense", "Carioca", "Fluminense"], corr: 0, exp: "No Espírito Santo é Capixaba ou Espirito-santense." },
+
+        // RLM (16 a 20) - Peso 1.0
+        { id: 16, mod: 1, cat: "RAC. LÓGICO", q: "Se A=T e B=F, qual o valor de A v B (OU)?", opts: ["Verdadeiro", "Falso"], corr: 0, exp: "No OU, basta um ser verdadeiro para o resultado ser verdadeiro." },
+        { id: 17, mod: 1, cat: "RAC. LÓGICO", q: "Qual a negação de 'Algum'? ", opts: ["Todo", "Nenhum", "Pelo menos um"], corr: 1, exp: "A negação de 'Algum' é 'Nenhum'." },
+        { id: 18, mod: 1, cat: "RAC. LÓGICO", q: "Um dado é lançado. Qual a chance de sair o número 6?", opts: ["1/6", "1/2", "1/4"], corr: 0, exp: "Um dado tem 6 faces." },
+        { id: 19, mod: 1, cat: "RAC. LÓGICO", q: "2, 4, 8, 16... qual o próximo?", opts: ["20", "24", "32"], corr: 2, exp: "A sequência dobra a cada passo." },
+        { id: 20, mod: 1, cat: "RAC. LÓGICO", q: "Negação de 'A e B':", opts: ["Não A e Não B", "Não A ou Não B", "A ou B"], corr: 1, exp: "Lei de De Morgan: troca o 'e' pelo 'ou' e nega ambos." },
+
+        // LEGISLAÇÃO MPES (21 a 30) - Peso 1.5
+        { id: 21, mod: 2, cat: "LEGISLAÇÃO MPES", q: "O MP é essencial à função jurisdicional do Estado?", opts: ["Sim", "Não"], corr: 0, exp: "Art. 127 da CF/88 e Lei Orgânica." },
+        { id: 22, mod: 2, cat: "LEGISLAÇÃO MPES", q: "O PGJ pode ser destituído por decisão de:", opts: ["Governador sozinho", "Maioria da Assembleia Legislativa", "Presidente"], corr: 1, exp: "A destituição depende de autorização do legislativo." },
+        { id: 23, mod: 2, cat: "LEGISLAÇÃO MPES", q: "O mandato do Corregedor-Geral é de:", opts: ["1 ano", "2 anos", "4 anos"], corr: 1, exp: "Geralmente segue o biênio (2 anos)." },
+        { id: 24, mod: 2, cat: "LEGISLAÇÃO MPES", q: "Promotores de Justiça têm garantia de vitaliciedade após:", opts: ["2 anos", "3 anos", "5 anos"], corr: 0, exp: "Vitaliciedade após 2 anos de exercício." },
+        { id: 25, mod: 2, cat: "LEGISLAÇÃO MPES", q: "É vedado ao membro do MP exercer a advocacia?", opts: ["Sim, é proibido", "Não, pode no tempo livre"], corr: 0, exp: "A Constituição proíbe advocacia para membros do MP." },
+        { id: 26, mod: 2, cat: "LEGISLAÇÃO MPES", q: "Quem preside o Conselho Superior do MPES?", opts: ["O Governador", "O Procurador-Geral de Justiça", "O Juiz mais antigo"], corr: 1, exp: "O PGJ preside o Conselho Superior." },
+        { id: 27, mod: 2, cat: "LEGISLAÇÃO MPES", q: "Unidade, Indivisibilidade e Independência são:", opts: ["Princípios institucionais", "Regras opcionais", "Direitos dos réus"], corr: 0, exp: "São os 3 pilares do Ministério Público." },
+        { id: 28, mod: 2, cat: "LEGISLAÇÃO MPES", q: "O MPES pode intervir em empresas privadas livremente?", opts: ["Não", "Sim"], corr: 0, exp: "Atua na defesa da ordem jurídica e interesses sociais, não gestão privada." },
+        { id: 29, mod: 2, cat: "LEGISLAÇÃO MPES", q: "A Ouvidoria do MPES serve para:", opts: ["Prender pessoas", "Receber críticas e elogios do público", "Julgar processos"], corr: 1, exp: "Ouvidoria é o canal de comunicação com o cidadão." },
+        { id: 30, mod: 2, cat: "LEGISLAÇÃO MPES", q: "O Colégio de Procuradores é composto por:", opts: ["Todos os Promotores", "Todos os Procuradores de Justiça", "Apenas 5 membros"], corr: 1, exp: "Composto por todos os Procuradores em exercício." },
+
+        // DIREITO (31 a 45) - Peso 1.5
+        { id: 31, mod: 2, cat: "DIR. ADMIN", q: "Princípio que exige menor gasto e melhor resultado:", opts: ["Moralidade", "Eficiência", "Legalidade"], corr: 1, exp: "Eficiência é o foco no custo-benefício." },
+        { id: 32, mod: 2, cat: "DIR. CONST", q: "A saúde é um direito:", opts: ["Individual", "Social", "Político"], corr: 1, exp: "Art. 6º da CF/88 (Direitos Sociais)." },
+        { id: 33, mod: 2, cat: "DIR. ADMIN", q: "Ato administrativo anulado produz efeitos:", opts: ["Retroativos (Ex Tunc)", "Futuros (Ex Nunc)"], corr: 0, exp: "Anulação apaga o ato desde o início (Ex Tunc)." },
+        { id: 34, mod: 2, cat: "DIR. ADMIN", q: "Desvio de poder é espécie de:", opts: ["Excesso de poder", "Abuso de poder", "Ato legítimo"], corr: 1, exp: "Abuso de poder divide-se em excesso e desvio." },
+        { id: 35, mod: 2, cat: "DIR. CONST", q: "A soberania emana do:", opts: ["Presidente", "Exército", "Povo"], corr: 2, exp: "Todo poder emana do povo." },
+        { id: 36, mod: 2, cat: "DIR. ADMIN", q: "O silêncio administrativo é sempre ato de aprovação?", opts: ["Sim", "Não"], corr: 1, exp: "Só é aprovação se a lei previr expressamente." },
+        { id: 37, mod: 2, cat: "DIR. ADMIN", q: "Licitação é a regra para contratar?", opts: ["Sim", "Não"], corr: 0, exp: "O dever de licitar é regra para a administração." },
+        { id: 38, mod: 2, cat: "DIR. ADMIN", q: "O agente público age em nome do Estado por:", opts: ["Imputação volitiva", "Representação"], corr: 0, exp: "Teoria do Órgão (Imputação)." },
+        { id: 39, mod: 2, cat: "DIR. CONST", q: "O voto no Brasil é obrigatório a partir dos:", opts: ["16 anos", "18 anos", "21 anos"], corr: 1, exp: "Facultativo aos 16, obrigatório aos 18." },
+        { id: 40, mod: 2, cat: "DIR. ADMIN", q: "Poder de restringir bens em favor do interesse público:", opts: ["Poder de Polícia", "Poder Disciplinar"], corr: 0, exp: "Polícia Administrativa." },
+        { id: 41, mod: 2, cat: "DIR. ADMIN", q: "Cargo em comissão é de livre nomeação e exoneração?", opts: ["Sim", "Não"], corr: 0, exp: "Cargos de confiança/comissão." },
+        { id: 42, mod: 2, cat: "DIR. CONST", q: "A casa é asilo inviolável?", opts: ["Sim", "Não"], corr: 0, exp: "Proteção constitucional do domicílio." },
+        { id: 43, mod: 2, cat: "DIR. ADMIN", q: "Presunção de Legitimidade é atributo do ato?", opts: ["Sim", "Não"], corr: 0, exp: "Atos administrativos presumem-se verdadeiros." },
+        { id: 44, mod: 2, cat: "DIR. ADMIN", q: "A administração pode revogar atos legais por conveniência?", opts: ["Sim", "Não"], corr: 0, exp: "Poder de autotutela (Revogação)." },
+        { id: 45, mod: 2, cat: "DIR. CONST", q: "Homens e mulheres são iguais em direitos e obrigações?", opts: ["Sim", "Não"], corr: 0, exp: "Art. 5º, inciso I da CF." },
+
+        // ADMINISTRAÇÃO (46 a 60) - Peso 1.5
+        { id: 46, mod: 2, cat: "ADMINISTRAÇÃO", q: "O PDCA serve para:", opts: ["Prender, Deter, Correr, Agir", "Planejar, Fazer, Checar, Agir"], corr: 1, exp: "Plan, Do, Check, Act." },
+        { id: 47, mod: 2, cat: "ADMINISTRAÇÃO", q: "Gestão focada no cliente na área pública é:", opts: ["Burocrática", "Gerencial", "Patrimonialista"], corr: 1, exp: "O modelo gerencial foca na eficiência." },
+        { id: 48, mod: 2, cat: "ADMINISTRAÇÃO", q: "Eficácia foca em:", opts: ["Meios e economia", "Resultados e objetivos"], corr: 1, exp: "Eficácia é atingir a meta." },
+        { id: 49, mod: 2, cat: "ADMINISTRAÇÃO", q: "A cultura organizacional é:", opts: ["O prédio da empresa", "O conjunto de valores e hábitos"], corr: 1, exp: "A cultura é o 'DNA' da organização." },
+        { id: 50, mod: 2, cat: "ADMINISTRAÇÃO", q: "Liderança democrática foca em:", opts: ["Decisões do chefe", "Participação do grupo"], corr: 1, exp: "O líder democrático ouve o grupo." },
+        { id: 51, mod: 2, cat: "ADMINISTRAÇÃO", q: "Brainstorming serve para:", opts: ["Limpar a mesa", "Gerar ideias criativas", "Cortar custos"], corr: 1, exp: "Tempestade de ideias para solução de problemas." },
+        { id: 52, mod: 2, cat: "ADMINISTRAÇÃO", q: "A pirâmide de Maslow fala sobre:", opts: ["Finanças", "Necessidades humanas", "Logística"], corr: 1, exp: "Foca na motivação através de necessidades." },
+        { id: 53, mod: 2, cat: "ADMINISTRAÇÃO", q: "Comunicação interna eficiente evita:", opts: ["Lucros", "Rádios corredor (boatos)", "Trabalho"], corr: 1, exp: "Boa comunicação reduz ruídos e boatos." },
+        { id: 54, mod: 2, cat: "ADMINISTRAÇÃO", q: "Organograma representa:", opts: ["A escala de salários", "A estrutura hierárquica", "A agenda"], corr: 1, exp: "Desenho visual da hierarquia da empresa." },
+        { id: 55, mod: 2, cat: "ADMINISTRAÇÃO", q: "Feedback deve ser:", opts: ["Sempre negativo", "Construtivo e constante", "Anual"], corr: 1, exp: "Feedback serve para desenvolvimento." },
+        { id: 56, mod: 2, cat: "ADMINISTRAÇÃO", q: "Eficiência é:", opts: ["Fazer a coisa certa", "Fazer certo a coisa (processo)"], corr: 1, exp: "Foco nos meios e economia de recursos." },
+        { id: 57, mod: 2, cat: "ADMINISTRAÇÃO", q: "Recrutamento externo busca:", opts: ["Pessoas de dentro", "Novos talentos do mercado"], corr: 1, exp: "Busca oxigenar a empresa com gente de fora." },
+        { id: 58, mod: 2, cat: "ADMINISTRAÇÃO", q: "Ética no serviço público é:", opts: ["Opcional", "Dever profissional e moral", "Apenas para chefes"], corr: 1, exp: "A ética é pilar da Administração Pública." },
+        { id: 59, mod: 2, cat: "ADMINISTRAÇÃO", q: "Um processo administrativo deve ser:", opts: ["Lento", "Racional e eficiente", "Secreto"], corr: 1, exp: "Busca a eficiência e transparência." },
+        { id: 60, mod: 2, cat: "ADMINISTRAÇÃO", q: "A motivação é apenas financeira?", opts: ["Sim", "Não, envolve reconhecimento e desafios"], corr: 1, exp: "Fatores motivacionais vão além do salário." },
+{ id: 61, mod: 2, cat: "LEGISLAÇÃO MPES", peso: 1.5, 
+    q: "De acordo com a LC 95/97, o Ministério Público é uma instituição permanente, essencial à função jurisdicional do Estado, incumbindo-lhe a defesa da:", 
+    opts: ["Ordem jurídica, do regime democrático e dos interesses sociais e individuais indisponíveis", "Segurança pública e do patrimônio privado dos governantes", "Vontade absoluta do Poder Executivo estadual"], 
+    corr: 0, 
+    exp: "Texto literal do Art. 1º da Lei Orgânica do MPES e da CF/88." 
+},
+{ 
+    id: 62, mod: 2, cat: "LEGISLAÇÃO MPES", peso: 1.5, 
+    q: "São princípios institucionais do Ministério Público, EXCETO:", 
+    opts: ["A unidade", "A indivisibilidade", "A hierarquia funcional absoluta", "A independência funcional"], 
+    corr: 2, 
+    exp: "No MP não há hierarquia funcional (um promotor não manda no parecer do outro), apenas administrativa." 
+},
+{ 
+    id: 63, mod: 2, cat: "LEGISLAÇÃO MPES", peso: 1.5, 
+    q: "O Procurador-Geral de Justiça será nomeado pelo Governador do Estado, dentre os integrantes da lista tríplice, para mandato de:", 
+    opts: ["Dois anos, permitida uma recondução", "Quatro anos, sem recondução", "Dois anos, permitidas infinitas reconduções"], 
+    corr: 0, 
+    exp: "Art. 9º da LC 95/97: mandato de 2 anos com uma recondução permitida." 
+},
+{ 
+    id: 64, mod: 2, cat: "LEGISLAÇÃO MPES", peso: 1.5, 
+    q: "Qual órgão é considerado o órgão de cúpula da administração superior do MPES?", 
+    opts: ["A Corregedoria-Geral", "O Colégio de Procuradores de Justiça", "O Centro de Apoio Operacional"], 
+    corr: 1, 
+    exp: "O Colégio de Procuradores é o órgão máximo de deliberação superior." 
+},
+{ 
+    id: 65, mod: 2, cat: "LEGISLAÇÃO MPES", peso: 1.5, 
+    q: "A quem cabe a presidência do Conselho Superior do Ministério Público?", 
+    opts: ["Ao Corregedor-Geral", "Ao Procurador-Geral de Justiça", "Ao Governador do Estado"], 
+    corr: 1, 
+    exp: "O PGJ preside o Conselho Superior por força de lei." 
+},
+{ 
+    id: 66, mod: 2, cat: "LEGISLAÇÃO MPES", peso: 1.5, 
+    q: "A garantia de que o membro do MP não perderá o cargo senão por sentença judicial transitada em julgado chama-se:", 
+    opts: ["Inamovibilidade", "Irredutibilidade de subsídios", "Vitaliciedade"], 
+    corr: 2, 
+    exp: "A vitaliciedade garante que o cargo só seja perdido por decisão judicial definitiva." 
+},
+{ 
+    id: 67, mod: 2, cat: "LEGISLAÇÃO MPES", peso: 1.5, 
+    q: "O membro do Ministério Público, após dois anos de exercício, adquire a:", 
+    opts: ["Vitaliciedade", "Estabilidade simples", "Imunidade total"], 
+    corr: 0, 
+    exp: "Diferente do servidor comum (3 anos), o membro (promotor) torna-se vitalício após 2 anos." 
+},
+{ 
+    id: 68, mod: 2, cat: "LEGISLAÇÃO MPES", peso: 1.5, 
+    q: "É vedado (proibido) ao membro do Ministério Público:", 
+    opts: ["Exercer a advocacia", "Exercer o magistério (ser professor)", "Participar de conselhos de assistência social"], 
+    corr: 0, 
+    exp: "Membros do MP são proibidos de advogar, mas podem ser professores." 
+},
+{ 
+    id: 69, mod: 2, cat: "LEGISLAÇÃO MPES", peso: 1.5, 
+    q: "O órgão encarregado de orientar e fiscalizar a conduta e a eficiência dos membros do MP é a:", 
+    opts: ["Ouvidoria", "Corregedoria-Geral", "Assembleia Legislativa"], 
+    corr: 1, 
+    exp: "Fiscalização e orientação são funções típicas da Corregedoria." 
+},
+{ 
+    id: 70, mod: 2, cat: "LEGISLAÇÃO MPES", peso: 1.5, 
+    q: "O Ministério Público do Espírito Santo possui autonomia:", 
+    opts: ["Apenas administrativa", "Funcional, administrativa e financeira", "Subordinada ao Tribunal de Justiça"], 
+    corr: 1, 
+    exp: "O MP é independente e gere seu próprio orçamento e pessoal." 
+}
+    ];
+
+    function renderizar() {
+        const container = document.getElementById('quiz-container');
+        container.innerHTML = '';
+        let currentCat = "";
+        questoes.forEach(q => {
+            if(q.cat !== currentCat) {
+                currentCat = q.cat;
+                container.innerHTML += `<div class="modulo-title">${currentCat}</div>`;
+            }
+            const respondida = localStorage.getItem(`mpes_q_${q.id}`);
+            const div = document.createElement('div');
+            div.className = `questao ${respondida ? 'bloqueado' : ''}`;
+            div.innerHTML = `
+                <span class="badge ${q.mod === 1 ? 'cat-basic' : 'cat-especific'}">${q.cat} (Peso ${q.mod === 1 ? '1.0' : '1.5'})</span>
+                <p><b>${q.id}.</b> ${q.q}</p>
+                ${q.opts.map((opt, i) => `<button class="opcao" onclick="verificar(${q.id}, ${i})">${opt}</button>`).join('')}
+            `;
+            container.appendChild(div);
+        });
+        atualizarStats();
+    }
+
+    function verificar(id, opt) {
+        const q = questoes.find(x => x.id === id);
+        let pontos = parseFloat(localStorage.getItem('mpes_pontos') || 0);
+        let acertos = parseInt(localStorage.getItem('mpes_acertos') || 0);
+        let resp = parseInt(localStorage.getItem('mpes_resp') || 0);
+        localStorage.setItem(`mpes_q_${id}`, "true");
+        localStorage.setItem('mpes_resp', resp + 1);
+        if(opt === q.corr) {
+            localStorage.setItem('mpes_pontos', pontos + (q.mod === 1 ? 1.0 : 1.5));
+            localStorage.setItem('mpes_acertos', acertos + 1);
+            Swal.fire({ title: 'Acertou!', text: q.exp, icon: 'success' });
+        } else {
+            Swal.fire({ title: 'Errou!', text: `A resposta certa era: ${q.opts[q.corr]}`, icon: 'error' });
+        }
+        renderizar();
+    }
+
+    function atualizarStats() {
+        const pontos = parseFloat(localStorage.getItem('mpes_pontos') || 0);
+        const acertos = parseInt(localStorage.getItem('mpes_acertos') || 0);
+        const resp = parseInt(localStorage.getItem('mpes_resp') || 0);
+        document.getElementById('score').innerText = pontos.toFixed(1);
+        document.getElementById('acertos').innerText = `${acertos}/60`;
+        document.getElementById('percent').innerText = resp > 0 ? Math.round((acertos/resp)*100) + '%' : '0%';
+    }
+    renderizar();
+</script>
+</body>
+</html>
