@@ -57,11 +57,41 @@
         { id: 15, mod: 1, cat: "PORTUGUÊS", q: "Adjetivo pátrio de quem nasce no ES:", opts: ["Capixaba ou Espirito-santense", "Carioca", "Fluminense"], corr: 0, exp: "No Espírito Santo é Capixaba ou Espirito-santense." },
 
         // RLM (16 a 20) - Peso 1.0
-        { id: 16, mod: 1, cat: "RAC. LÓGICO", q: "Se A=T e B=F, qual o valor de A v B (OU)?", opts: ["Verdadeiro", "Falso"], corr: 0, exp: "No OU, basta um ser verdadeiro para o resultado ser verdadeiro." },
-        { id: 17, mod: 1, cat: "RAC. LÓGICO", q: "Qual a negação de 'Algum'? ", opts: ["Todo", "Nenhum", "Pelo menos um"], corr: 1, exp: "A negação de 'Algum' é 'Nenhum'." },
-        { id: 18, mod: 1, cat: "RAC. LÓGICO", q: "Um dado é lançado. Qual a chance de sair o número 6?", opts: ["1/6", "1/2", "1/4"], corr: 0, exp: "Um dado tem 6 faces." },
-        { id: 19, mod: 1, cat: "RAC. LÓGICO", q: "2, 4, 8, 16... qual o próximo?", opts: ["20", "24", "32"], corr: 2, exp: "A sequência dobra a cada passo." },
-        { id: 20, mod: 1, cat: "RAC. LÓGICO", q: "Negação de 'A e B':", opts: ["Não A e Não B", "Não A ou Não B", "A ou B"], corr: 1, exp: "Lei de De Morgan: troca o 'e' pelo 'ou' e nega ambos." },
+        { 
+    id: 16, mod: 1, cat: "RLM", peso: 1.0, 
+    q: "Um investimento de R$ 1.000,00 rende 10% no primeiro mês. No segundo mês, o novo montante rende mais 10%. Qual o valor total ao final do período?", 
+    opts: ["R$ 1.200,00", "R$ 1.210,00", "R$ 1.100,00"], 
+    corr: 1, 
+    exp: "Juros sobre juros: 1000 + 10% = 1100. Depois, 1100 + 10% (110) = 1210." 
+},
+{ 
+    id: 17, mod: 1, cat: "RLM", peso: 1.0, 
+    q: "Se 3 digitadores preparam 9 editais em 3 horas, quantos editais 5 digitadores prepararão em 3 horas?", 
+    opts: ["12 editais", "15 editais", "18 editais"], 
+    corr: 1, 
+    exp: "Regra de três simples: 3 digitadores = 9 editais. 5 digitadores = x. (5 * 9) / 3 = 15." 
+},
+{ 
+    id: 18, mod: 1, cat: "RLM", peso: 1.0, 
+    q: "Em uma urna há 5 bolas brancas e 3 bolas pretas. Qual a probabilidade de retirar, ao acaso, uma bola preta?", 
+    opts: ["3/5", "3/8", "5/8"], 
+    corr: 1, 
+    exp: "Probabilidade = Casos favoráveis (3) / Total de casos (5+3=8)." 
+},
+{ 
+    id: 19, mod: 1, cat: "RLM", peso: 1.0, 
+    q: "Um produto que custava R$ 80,00 sofreu um desconto e passou a custar R$ 60,00. Qual foi o percentual de desconto?", 
+    opts: ["20%", "25%", "30%"], 
+    corr: 1, 
+    exp: "A diferença é 20. 20 dividido pelo valor original 80 = 0,25 ou 25%." 
+},
+{ 
+    id: 20, mod: 1, cat: "RLM", peso: 1.0, 
+    q: "A soma de dois números é 50 e a diferença entre eles é 10. Quais são esses números?", 
+    opts: ["30 e 20", "25 e 25", "40 e 10"], 
+    corr: 0, 
+    exp: "Sistema simples: 30+20=50 e 30-20=10." 
+}
 
         // LEGISLAÇÃO MPES (21 a 30) - Peso 1.5
         { id: 21, mod: 2, cat: "LEGISLAÇÃO MPES", q: "O MP é essencial à função jurisdicional do Estado?", opts: ["Sim", "Não"], corr: 0, exp: "Art. 127 da CF/88 e Lei Orgânica." },
