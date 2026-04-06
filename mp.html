@@ -208,8 +208,8 @@
 }
     ];
 
-    <script>
-    // Configuração do tempo de bloqueio (4 horas em milissegundos)
+   <script>
+    // 1. CONFIGURAÇÃO DO TEMPO (4 HORAS)
     const TEMPO_BLOQUEIO = 4 * 60 * 60 * 1000; 
 
     function renderizar() {
@@ -219,11 +219,13 @@
         let currentCat = "";
 
         questoes.forEach(q => {
+            // Gerenciador de títulos de categorias
             if(q.cat !== currentCat) {
                 currentCat = q.cat;
                 container.innerHTML += `<div class="modulo-title">${currentCat}</div>`;
             }
 
+            // LÓGICA DE BLOQUEIO DE 4 HORAS (TIMESTAMP)
             const dataResposta = localStorage.getItem(`mpes_bloqueio_${q.id}`);
             let bloqueada = false;
 
@@ -232,11 +234,13 @@
                 if (tempoPassado < TEMPO_BLOQUEIO) {
                     bloqueada = true;
                 } else {
+                    // Se passou o tempo, limpa o registro para liberar a questão
                     localStorage.removeItem(`mpes_bloqueio_${q.id}`);
                 }
             }
 
             const div = document.createElement('div');
+            // Aplica a classe CSS 'bloqueado' se estiver no prazo de 4h
             div.className = `questao ${bloqueada ? 'bloqueado' : ''}`;
             
             div.innerHTML = `
@@ -259,28 +263,20 @@
         let acertos = parseInt(localStorage.getItem('mpes_acertos') || 0);
         let resp = parseInt(localStorage.getItem('mpes_resp') || 0);
 
+        // GRAVA O TIMESTAMP DO CLIQUE PARA O BLOQUEIO
         localStorage.setItem(`mpes_bloqueio_${id}`, Date.now());
         localStorage.setItem('mpes_resp', resp + 1);
 
         if(opt === q.corr) {
             localStorage.setItem('mpes_pontos', pontos + (q.mod === 1 ? 1.0 : 1.5));
             localStorage.setItem('mpes_acertos', acertos + 1);
-            Swal.fire({ 
-                title: 'Acertou!', 
-                text: q.exp, 
-                icon: 'success',
-                confirmButtonColor: '#22c55e'
-            });
+            Swal.fire({ title: 'Acertou!', text: q.exp, icon: 'success', confirmButtonColor: '#6366f1' });
         } else {
-            Swal.fire({ 
-                title: 'Errou!', 
-                text: `A resposta certa era: ${q.opts[q.corr]}. \n\n${q.exp}`, 
-                icon: 'error',
-                confirmButtonColor: '#ef4444'
-            });
+            Swal.fire({ title: 'Errou!', text: `Resposta certa: ${q.opts[q.corr]}`, icon: 'error', confirmButtonColor: '#ef4444' });
         }
         
-        setTimeout(renderizar, 150);
+        // Atualiza a tela para aplicar o bloqueio visual imediatamente
+        setTimeout(renderizar, 200);
     }
 
     function atualizarStats() {
@@ -288,16 +284,12 @@
         const acertos = parseInt(localStorage.getItem('mpes_acertos') || 0);
         const resp = parseInt(localStorage.getItem('mpes_resp') || 0);
         
-        const scoreEl = document.getElementById('score');
-        const acertosEl = document.getElementById('acertos');
-        const percentEl = document.getElementById('percent');
-
-        if(scoreEl) scoreEl.innerText = pontos.toFixed(1);
-        if(acertosEl) acertosEl.innerText = `${acertos}/60`;
-        if(percentEl) percentEl.innerText = resp > 0 ? Math.round((acertos/resp)*100) + '%' : '0%';
+        if(document.getElementById('score')) document.getElementById('score').innerText = pontos.toFixed(1);
+        if(document.getElementById('acertos')) document.getElementById('acertos').innerText = `${acertos}/60`;
+        if(document.getElementById('percent')) document.getElementById('percent').innerText = resp > 0 ? Math.round((acertos/resp)*100) + '%' : '0%';
     }
 
-    // Garante que o código rode assim que a página carregar
+    // Executa a função assim que o navegador terminar de ler o HTML
     window.onload = renderizar;
 </script>
 
