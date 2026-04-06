@@ -208,22 +208,47 @@
 }
     ];
 
+    <script>
+    // Configuração do tempo de bloqueio (4 horas em milissegundos)
+    const TEMPO_BLOQUEIO = 4 * 60 * 60 * 1000; 
+
     function renderizar() {
         const container = document.getElementById('quiz-container');
         container.innerHTML = '';
         let currentCat = "";
+
         questoes.forEach(q => {
             if(q.cat !== currentCat) {
                 currentCat = q.cat;
                 container.innerHTML += `<div class="modulo-title">${currentCat}</div>`;
             }
-            const respondida = localStorage.getItem(`mpes_q_${q.id}`);
+
+            // Lógica de Bloqueio por Tempo
+            const dataResposta = localStorage.getItem(`mpes_bloqueio_${q.id}`);
+            let bloqueada = false;
+
+            if (dataResposta) {
+                const tempoPassado = Date.now() - parseInt(dataResposta);
+                if (tempoPassado < TEMPO_BLOQUEIO) {
+                    bloqueada = true;
+                } else {
+                    // Se já passou 4h, remove o bloqueio para permitir nova tentativa
+                    localStorage.removeItem(`mpes_bloqueio_${q.id}`);
+                }
+            }
+
             const div = document.createElement('div');
-            div.className = `questao ${respondida ? 'bloqueado' : ''}`;
+            div.className = `questao ${bloqueada ? 'bloqueado' : ''}`;
+            
+            // Se estiver bloqueada, mostra o tempo restante ou apenas desabilita
             div.innerHTML = `
                 <span class="badge ${q.mod === 1 ? 'cat-basic' : 'cat-especific'}">${q.cat} (Peso ${q.mod === 1 ? '1.0' : '1.5'})</span>
                 <p><b>${q.id}.</b> ${q.q}</p>
-                ${q.opts.map((opt, i) => `<button class="opcao" onclick="verificar(${q.id}, ${i})">${opt}</button>`).join('')}
+                ${q.opts.map((opt, i) => `
+                    <button class="opcao" ${bloqueada ? 'disabled' : ''} onclick="verificar(${q.id}, ${i})">
+                        ${opt}
+                    </button>
+                `).join('')}
             `;
             container.appendChild(div);
         });
@@ -235,26 +260,43 @@
         let pontos = parseFloat(localStorage.getItem('mpes_pontos') || 0);
         let acertos = parseInt(localStorage.getItem('mpes_acertos') || 0);
         let resp = parseInt(localStorage.getItem('mpes_resp') || 0);
-        localStorage.setItem(`mpes_q_${id}`, "true");
+
+        // Salva o momento exato da resposta para o bloqueio de 4h
+        localStorage.setItem(`mpes_bloqueio_${id}`, Date.now());
         localStorage.setItem('mpes_resp', resp + 1);
+
         if(opt === q.corr) {
             localStorage.setItem('mpes_pontos', pontos + (q.mod === 1 ? 1.0 : 1.5));
             localStorage.setItem('mpes_acertos', acertos + 1);
-            Swal.fire({ title: 'Acertou!', text: q.exp, icon: 'success' });
+            Swal.fire({ 
+                title: 'Acertou!', 
+                text: q.exp, 
+                icon: 'success',
+                confirmButtonColor: '#22c55e'
+            });
         } else {
-            Swal.fire({ title: 'Errou!', text: `A resposta certa era: ${q.opts[q.corr]}`, icon: 'error' });
+            Swal.fire({ 
+                title: 'Errou!', 
+                text: `A resposta certa era: ${q.opts[q.corr]}. \n\n${q.exp}`, 
+                icon: 'error',
+                confirmButtonColor: '#ef4444'
+            });
         }
-        renderizar();
+        
+        // Pequeno delay para o usuário ver o feedback antes de renderizar o bloqueio
+        setTimeout(renderizar, 150);
     }
 
     function atualizarStats() {
         const pontos = parseFloat(localStorage.getItem('mpes_pontos') || 0);
         const acertos = parseInt(localStorage.getItem('mpes_acertos') || 0);
         const resp = parseInt(localStorage.getItem('mpes_resp') || 0);
+        
         document.getElementById('score').innerText = pontos.toFixed(1);
         document.getElementById('acertos').innerText = `${acertos}/60`;
         document.getElementById('percent').innerText = resp > 0 ? Math.round((acertos/resp)*100) + '%' : '0%';
     }
+
     renderizar();
 </script>
 </body>
