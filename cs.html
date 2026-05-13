@@ -190,21 +190,26 @@
     }
 
     function pararCrash(ganhou) {
-        clearInterval(crashInterval);
-        emJogoCrash = false;
-        const btn = document.getElementById('btnCrash');
-        btn.innerText = "TREINAR";
-        btn.className = "bg-blue-600 px-6 rounded-xl font-bold";
-        
-        if (ganhou) {
-            Swal.fire("Boa!", `Você saiu em ${multiplicador.toFixed(2)}x`, "success");
-        } else {
-            document.getElementById('displayMult').className = "text-4xl font-black text-red-500 relative z-10";
-            setTimeout(() => { document.getElementById('displayMult').className = "text-4xl font-black relative z-10"; }, 1000);
-            Swal.fire("Crash!", "O simulador parou.", "error");
-        }
-        document.getElementById('chartFill').style.height = "0%";
+    clearInterval(crashInterval);
+    emJogoCrash = false;
+    const btn = document.getElementById('btnCrash');
+    const valorAposta = parseFloat(document.getElementById('inputAposta').value) || 0;
+
+    btn.innerText = "TREINAR";
+    btn.className = "bg-blue-600 px-6 rounded-xl font-bold";
+    
+    if (ganhou) {
+        const lucro = valorAposta * (multiplicador - 1);
+        db.ref(`cassino/usuarios/${userLogado.uid}/saldoSimulado`).transaction(s => (s || 0) + lucro);
+        Swal.fire("Boa!", `Você ganhou R$ ${lucro.toFixed(2)} (Saiu em ${multiplicador.toFixed(2)}x)`, "success");
+    } else {
+        db.ref(`cassino/usuarios/${userLogado.uid}/saldoSimulado`).transaction(s => Math.max(0, (s || 0) - valorAposta));
+        document.getElementById('displayMult').className = "text-4xl font-black text-red-500 relative z-10";
+        setTimeout(() => { document.getElementById('displayMult').className = "text-4xl font-black relative z-10"; }, 1000);
+        Swal.fire("Crash!", "Você perdeu a aposta simulada.", "error");
     }
+    document.getElementById('chartFill').style.height = "0%";
+}
 
     // --- LÓGICA DO JOGO 2: VELHA REAL ---
     function ouvirDesafios() {
