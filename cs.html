@@ -12,7 +12,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
-        body { background: #0f172a; color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        :root { --primary: #3b82f6; --bg: #0f172a; --card: #1e293b; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
         
         .chart-box {
             position: relative;
@@ -56,7 +57,6 @@
             font-size: 5rem;
             font-weight: 900;
             text-shadow: 0 0 30px rgba(0,0,0,0.8);
-            transition: transform 0.1s ease;
         }
 
         .crash-effect { background: rgba(239, 68, 68, 0.2) !important; animation: shake 0.2s infinite; }
@@ -65,13 +65,13 @@
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
 
-    <div class="w-full max-w-md space-y-6">
+    <div id="gameContainer" class="w-full max-w-md space-y-6 opacity-0 transition-opacity duration-500">
         <div class="flex justify-between items-center bg-slate-800/50 p-4 rounded-2xl border border-slate-700">
             <div>
                 <h1 class="text-xl font-black italic text-blue-400">ARES7 <span class="text-white">TRADE</span></h1>
-                <p id="statusModo" class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">MODO SIMULAÇÃO</p>
+                <p id="statusModo" class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">CARREGANDO...</p>
             </div>
-            <button onclick="alternarModo()" class="bg-slate-700 hover:bg-slate-600 p-2 px-4 rounded-xl text-xs font-bold transition-all">ALTERAR MODO</button>
+            <button onclick="alternarModo()" class="bg-slate-700 hover:bg-slate-600 p-2 px-4 rounded-xl text-xs font-bold">MODO</button>
         </div>
 
         <div id="mainChart" class="chart-box">
@@ -84,20 +84,22 @@
         <div class="bg-slate-800/50 p-6 rounded-3xl border border-slate-700 shadow-xl space-y-4">
             <div class="flex justify-between items-end">
                 <span class="text-xs text-slate-400 font-bold">SALDO DISPONÍVEL</span>
-                <span id="txtSaldo" class="text-xl font-black text-green-400">R$ 1000.00</span>
+                <span id="txtSaldo" class="text-xl font-black text-green-400">R$ 0,00</span>
             </div>
 
             <div class="relative">
                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">R$</span>
-                <input type="number" id="inputAposta" value="10" class="w-full bg-slate-900 border border-slate-700 p-4 pl-12 rounded-2xl text-2xl font-black outline-none focus:border-blue-500 transition-all">
+                <input type="number" id="inputAposta" value="10" class="w-full bg-slate-900 border border-slate-700 p-4 pl-12 rounded-2xl text-2xl font-black outline-none focus:border-blue-500">
             </div>
 
-            <button id="btnAcao" onclick="controlarJogo()" class="w-full bg-blue-600 hover:bg-blue-500 py-5 rounded-2xl font-black text-2xl shadow-lg shadow-blue-900/20 active:scale-95 transition-all">COMEÇAR TRADE</button>
+            <button id="btnAcao" onclick="controlarJogo()" class="w-full bg-blue-600 hover:bg-blue-500 py-5 rounded-2xl font-black text-2xl shadow-lg active:scale-95 transition-all">COMEÇAR TRADE</button>
         </div>
+        
+        <p class="text-center text-[10px] text-slate-500 uppercase tracking-tighter">Conectado como: <span id="userEmail">...</span></p>
     </div>
 
 <script>
-    // --- CREDENCIAIS INTEGRADAS ---
+    // --- CONFIGURAÇÃO FIREBASE (IGUAL AO TEU INDEX.HTML) ---
     const firebaseConfig = {
         apiKey: "AIzaSyBanevR51ejaTE0ccqlmlU6VRh7Qg4EETs",
         authDomain: "aresrpg-7daf4.firebaseapp.com",
@@ -120,13 +122,24 @@
     let pontoDeCrash;
     let saldoSimulado = 1000.00;
 
-    // Monitoramento do Estado do Usuário
+    // --- INTEGRAÇÃO DE CONTA (IGUAL À DIETA E AVALIAÇÃO) ---
     auth.onAuthStateChanged(user => {
         if (user) {
             userLogado = user;
+            document.getElementById('userEmail').innerText = user.email;
+            document.getElementById('gameContainer').style.opacity = "1";
             carregarDados();
         } else {
-            Swal.fire("Atenção", "Conecta-te à tua conta para operar.", "warning");
+            // Se não estiver logado, manda para a página principal
+            Swal.fire({
+                title: "Acesso Negado",
+                text: "Tens de estar logado no Ares7 para aceder ao Cassino.",
+                icon: "warning",
+                confirmButtonColor: "#3b82f6",
+                confirmButtonText: "Fazer Login"
+            }).then(() => {
+                window.location.href = "../index.html";
+            });
         }
     });
 
@@ -149,55 +162,45 @@
         if (!userLogado) return;
         db.ref(`cassino/usuarios/${userLogado.uid}`).once('value', snap => {
             const data = snap.val();
-            // Verifica se o usuário tem permissão para o Modo Real
             if (data && data.modoRealAtivo) {
                 modoReal = !modoReal;
                 carregarDados();
                 Swal.fire("Modo Alterado", modoReal ? "Operando com Saldo Real" : "Operando em Simulação", "info");
             } else {
-                Swal.fire("Bloqueado", "O Modo Real exige ativação manual pela administração.", "error");
+                Swal.fire("Bloqueado", "Modo Real exige autorização manual (Depósito).", "error");
             }
         });
     }
 
     function controlarJogo() {
-        if (!jogando) {
-            iniciar();
-        } else {
-            vender();
-        }
+        if (!jogando) iniciar();
+        else vender();
     }
 
     function iniciar() {
         const aposta = parseFloat(document.getElementById('inputAposta').value);
         if (aposta <= 0 || isNaN(aposta)) return;
 
-        // Reset da Interface
         jogando = true;
         multiplicador = 1.00;
         document.getElementById('mainChart').classList.remove('crash-effect');
         document.getElementById('crashLabel').classList.add('hidden');
         document.getElementById('displayMult').className = "text-white";
-        document.getElementById('btnAcao').innerText = "CASH OUT (VENDER)";
+        document.getElementById('btnAcao').innerText = "VENDER (CASH OUT)";
         document.getElementById('btnAcao').classList.replace('bg-blue-600', 'bg-orange-500');
 
-        // Cálculo do Crash (Ponto onde o gráfico para)
-        pontoDeCrash = (Math.random() * 5 + 1.1).toFixed(2);
+        pontoDeCrash = (Math.random() * 4 + 1.1).toFixed(2);
 
         loop = setInterval(() => {
             multiplicador += 0.01;
             const mFix = multiplicador.toFixed(2);
-            
-            // Atualização do Texto e da Animação
             document.getElementById('displayMult').innerText = mFix + "x";
             let altura = Math.min((multiplicador - 1) * 25, 100); 
             document.getElementById('chartFill').style.height = altura + "%";
             document.getElementById('chartLine').style.bottom = altura + "%";
 
-            if (multiplicador >= pontoDeCrash) {
-                crash();
-            }
-        }, 70);
+            if (multiplicador >= pontoDeCrash) crash();
+        }, 75);
     }
 
     function vender() {
@@ -211,46 +214,38 @@
                 const data = snap.val();
                 const limite = data.limitePremio || 100;
                 const saldoAtual = data.saldoReal || 0;
-                let ganhoParaAdicionar = parseFloat(lucroFinal);
+                let ganhoReal = parseFloat(lucroFinal);
 
-                // Trava de Segurança contra ganhos excessivos
-                if ((saldoAtual + ganhoParaAdicionar) > limite) {
-                    ganhoParaAdicionar = limite - saldoAtual;
-                    if(ganhoParaAdicionar < 0) ganhoParaAdicionar = 0;
-                    Swal.fire("Limite Atingido", "Alcançaste o prémio máximo permitido.", "info");
+                if ((saldoAtual + ganhoReal) > limite) {
+                    ganhoReal = Math.max(0, limite - saldoAtual);
+                    Swal.fire("Limite Atingido", "Prémio limitado ao valor investido.", "info");
                 }
                 
-                db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).transaction(atual => (atual || 0) + ganhoParaAdicionar);
+                db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).transaction(atual => (atual || 0) + ganhoReal);
             });
         } else {
             saldoSimulado += parseFloat(lucroFinal);
         }
 
-        Swal.fire("Sucesso!", `Saíste em ${multiplicador.toFixed(2)}x. Total: R$ ${lucroFinal}`, "success");
+        Swal.fire("Trade Fechado!", `Ganho: R$ ${lucroFinal}`, "success");
         resetInterface();
     }
 
     function crash() {
         clearInterval(loop);
         jogando = false;
-        
         document.getElementById('mainChart').classList.add('crash-effect');
         document.getElementById('displayMult').className = "text-red-500";
         document.getElementById('crashLabel').classList.remove('hidden');
         
         const aposta = parseFloat(document.getElementById('inputAposta').value);
         if (modoReal) {
-            db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).transaction(atual => {
-                let novo = (atual || 0) - aposta;
-                return novo < 0 ? 0 : novo;
-            });
+            db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).transaction(atual => Math.max(0, (atual || 0) - aposta));
         } else {
             saldoSimulado -= aposta;
         }
 
-        setTimeout(() => {
-            resetInterface();
-        }, 2000);
+        setTimeout(() => resetInterface(), 2000);
     }
 
     function resetInterface() {
@@ -261,6 +256,5 @@
         carregarDados();
     }
 </script>
-
 </body>
 </html>
