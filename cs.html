@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ares7 - Trade Crash</title>
+    <title>Ares7 - Trade & Desafios</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
@@ -13,11 +13,12 @@
 
     <style>
         :root { --primary: #3b82f6; --bg: #0f172a; --card: #1e293b; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; }
         
+        /* Estilos Crash */
         .chart-box {
             position: relative;
-            height: 300px;
+            height: 200px;
             background: #1e293b;
             border: 2px solid #334155;
             border-radius: 24px;
@@ -25,77 +26,85 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
         }
+        #chartFill { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(0deg, rgba(34, 197, 94, 0.4) 0%, rgba(34, 197, 94, 0) 100%); transition: height 0.1s linear; }
+        #chartLine { position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: #22c55e; box-shadow: 0px 0px 20px #22c55e; transition: bottom 0.1s linear; }
+        
+        /* Estilos Jogo da Velha */
+        .velha-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .velha-cell { aspect-ratio: 1; background: #334155; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .velha-cell:hover { background: #475569; }
+        .velha-cell.taken { cursor: not-allowed; }
 
-        #chartFill {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 0%;
-            background: linear-gradient(0deg, rgba(34, 197, 94, 0.4) 0%, rgba(34, 197, 94, 0) 100%);
-            transition: height 0.1s linear;
-            z-index: 1;
-        }
+        .modo-real-only { filter: blur(4px); pointer-events: none; opacity: 0.5; transition: 0.3s; }
+        .modo-real-active { filter: blur(0); pointer-events: auto; opacity: 1; }
 
-        #chartLine {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: #22c55e;
-            box-shadow: 0px 0px 20px #22c55e;
-            z-index: 2;
-            transition: bottom 0.1s linear;
-        }
-
-        #displayMult {
-            position: relative;
-            z-index: 10;
-            font-size: 5rem;
-            font-weight: 900;
-            text-shadow: 0 0 30px rgba(0,0,0,0.8);
-        }
-
-        .crash-effect { background: rgba(239, 68, 68, 0.2) !important; animation: shake 0.2s infinite; }
+        .crash-effect { animation: shake 0.2s infinite; }
         @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(1px, 1px); } }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen p-4 pb-20">
 
-    <div id="gameContainer" class="w-full max-w-md space-y-6 opacity-0 transition-opacity duration-500">
+    <div id="gameContainer" class="w-full max-w-md mx-auto space-y-6 opacity-0 transition-opacity duration-500">
+        
         <div class="flex justify-between items-center bg-slate-800/50 p-4 rounded-2xl border border-slate-700">
             <div>
-                <h1 class="text-xl font-black italic text-blue-400">ARES7 <span class="text-white">TRADE</span></h1>
+                <h1 class="text-xl font-black italic text-blue-400">ARES7 <span class="text-white">CS</span></h1>
                 <p id="statusModo" class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">CARREGANDO...</p>
             </div>
-            <button onclick="alternarModo()" class="bg-slate-700 hover:bg-slate-600 p-2 px-4 rounded-xl text-xs font-bold transition-all">MODO</button>
+            <button onclick="alternarModo()" class="bg-slate-700 hover:bg-slate-600 p-2 px-4 rounded-xl text-xs font-bold">ALTERNAR MODO</button>
         </div>
 
-        <div id="mainChart" class="chart-box">
-            <div id="chartFill"></div>
-            <div id="chartLine"></div>
-            <div id="displayMult">1.00x</div>
-            <div id="crashLabel" class="absolute hidden z-20 text-red-500 text-5xl font-black italic">CRASHED!</div>
+        <div class="bg-slate-800/50 p-4 rounded-3xl border border-slate-700 shadow-xl space-y-4">
+            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Ares7 Trade Crash</h2>
+            <div id="mainChart" class="chart-box">
+                <div id="chartFill"></div>
+                <div id="chartLine"></div>
+                <div id="displayMult" class="relative z-10 text-4xl font-black">1.00x</div>
+            </div>
+            <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-700">
+                <span id="txtSaldo" class="text-lg font-black text-green-400">R$ 0,00</span>
+                <input type="number" id="inputAposta" value="10" class="w-20 bg-transparent text-right font-bold outline-none">
+            </div>
+            <button id="btnAcao" onclick="controlarJogo()" class="w-full bg-blue-600 py-4 rounded-2xl font-black text-xl active:scale-95 transition-all">COMEÇAR TRADE</button>
         </div>
 
-        <div class="bg-slate-800/50 p-6 rounded-3xl border border-slate-700 shadow-xl space-y-4">
-            <div class="flex justify-between items-end">
-                <span class="text-xs text-slate-400 font-bold">SALDO DISPONÍVEL</span>
-                <span id="txtSaldo" class="text-xl font-black text-green-400">R$ 0,00</span>
+        <div id="sectionVelha" class="bg-slate-800/50 p-4 rounded-3xl border border-slate-700 shadow-xl space-y-4 modo-real-only">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xs font-bold text-orange-400 uppercase tracking-widest">Desafio Velha Ao Vivo</h2>
+                <span class="text-[10px] bg-red-500 px-2 py-0.5 rounded-full font-bold animate-pulse">LIVE</span>
+            </div>
+            
+            <div id="velhaMenu" class="space-y-3">
+                <p class="text-[10px] text-slate-400 text-center uppercase">Aposte contra outros jogadores em tempo real</p>
+                <div class="flex gap-2">
+                    <input type="number" id="apostaVelha" value="5" class="flex-1 bg-slate-900 p-3 rounded-xl border border-slate-700 font-bold outline-none" placeholder="Valor Aposta">
+                    <button onclick="buscarOponente()" class="bg-orange-500 hover:bg-orange-400 px-6 rounded-xl font-bold text-sm">BUSCAR</button>
+                </div>
             </div>
 
-            <div class="relative">
-                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">R$</span>
-                <input type="number" id="inputAposta" value="10" class="w-full bg-slate-900 border border-slate-700 p-4 pl-12 rounded-2xl text-2xl font-black outline-none focus:border-blue-500">
+            <div id="velhaGame" class="hidden space-y-4">
+                <div class="flex justify-between text-[10px] font-bold uppercase text-slate-400">
+                    <span>Tu (X)</span>
+                    <span id="turnoAviso" class="text-blue-400">Aguardando...</span>
+                    <span>Oponente (O)</span>
+                </div>
+                <div class="velha-grid" id="gridVelha">
+                    <div class="velha-cell" onclick="marcarVelha(0)"></div>
+                    <div class="velha-cell" onclick="marcarVelha(1)"></div>
+                    <div class="velha-cell" onclick="marcarVelha(2)"></div>
+                    <div class="velha-cell" onclick="marcarVelha(3)"></div>
+                    <div class="velha-cell" onclick="marcarVelha(4)"></div>
+                    <div class="velha-cell" onclick="marcarVelha(5)"></div>
+                    <div class="velha-cell" onclick="marcarVelha(6)"></div>
+                    <div class="velha-cell" onclick="marcarVelha(7)"></div>
+                    <div class="velha-cell" onclick="marcarVelha(8)"></div>
+                </div>
+                <button onclick="desistirVelha()" class="w-full py-2 text-xs text-slate-500 font-bold uppercase hover:text-red-400 transition-colors">Desistir (Perde a aposta)</button>
             </div>
-
-            <button id="btnAcao" onclick="controlarJogo()" class="w-full bg-blue-600 hover:bg-blue-500 py-5 rounded-2xl font-black text-2xl shadow-lg active:scale-95 transition-all">COMEÇAR TRADE</button>
         </div>
-        
-        <p class="text-center text-[10px] text-slate-500 uppercase tracking-tighter">Conectado como: <span id="userEmail">...</span></p>
+
+        <p class="text-center text-[10px] text-slate-500 uppercase tracking-tighter">ID: <span id="userId">...</span></p>
     </div>
 
 <script>
@@ -115,15 +124,19 @@
 
     let userLogado = null;
     let modoReal = false;
-    let jogando = false;
+    let jogandoCrash = false;
     let multiplicador = 1.00;
-    let loop;
-    let pontoDeCrash;
+    let loopCrash;
+    
+    // Variáveis Velha
+    let gameId = null;
+    let meuSimbolo = null;
+    let meuTurno = false;
 
     auth.onAuthStateChanged(user => {
         if (user) {
             userLogado = user;
-            document.getElementById('userEmail').innerText = user.email;
+            document.getElementById('userId').innerText = user.uid.substring(0,8);
             document.getElementById('gameContainer').style.opacity = "1";
             carregarDados();
         } else {
@@ -135,162 +148,190 @@
         const path = `cassino/usuarios/${userLogado.uid}`;
         db.ref(path).on('value', snap => {
             const data = snap.val() || {};
-            const saldoSimulado = data.saldoSimulado !== undefined ? data.saldoSimulado : 1000.00;
+            const saldoSim = data.saldoSimulado !== undefined ? data.saldoSimulado : 1000.00;
             const saldoReal = data.saldoReal || 0;
 
+            const sectionVelha = document.getElementById('sectionVelha');
+
             if (!modoReal) {
-                document.getElementById('txtSaldo').innerText = `R$ ${saldoSimulado.toFixed(2)}`;
+                document.getElementById('txtSaldo').innerText = `R$ ${saldoSim.toFixed(2)}`;
                 document.getElementById('statusModo').innerText = "MODO SIMULAÇÃO";
                 document.getElementById('statusModo').className = "text-[10px] font-bold tracking-widest text-slate-400 uppercase";
+                sectionVelha.classList.remove('modo-real-active');
             } else {
                 document.getElementById('txtSaldo').innerText = `R$ ${saldoReal.toFixed(2)}`;
                 document.getElementById('statusModo').innerText = "MODO REAL ATIVO";
                 document.getElementById('statusModo').className = "text-[10px] font-bold tracking-widest text-red-500 uppercase";
+                sectionVelha.classList.add('modo-real-active');
             }
         });
     }
 
     function alternarModo() {
-        if (!userLogado) return;
-
-        // Se já estiver no modo real, volta para a simulação normalmente
         if (modoReal) {
             modoReal = false;
             carregarDados();
-            Swal.fire({
-                title: "Modo Simulação",
-                text: "Voltaste para a banca de treino.",
-                icon: "info",
-                confirmButtonColor: "#3b82f6",
-                background: "#1e293b",
-                color: "#fff"
-            });
             return;
         }
 
-        // Se quiser ir para o modo real, verificamos se a conta está ativa
         db.ref(`cassino/usuarios/${userLogado.uid}`).once('value', snap => {
             const data = snap.val() || {};
             if (data.modoRealAtivo) {
                 modoReal = true;
                 carregarDados();
-                Swal.fire({
-                    title: "Modo Real Ativado",
-                    text: "Estás agora a operar com o teu saldo real.",
-                    icon: "warning",
-                    confirmButtonColor: "#3b82f6",
-                    background: "#1e293b",
-                    color: "#fff"
-                });
             } else {
-                // EXIBE O PIX PARA DEPÓSITO
                 Swal.fire({
                     title: "Ativar Conta Real",
-                    html: `
-                        <div class="text-center space-y-4">
-                            <p class="text-sm">Para operar com saldo real, realiza um depósito para ativação da conta.</p>
-                            <div class="bg-slate-900 p-4 rounded-xl border border-blue-500/50 my-4">
-                                <span class="text-[10px] text-slate-500 block uppercase font-bold tracking-widest">Chave PIX (CPF)</span>
-                                <span class="text-2xl font-black text-blue-400 select-all">10490828779</span>
-                            </div>
-                            <p class="text-[10px] text-slate-400 uppercase italic font-bold">A conta será ativada pela administração após o envio.</p>
-                        </div>
-                    `,
-                    showConfirmButton: true,
-                    confirmButtonText: "OK, ENTENDIDO",
-                    confirmButtonColor: "#3b82f6",
-                    background: "#1e293b",
-                    color: "#fff"
+                    html: `<p>Deposite via PIX para liberar o Modo Real e Desafios Ao Vivo:</p><br><b>10490828779 (CPF)</b>`,
+                    icon: "info",
+                    confirmButtonColor: "#3b82f6"
                 });
             }
         });
     }
 
-    function controlarJogo() {
-        if (!jogando) iniciar();
-        else vender();
-    }
-
-    function iniciar() {
+    // --- LÓGICA CRASH (RESUMIDA) ---
+    function controlarJogo() { if (!jogandoCrash) iniciarCrash(); else venderCrash(); }
+    function iniciarCrash() {
         const aposta = parseFloat(document.getElementById('inputAposta').value);
         if (aposta <= 0 || isNaN(aposta)) return;
-
-        jogando = true;
-        multiplicador = 1.00;
-        document.getElementById('mainChart').classList.remove('crash-effect');
-        document.getElementById('crashLabel').classList.add('hidden');
-        document.getElementById('displayMult').className = "text-white";
-        document.getElementById('btnAcao').innerText = "VENDER (CASH OUT)";
-        document.getElementById('btnAcao').classList.replace('bg-blue-600', 'bg-orange-500');
-
-        pontoDeCrash = (Math.random() * 4 + 1.1).toFixed(2);
-
-        loop = setInterval(() => {
+        jogandoCrash = true; multiplicador = 1.00;
+        document.getElementById('btnAcao').innerText = "CASH OUT";
+        document.getElementById('btnAcao').className = "w-full bg-orange-500 py-4 rounded-2xl font-black text-xl";
+        let pontoDeCrash = (Math.random() * 3 + 1.1).toFixed(2);
+        loopCrash = setInterval(() => {
             multiplicador += 0.01;
             document.getElementById('displayMult').innerText = multiplicador.toFixed(2) + "x";
-            let altura = Math.min((multiplicador - 1) * 25, 100); 
-            document.getElementById('chartFill').style.height = altura + "%";
-            document.getElementById('chartLine').style.bottom = altura + "%";
-
-            if (multiplicador >= pontoDeCrash) crash();
-        }, 75);
+            document.getElementById('chartFill').style.height = Math.min((multiplicador-1)*30, 100) + "%";
+            if (multiplicador >= pontoDeCrash) finalizarCrash(false);
+        }, 100);
+    }
+    function venderCrash() { finalizarCrash(true); }
+    function finalizarCrash(ganhou) {
+        clearInterval(loopCrash); jogandoCrash = false;
+        const aposta = parseFloat(document.getElementById('inputAposta').value);
+        const ref = modoReal ? 'saldoReal' : 'saldoSimulado';
+        if (ganhou) {
+            const lucro = parseFloat((aposta * multiplicador).toFixed(2));
+            db.ref(`cassino/usuarios/${userLogado.uid}/${ref}`).transaction(a => (a || 0) + lucro);
+            Swal.fire("Ganhaste!", `+ R$ ${lucro}`, "success");
+        } else {
+            db.ref(`cassino/usuarios/${userLogado.uid}/${ref}`).transaction(a => Math.max(0, (a || 0) - aposta));
+            document.getElementById('displayMult').className = "relative z-10 text-4xl font-black text-red-500 animate-bounce";
+            setTimeout(() => { document.getElementById('displayMult').className = "relative z-10 text-4xl font-black text-white"; }, 2000);
+        }
+        document.getElementById('btnAcao').innerText = "COMEÇAR TRADE";
+        document.getElementById('btnAcao').className = "w-full bg-blue-600 py-4 rounded-2xl font-black text-xl";
     }
 
-    function vender() {
-        clearInterval(loop);
-        jogando = false;
-        const aposta = parseFloat(document.getElementById('inputAposta').value);
-        const lucroFinal = parseFloat((aposta * multiplicador).toFixed(2));
-
-        const refSaldo = modoReal ? 'saldoReal' : 'saldoSimulado';
+    // --- LÓGICA JOGO DA VELHA (LIVE) ---
+    function buscarOponente() {
+        if (!modoReal) return;
+        const aposta = parseFloat(document.getElementById('apostaVelha').value);
         
-        db.ref(`cassino/usuarios/${userLogado.uid}`).once('value', snap => {
-            const data = snap.val() || {};
-            let ganhoParaAdicionar = lucroFinal;
+        db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).once('value', s => {
+            if ((s.val() || 0) < aposta) return Swal.fire("Saldo Insuficiente", "", "error");
 
-            if (modoReal) {
-                const limite = data.limitePremio || 100;
-                const saldoAtual = data.saldoReal || 0;
-                if ((saldoAtual + ganhoParaAdicionar) > limite) {
-                    ganhoParaAdicionar = Math.max(0, limite - saldoAtual);
-                    Swal.fire("Limite Atingido", "Prémio limitado ao valor investido.", "info");
-                }
-            }
+            Swal.fire({ title: 'Buscando Oponente...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-            db.ref(`cassino/usuarios/${userLogado.uid}/${refSaldo}`).transaction(atual => {
-                if (atual === null && !modoReal) return 1000 + ganhoParaAdicionar;
-                return (atual || 0) + ganhoParaAdicionar;
+            const filaRef = db.ref('jogos/velha/fila');
+            filaRef.once('value', snap => {
+                const fila = snap.val();
+                if (fila) {
+                    const oponenteId = Object.keys(fila)[0];
+                    const dadosOponente = fila[oponenteId];
+                    if (dadosOponente.aposta == aposta && oponenteId !== userLogado.uid) {
+                        gameId = oponenteId + "_" + userLogado.uid;
+                        meuSimbolo = "O";
+                        filaRef.child(oponenteId).remove();
+                        db.ref('jogos/velha/partidas/' + gameId).set({
+                            players: { [oponenteId]: "X", [userLogado.uid]: "O" },
+                            tabuleiro: ["", "", "", "", "", "", "", "", ""],
+                            turno: oponenteId,
+                            aposta: aposta,
+                            status: "jogando"
+                        });
+                        iniciarVelhaUI();
+                    } else { criarEsperaVelha(aposta); }
+                } else { criarEsperaVelha(aposta); }
             });
         });
-
-        Swal.fire("Trade Fechado!", `Ganho: R$ ${lucroFinal}`, "success");
-        resetInterface();
     }
 
-    function crash() {
-        clearInterval(loop);
-        jogando = false;
-        document.getElementById('mainChart').classList.add('crash-effect');
-        document.getElementById('displayMult').className = "text-red-500";
-        document.getElementById('crashLabel').classList.remove('hidden');
-        
-        const aposta = parseFloat(document.getElementById('inputAposta').value);
-        const refSaldo = modoReal ? 'saldoReal' : 'saldoSimulado';
-
-        db.ref(`cassino/usuarios/${userLogado.uid}/${refSaldo}`).transaction(atual => {
-            if (atual === null && !modoReal) return 1000 - aposta;
-            return Math.max(0, (atual || 0) - aposta);
+    function criarEsperaVelha(aposta) {
+        db.ref('jogos/velha/fila/' + userLogado.uid).set({ aposta: aposta, time: Date.now() });
+        meuSimbolo = "X";
+        // Ouvir se alguém aceitou
+        db.ref('jogos/velha/partidas').on('child_added', snap => {
+            if (snap.key.includes(userLogado.uid)) {
+                gameId = snap.key;
+                iniciarVelhaUI();
+            }
         });
-
-        setTimeout(() => resetInterface(), 2000);
     }
 
-    function resetInterface() {
-        document.getElementById('btnAcao').innerText = "COMEÇAR TRADE";
-        document.getElementById('btnAcao').classList.replace('bg-orange-500', 'bg-blue-600');
-        document.getElementById('chartFill').style.height = "0%";
-        document.getElementById('chartLine').style.bottom = "0%";
-        carregarDados();
+    function iniciarVelhaUI() {
+        Swal.close();
+        document.getElementById('velhaMenu').classList.add('hidden');
+        document.getElementById('velhaGame').classList.remove('hidden');
+        
+        db.ref('jogos/velha/partidas/' + gameId).on('value', snap => {
+            const data = snap.val();
+            if (!data) return;
+            
+            const cells = document.querySelectorAll('.velha-cell');
+            data.tabuleiro.forEach((v, i) => {
+                cells[i].innerText = v;
+                cells[i].className = v === "" ? "velha-cell" : "velha-cell taken text-orange-400";
+            });
+
+            meuTurno = (data.turno === userLogado.uid);
+            document.getElementById('turnoAviso').innerText = meuTurno ? "TEU TURNO!" : "AGUARDE...";
+            
+            if (data.vencedor) finalizarVelha(data.vencedor, data.aposta);
+        });
+    }
+
+    function marcarVelha(index) {
+        if (!meuTurno) return;
+        const ref = db.ref('jogos/velha/partidas/' + gameId);
+        ref.once('value', snap => {
+            const data = snap.val();
+            if (data.tabuleiro[index] === "") {
+                data.tabuleiro[index] = meuSimbolo;
+                const oponenteId = Object.keys(data.players).find(id => id !== userLogado.uid);
+                
+                // Verificar Vitoria
+                const win = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+                let vencedor = null;
+                if (win.some(p => p.every(i => data.tabuleiro[i] === meuSimbolo))) vencedor = userLogado.uid;
+                else if (!data.tabuleiro.includes("")) vencedor = "empate";
+
+                ref.update({ tabuleiro: data.tabuleiro, turno: oponenteId, vencedor: vencedor });
+            }
+        });
+    }
+
+    function finalizarVelha(vencedor, aposta) {
+        db.ref('jogos/velha/partidas/' + gameId).off();
+        const msg = vencedor === "empate" ? "Empate!" : (vencedor === userLogado.uid ? "GANHASTE!" : "PERDESTE!");
+        
+        if (vencedor === userLogado.uid) {
+            db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).transaction(a => (a || 0) + aposta);
+        } else if (vencedor !== "empate") {
+            db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).transaction(a => Math.max(0, (a || 0) - aposta));
+        }
+
+        Swal.fire(msg, `Valor da aposta: R$ ${aposta}`, vencedor === userLogado.uid ? "success" : "info").then(() => {
+            location.reload();
+        });
+    }
+
+    function desistirVelha() {
+        if (gameId) {
+            const oponenteId = gameId.replace(userLogado.uid, "").replace("_", "");
+            db.ref('jogos/velha/partidas/' + gameId).update({ vencedor: oponenteId });
+        }
     }
 </script>
 </body>
