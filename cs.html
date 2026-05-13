@@ -99,7 +99,6 @@
     </div>
 
 <script>
-    // --- CONFIGURAÇÃO FIREBASE (IGUAL AO TEU INDEX.HTML) ---
     const firebaseConfig = {
         apiKey: "AIzaSyBanevR51ejaTE0ccqlmlU6VRh7Qg4EETs",
         authDomain: "aresrpg-7daf4.firebaseapp.com",
@@ -120,9 +119,7 @@
     let multiplicador = 1.00;
     let loop;
     let pontoDeCrash;
-    let saldoSimulado = 1000.00;
 
-    // --- INTEGRAÇÃO DE CONTA (IGUAL À DIETA E AVALIAÇÃO) ---
     auth.onAuthStateChanged(user => {
         if (user) {
             userLogado = user;
@@ -130,36 +127,32 @@
             document.getElementById('gameContainer').style.opacity = "1";
             carregarDados();
         } else {
-            // Se não estiver logado, manda para a página principal
-            Swal.fire({
-                title: "Acesso Negado",
-                text: "Tens de estar logado no Ares7 para aceder ao Cassino.",
-                icon: "warning",
-                confirmButtonColor: "#3b82f6",
-                confirmButtonText: "Fazer Login"
-            }).then(() => {
-                window.location.href = "../index.html";
-            });
+            window.location.href = "../index.html";
         }
     });
 
     function carregarDados() {
-        if (!modoReal) {
-            document.getElementById('txtSaldo').innerText = `R$ ${saldoSimulado.toFixed(2)}`;
-            document.getElementById('statusModo').innerText = "MODO SIMULAÇÃO";
-            document.getElementById('statusModo').className = "text-[10px] font-bold tracking-widest text-slate-400 uppercase";
-        } else {
-            db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).on('value', snap => {
-                const saldo = snap.val() || 0;
-                document.getElementById('txtSaldo').innerText = `R$ ${saldo.toFixed(2)}`;
+        const path = `cassino/usuarios/${userLogado.uid}`;
+        db.ref(path).on('value', snap => {
+            const data = snap.val() || {};
+            
+            // Se o saldo de simulação não existir, inicia com 1000
+            const saldoSimulado = data.saldoSimulado !== undefined ? data.saldoSimulado : 1000.00;
+            const saldoReal = data.saldoReal || 0;
+
+            if (!modoReal) {
+                document.getElementById('txtSaldo').innerText = `R$ ${saldoSimulado.toFixed(2)}`;
+                document.getElementById('statusModo').innerText = "MODO SIMULAÇÃO";
+                document.getElementById('statusModo').className = "text-[10px] font-bold tracking-widest text-slate-400 uppercase";
+            } else {
+                document.getElementById('txtSaldo').innerText = `R$ ${saldoReal.toFixed(2)}`;
                 document.getElementById('statusModo').innerText = "MODO REAL ATIVO";
                 document.getElementById('statusModo').className = "text-[10px] font-bold tracking-widest text-red-500 uppercase";
-            });
-        }
+            }
+        });
     }
 
     function alternarModo() {
-        if (!userLogado) return;
         db.ref(`cassino/usuarios/${userLogado.uid}`).once('value', snap => {
             const data = snap.val();
             if (data && data.modoRealAtivo) {
@@ -167,7 +160,7 @@
                 carregarDados();
                 Swal.fire("Modo Alterado", modoReal ? "Operando com Saldo Real" : "Operando em Simulação", "info");
             } else {
-                Swal.fire("Bloqueado", "Modo Real exige autorização manual (Depósito).", "error");
+                Swal.fire("Bloqueado", "Modo Real exige autorização manual.", "error");
             }
         });
     }
@@ -193,8 +186,7 @@
 
         loop = setInterval(() => {
             multiplicador += 0.01;
-            const mFix = multiplicador.toFixed(2);
-            document.getElementById('displayMult').innerText = mFix + "x";
+            document.getElementById('displayMult').innerText = multiplicador.toFixed(2) + "x";
             let altura = Math.min((multiplicador - 1) * 25, 100); 
             document.getElementById('chartFill').style.height = altura + "%";
             document.getElementById('chartLine').style.bottom = altura + "%";
@@ -207,25 +199,29 @@
         clearInterval(loop);
         jogando = false;
         const aposta = parseFloat(document.getElementById('inputAposta').value);
-        const lucroFinal = (aposta * multiplicador).toFixed(2);
+        const lucroFinal = parseFloat((aposta * multiplicador).toFixed(2));
 
-        if (modoReal) {
-            db.ref(`cassino/usuarios/${userLogado.uid}`).once('value', snap => {
-                const data = snap.val();
+        const refSaldo = modoReal ? 'saldoReal' : 'saldoSimulado';
+        
+        db.ref(`cassino/usuarios/${userLogado.uid}`).once('value', snap => {
+            const data = snap.val() || {};
+            let ganhoParaAdicionar = lucroFinal;
+
+            if (modoReal) {
                 const limite = data.limitePremio || 100;
                 const saldoAtual = data.saldoReal || 0;
-                let ganhoReal = parseFloat(lucroFinal);
-
-                if ((saldoAtual + ganhoReal) > limite) {
-                    ganhoReal = Math.max(0, limite - saldoAtual);
+                if ((saldoAtual + ganhoParaAdicionar) > limite) {
+                    ganhoParaAdicionar = Math.max(0, limite - saldoAtual);
                     Swal.fire("Limite Atingido", "Prémio limitado ao valor investido.", "info");
                 }
-                
-                db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).transaction(atual => (atual || 0) + ganhoReal);
+            }
+
+            db.ref(`cassino/usuarios/${userLogado.uid}/${refSaldo}`).transaction(atual => {
+                // Se for simulação e o atual for nulo, começa com 1000 e soma o lucro
+                if (atual === null && !modoReal) return 1000 + ganhoParaAdicionar;
+                return (atual || 0) + ganhoParaAdicionar;
             });
-        } else {
-            saldoSimulado += parseFloat(lucroFinal);
-        }
+        });
 
         Swal.fire("Trade Fechado!", `Ganho: R$ ${lucroFinal}`, "success");
         resetInterface();
@@ -239,11 +235,12 @@
         document.getElementById('crashLabel').classList.remove('hidden');
         
         const aposta = parseFloat(document.getElementById('inputAposta').value);
-        if (modoReal) {
-            db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).transaction(atual => Math.max(0, (atual || 0) - aposta));
-        } else {
-            saldoSimulado -= aposta;
-        }
+        const refSaldo = modoReal ? 'saldoReal' : 'saldoSimulado';
+
+        db.ref(`cassino/usuarios/${userLogado.uid}/${refSaldo}`).transaction(atual => {
+            if (atual === null && !modoReal) return 1000 - aposta;
+            return Math.max(0, (atual || 0) - aposta);
+        });
 
         setTimeout(() => resetInterface(), 2000);
     }
