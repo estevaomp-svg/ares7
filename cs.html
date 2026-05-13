@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ares7 - Cassino de Trade</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #0f172a; color: white; font-family: sans-serif; }
+        .chart-container { height: 200px; background: #1e293b; position: relative; overflow: hidden; }
+        .line { position: absolute; bottom: 0; left: 0; height: 4px; background: #22c55e; transition: width 0.1s linear; }
+        .multiplier { font-size: 3rem; font-weight: bold; text-align: center; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="max-w-md mx-auto p-4">
+    <h1 class="text-2xl font-bold text-center mb-6">Ares7 Trade Crash</h1>
+    
+    <div class="flex justify-between mb-4 bg-slate-800 p-2 rounded-lg">
+        <button id="btnSim" onclick="setModo('simulado')" class="w-1/2 p-2 rounded bg-blue-600">Simulação</button>
+        <button id="btnReal" onclick="checkAcessoReal()" class="w-1/2 p-2 rounded text-slate-400">Modo Real</button>
+    </div>
+
+    <div class="chart-container rounded-lg border-2 border-slate-700">
+        <div id="multiplierDisplay" class="multiplier text-blue-400">1.00x</div>
+        <div id="chartLine" class="line" style="width: 0%"></div>
+    </div>
+
+    <div class="mt-6 space-y-4">
+        <div>
+            <label class="block text-sm">Valor da Aposta (R$):</label>
+            <input type="number" id="valorAposta" value="10" class="w-full p-3 rounded bg-slate-800 border border-slate-600 outline-none">
+        </div>
+        
+        <button id="btnAcao" onclick="iniciarRodada()" class="w-full p-4 bg-green-500 hover:bg-green-600 rounded-xl font-bold text-xl uppercase">Comprar</button>
+        
+        <div class="text-center text-slate-400 text-sm" id="infoSaldo">
+            Saldo Simulado: <span id="labelSaldo">R$ 1000.00</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- CONFIGURAÇÃO FIREBASE (Use as suas chaves aqui) ---
+    const firebaseConfig = { /* Cole suas chaves aqui igual ao index.html */ };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let modo = 'simulado';
+    let jogando = false;
+    let multiplicador = 1.00;
+    let saldoSimulado = 1000.00;
+    let timer;
+    let userId = "USER_ID_AQUI"; // Pegar via Auth como no seu index.html
+
+    function setModo(m) {
+        modo = m;
+        document.getElementById('btnSim').className = m === 'simulado' ? 'w-1/2 p-2 rounded bg-blue-600' : 'w-1/2 p-2 rounded text-slate-400';
+        document.getElementById('btnReal').className = m === 'real' ? 'w-1/2 p-2 rounded bg-red-600' : 'w-1/2 p-2 rounded text-slate-400';
+        updateUI();
+    }
+
+    function checkAcessoReal() {
+        db.ref('cassino/usuarios/' + userId).once('value').then(snap => {
+            const data = snap.val();
+            if (data && data.modoRealAtivo) {
+                setModo('real');
+                Swal.fire('Modo Real Ativado', `Seu limite é R$ ${data.limitePremio}`, 'success');
+            } else {
+                Swal.fire('Bloqueado', 'Solicite ativação manual após depósito.', 'error');
+            }
+        });
+    }
+
+    function iniciarRodada() {
+        if (!jogando) {
+            const v = parseFloat(document.getElementById('valorAposta').value);
+            // Aqui você deve verificar se o saldo é suficiente antes de começar
+            começarSubida();
+        } else {
+            vender();
+        }
+    }
+
+    function começarSubida() {
+        jogando = true;
+        multiplicador = 1.00;
+        document.getElementById('btnAcao').innerText = 'VENDER (CASH OUT)';
+        document.getElementById('btnAcao').className = 'w-full p-4 bg-orange-500 rounded-xl font-bold text-xl';
+        
+        // Lógica de sorteio do Crash (ex: trava no limite se for modo real)
+        const crashPoint = (Math.random() * 5 + 1).toFixed(2); 
+
+        timer = setInterval(() => {
+            multiplicador += 0.01;
+            document.getElementById('multiplierDisplay').innerText = multiplicador.toFixed(2) + 'x';
+            document.getElementById('chartLine').style.width = (multiplicador * 10) + '%';
+
+            if (multiplicador >= crashPoint) {
+                perder();
+            }
+        }, 100);
+    }
+
+    function vender() {
+        clearInterval(timer);
+        jogando = false;
+        const lucro = (parseFloat(document.getElementById('valorAposta').value) * multiplicador).toFixed(2);
+        
+        Swal.fire('Lucro!', `Você vendeu a ${multiplicador.toFixed(2)}x e ganhou R$ ${lucro}`, 'success');
+        resetJogo();
+    }
+
+    function perder() {
+        clearInterval(timer);
+        jogando = false;
+        document.getElementById('multiplierDisplay').innerText = 'CRASH!';
+        document.getElementById('multiplierDisplay').className = 'multiplier text-red-500';
+        
+        setTimeout(() => {
+            resetJogo();
+        }, 2000);
+    }
+
+    function resetJogo() {
+        document.getElementById('btnAcao').innerText = 'COMPRAR';
+        document.getElementById('btnAcao').className = 'w-full p-4 bg-green-500 rounded-xl font-bold text-xl';
+        document.getElementById('multiplierDisplay').className = 'multiplier text-blue-400';
+        document.getElementById('chartLine').style.width = '0%';
+    }
+</script>
+</body>
+</html>
