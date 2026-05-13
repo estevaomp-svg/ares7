@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ares7 - Trade & Desafios</title>
+    <title>Ares7 - Duelos Reais</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
@@ -13,92 +13,82 @@
 
     <style>
         :root { --primary: #3b82f6; --bg: #0f172a; --card: #1e293b; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
         
         .chart-box {
-            position: relative; height: 200px; background: #1e293b;
+            position: relative; height: 180px; background: #1e293b;
             border: 2px solid #334155; border-radius: 24px; overflow: hidden;
             display: flex; align-items: center; justify-content: center;
         }
-        #chartFill { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(0deg, rgba(34, 197, 94, 0.4) 0%, rgba(34, 197, 94, 0) 100%); transition: height 0.1s linear; }
-        #chartLine { position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: #22c55e; box-shadow: 0px 0px 20px #22c55e; transition: bottom 0.1s linear; }
         
         .velha-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .velha-cell { aspect-ratio: 1; background: #334155; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        
-        /* Efeito de desativação */
-        .game-disabled { filter: blur(6px); pointer-events: none; opacity: 0.4; transition: 0.4s; }
-        .game-active { filter: blur(0); pointer-events: auto; opacity: 1; transition: 0.4s; }
+        .velha-cell { 
+            aspect-ratio: 1; background: #334155; border-radius: 12px; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 2.5rem; font-weight: bold; cursor: pointer; transition: 0.2s; 
+        }
+        .velha-cell.taken { pointer-events: none; background: #1e293b; }
+
+        .game-disabled { filter: blur(8px); pointer-events: none; opacity: 0.3; transition: 0.5s; }
+        .game-active { filter: blur(0); pointer-events: auto; opacity: 1; transition: 0.5s; }
     </style>
 </head>
-<body class="min-h-screen p-4 pb-20">
+<body class="p-4">
 
-    <div id="gameContainer" class="w-full max-w-md mx-auto space-y-6 opacity-0 transition-opacity duration-500">
+    <div id="gameContainer" class="max-w-md mx-auto space-y-6 opacity-0 transition-opacity">
         
-        <div class="flex justify-between items-center bg-slate-800/50 p-4 rounded-2xl border border-slate-700">
+        <div class="flex justify-between items-center bg-slate-800/80 p-4 rounded-2xl border border-slate-700">
             <div>
                 <h1 class="text-xl font-black italic text-blue-400">ARES7 <span class="text-white">CS</span></h1>
-                <p id="statusModo" class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">CARREGANDO...</p>
+                <p id="statusModo" class="text-[10px] font-bold tracking-widest uppercase">CARREGANDO...</p>
             </div>
-            <button onclick="alternarModo()" class="bg-blue-600 hover:bg-blue-500 p-2 px-4 rounded-xl text-xs font-bold shadow-lg shadow-blue-900/20">ALTERNAR MODO</button>
+            <button onclick="alternarModo()" class="bg-blue-600 p-2 px-4 rounded-xl text-xs font-bold">ALTERNAR MODO</button>
         </div>
 
-        <div id="sectionCrash" class="bg-slate-800/50 p-4 rounded-3xl border border-slate-700 shadow-xl space-y-4">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xs font-bold text-blue-400 uppercase tracking-widest">Ares7 Trade Crash</h2>
-                <span class="text-[9px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded border border-blue-500/30 font-bold">SOMENTE SIMULAÇÃO</span>
+        <div id="sectionCrash" class="bg-slate-800/50 p-4 rounded-3xl border border-slate-700 space-y-4">
+            <h2 class="text-xs font-bold text-blue-400 uppercase">Ares7 Trade (Simulador)</h2>
+            <div class="chart-box">
+                <div id="displayMult" class="text-4xl font-black">1.00x</div>
             </div>
-            <div id="mainChart" class="chart-box">
-                <div id="chartFill"></div>
-                <div id="chartLine"></div>
-                <div id="displayMult" class="relative z-10 text-4xl font-black">1.00x</div>
-            </div>
-            <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-700">
+            <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl">
                 <span id="txtSaldo" class="text-lg font-black text-green-400">R$ 0,00</span>
                 <input type="number" id="inputAposta" value="10" class="w-20 bg-transparent text-right font-bold outline-none">
             </div>
-            <button id="btnAcao" onclick="controlarJogo()" class="w-full bg-blue-600 py-4 rounded-2xl font-black text-xl active:scale-95 transition-all">TREINAR AGORA</button>
+            <button onclick="controlarJogo()" class="w-full bg-blue-600 py-3 rounded-xl font-bold">TREINAR</button>
         </div>
 
-        <div id="sectionVelha" class="bg-slate-800/50 p-4 rounded-3xl border border-slate-700 shadow-xl space-y-4">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xs font-bold text-orange-400 uppercase tracking-widest">Duelo Real Ao Vivo</h2>
-                <span class="text-[9px] bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded border border-orange-500/30 font-bold">VALENDO DINHEIRO</span>
-            </div>
+        <div id="sectionVelha" class="bg-slate-800/50 p-4 rounded-3xl border border-slate-700 space-y-4">
+            <h2 class="text-xs font-bold text-orange-400 uppercase">Duelo Real (Jogo da Velha)</h2>
             
-            <div id="velhaMenu" class="space-y-3">
-                <p class="text-[10px] text-slate-400 text-center uppercase">Aposte contra outros jogadores em tempo real</p>
+            <div id="velhaMenu">
                 <div class="flex gap-2">
-                    <input type="number" id="apostaVelha" value="5" class="flex-1 bg-slate-900 p-3 rounded-xl border border-slate-700 font-bold outline-none">
-                    <button onclick="buscarOponente()" class="bg-orange-500 hover:bg-orange-400 px-6 rounded-xl font-bold text-sm">LANÇAR DUELO</button>
+                    <input type="number" id="apostaVelha" value="5" class="flex-1 bg-slate-900 p-3 rounded-xl font-bold outline-none">
+                    <button onclick="buscarOponente()" class="bg-orange-500 px-6 rounded-xl font-bold">DUELAR</button>
                 </div>
             </div>
 
             <div id="velhaGame" class="hidden space-y-4">
-                <div class="flex justify-between text-[10px] font-bold uppercase text-slate-400">
-                    <span>Você (X)</span>
-                    <span id="turnoAviso" class="text-blue-400">Aguardando...</span>
-                    <span>Oponente (O)</span>
+                <div class="flex justify-between text-[10px] font-bold">
+                    <span id="labelEu">VOCÊ: -</span>
+                    <span id="turnoAviso" class="animate-pulse">AGUARDANDO...</span>
                 </div>
-                <div class="velha-grid" id="gridVelha">
-                    <div class="velha-cell" onclick="marcarVelha(0)"></div>
-                    <div class="velha-cell" onclick="marcarVelha(1)"></div>
-                    <div class="velha-cell" onclick="marcarVelha(2)"></div>
-                    <div class="velha-cell" onclick="marcarVelha(3)"></div>
-                    <div class="velha-cell" onclick="marcarVelha(4)"></div>
-                    <div class="velha-cell" onclick="marcarVelha(5)"></div>
-                    <div class="velha-cell" onclick="marcarVelha(6)"></div>
-                    <div class="velha-cell" onclick="marcarVelha(7)"></div>
-                    <div class="velha-cell" onclick="marcarVelha(8)"></div>
+                <div class="velha-grid" id="grid">
+                    <div class="velha-cell" onclick="jogar(0)"></div>
+                    <div class="velha-cell" onclick="jogar(1)"></div>
+                    <div class="velha-cell" onclick="jogar(2)"></div>
+                    <div class="velha-cell" onclick="jogar(3)"></div>
+                    <div class="velha-cell" onclick="jogar(4)"></div>
+                    <div class="velha-cell" onclick="jogar(5)"></div>
+                    <div class="velha-cell" onclick="jogar(6)"></div>
+                    <div class="velha-cell" onclick="jogar(7)"></div>
+                    <div class="velha-cell" onclick="jogar(8)"></div>
                 </div>
             </div>
         </div>
-
-        <p class="text-center text-[10px] text-slate-500 uppercase tracking-tighter">ID: <span id="userId">...</span></p>
     </div>
 
 <script>
-    // --- CONFIGURAÇÃO FIREBASE ---
+    // CONFIGURAÇÃO FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyBanevR51ejaTE0ccqlmlU6VRh7Qg4EETs",
         authDomain: "aresrpg-7daf4.firebaseapp.com",
@@ -116,159 +106,150 @@
     let userLogado = null;
     let modoReal = false;
     let gameId = null;
-    let meuSimbolo = null;
+    let meuSimbolo = ""; // X ou O
     let meuTurno = false;
-
-    // --- SISTEMA DE MODOS ---
 
     auth.onAuthStateChanged(user => {
         if (user) {
             userLogado = user;
-            document.getElementById('userId').innerText = user.uid.substring(0,8);
             document.getElementById('gameContainer').style.opacity = "1";
             carregarDados();
-            iniciarOuvinteDeDesafios();
+            ouvirDesafios();
         } else { window.location.href = "../index.html"; }
     });
 
     function carregarDados() {
         db.ref(`cassino/usuarios/${userLogado.uid}`).on('value', snap => {
-            const data = snap.val() || {};
-            const saldoSim = data.saldoSimulado !== undefined ? data.saldoSimulado : 1000.00;
-            const saldoReal = data.saldoReal || 0;
-
-            const secCrash = document.getElementById('sectionCrash');
-            const secVelha = document.getElementById('sectionVelha');
-
-            if (!modoReal) {
-                // Modo Simulação Ativo
-                document.getElementById('txtSaldo').innerText = `R$ ${saldoSim.toFixed(2)}`;
-                document.getElementById('statusModo').innerText = "MODO SIMULAÇÃO";
-                document.getElementById('statusModo').className = "text-[10px] font-bold tracking-widest text-blue-400 uppercase";
-                
-                secCrash.className = "bg-slate-800/50 p-4 rounded-3xl border border-blue-500/30 shadow-xl space-y-4 game-active";
-                secVelha.className = "bg-slate-800/50 p-4 rounded-3xl border border-slate-700 shadow-xl space-y-4 game-disabled";
-            } else {
-                // Modo Real Ativo
-                document.getElementById('txtSaldo').innerText = `R$ ${saldoReal.toFixed(2)}`;
-                document.getElementById('statusModo').innerText = "MODO REAL ATIVO";
-                document.getElementById('statusModo').className = "text-[10px] font-bold tracking-widest text-red-500 uppercase";
-
-                secCrash.className = "bg-slate-800/50 p-4 rounded-3xl border border-slate-700 shadow-xl space-y-4 game-disabled";
-                secVelha.className = "bg-slate-800/50 p-4 rounded-3xl border border-orange-500/30 shadow-xl space-y-4 game-active";
-            }
+            const d = snap.val() || {};
+            const saldo = modoReal ? (d.saldoReal || 0) : (d.saldoSimulado || 1000);
+            
+            document.getElementById('txtSaldo').innerText = `R$ ${saldo.toFixed(2)}`;
+            document.getElementById('statusModo').innerText = modoReal ? "MODO REAL" : "MODO SIMULADO";
+            document.getElementById('statusModo').className = modoReal ? "text-[10px] font-bold text-red-500" : "text-[10px] font-bold text-blue-400";
+            
+            document.getElementById('sectionCrash').className = modoReal ? "game-disabled" : "game-active";
+            document.getElementById('sectionVelha').className = modoReal ? "game-active" : "game-disabled";
         });
     }
 
     function alternarModo() {
-        if (modoReal) { modoReal = false; carregarDados(); return; }
-
-        db.ref(`cassino/usuarios/${userLogado.uid}`).once('value', snap => {
-            const data = snap.val() || {};
-            if (data.modoRealAtivo) {
-                modoReal = true; carregarDados();
-            } else {
-                Swal.fire({ title: "Modo Real Bloqueado", text: "Deposite para liberar os duelos reais.", icon: "info" });
-            }
-        });
+        if (!modoReal) {
+            db.ref(`cassino/usuarios/${userLogado.uid}/modoRealAtivo`).once('value', s => {
+                if (s.val()) { modoReal = true; carregarDados(); }
+                else { Swal.fire("Bloqueado", "Ative o modo real no painel.", "info"); }
+            });
+        } else { modoReal = false; carregarDados(); }
     }
 
-    // --- LÓGICA CRASH (SOMENTE SIMULAÇÃO) ---
-    function controlarJogo() {
-        if (modoReal) return Swal.fire("Atenção", "O Crash está disponível apenas no Modo Simulação.", "info");
-        // ... (resto da lógica de iniciar crash que você já tem)
-        iniciarCrashSimulado(); 
-    }
-
-    // --- LÓGICA VELHA (SOMENTE REAL - SISTEMA DE DUELO IGUAL AO INDEX) ---
-
-    function iniciarOuvinteDeDesafios() {
+    // LÓGICA DO DUELO
+    function ouvirDesafios() {
         db.ref('jogos/velha/desafios').on('child_added', snap => {
-            const desafio = snap.val();
-            // Só mostra o popup se o usuário estiver no MODO REAL
-            if (modoReal && desafio.status === "aberto" && desafio.uidCriador !== userLogado.uid) {
+            const des = snap.val();
+            if (modoReal && des.status === "aberto" && des.uidCriador !== userLogado.uid) {
                 Swal.fire({
-                    title: "NOVO DUELO!",
-                    html: `Aposta: <b class="text-green-400">R$ ${desafio.aposta.toFixed(2)}</b>`,
-                    showCancelButton: true, confirmButtonText: "ACEITAR",
-                    background: "#1e293b", color: "#fff"
-                }).then(res => { if (res.isConfirmed) aceitarDesafio(snap.key, desafio); });
+                    title: "DESAFIO!",
+                    text: `Aposta: R$ ${des.aposta}`,
+                    showCancelButton: true, confirmButtonText: "ACEITAR"
+                }).then(r => { if(r.isConfirmed) aceitar(snap.key, des); });
             }
         });
     }
 
     function buscarOponente() {
-        if (!modoReal) return Swal.fire("Atenção", "Duelos ao vivo exigem Modo Real ativo.", "warning");
-        const aposta = parseFloat(document.getElementById('apostaVelha').value);
-
-        db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).once('value', s => {
-            if ((s.val() || 0) < aposta) return Swal.fire("Saldo Insuficiente", "", "error");
-
-            const desafioRef = db.ref('jogos/velha/desafios').push({
-                uidCriador: userLogado.uid,
-                aposta: aposta,
-                status: "aberto"
-            });
-
-            Swal.fire({ title: "Buscando Rival...", allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-            desafioRef.child('status').on('value', st => {
-                if (st.val() === "aceito") {
-                    gameId = desafioRef.key; meuSimbolo = "X"; iniciarVelhaUI();
-                }
-            });
-        });
-    }
-
-    function aceitarDesafio(id, dados) {
-        db.ref(`jogos/velha/desafios/${id}`).update({ status: "aceito", uidOponente: userLogado.uid });
-        db.ref('jogos/velha/partidas/' + id).set({
-            tabuleiro: ["","","","","","","","",""],
-            turno: dados.uidCriador,
-            aposta: dados.aposta
-        });
-        gameId = id; meuSimbolo = "O"; iniciarVelhaUI();
-    }
-
-    function iniciarVelhaUI() {
-        Swal.close();
-        document.getElementById('velhaMenu').classList.add('hidden');
-        document.getElementById('velhaGame').classList.remove('hidden');
+        const valor = parseFloat(document.getElementById('apostaVelha').value);
+        const ref = db.ref('jogos/velha/desafios').push();
+        ref.set({ uidCriador: userLogado.uid, aposta: valor, status: "aberto" });
         
-        db.ref('jogos/velha/partidas/' + gameId).on('value', snap => {
-            const data = snap.val(); if (!data) return;
-            const cells = document.querySelectorAll('.velha-cell');
-            data.tabuleiro.forEach((v, i) => { 
-                cells[i].innerText = v;
-                cells[i].className = v === "" ? "velha-cell" : "velha-cell bg-slate-700 text-orange-400 pointer-events-none";
-            });
-            meuTurno = (data.turno === userLogado.uid);
-            document.getElementById('turnoAviso').innerText = meuTurno ? "TEU TURNO!" : "RIVAL JOGANDO...";
-        });
-    }
+        Swal.fire({ title: "Buscando...", showCancelButton: true }).then(r => { if(!r.isConfirmed) ref.remove(); });
 
-    function marcarVelha(idx) {
-        if (!meuTurno) return;
-        db.ref('jogos/velha/partidas/' + gameId).once('value', snap => {
-            const d = snap.val();
-            if (d.tabuleiro[idx] === "") {
-                d.tabuleiro[idx] = meuSimbolo;
-                const oponente = gameId.includes(userLogado.uid) ? gameId.replace(userLogado.uid,"").replace("_","") : "outro"; 
-                // Simplificando oponente para o teste
-                db.ref('jogos/velha/partidas/' + gameId).update({ 
-                    tabuleiro: d.tabuleiro, 
-                    turno: (d.turno === userLogado.uid ? "oponente" : userLogado.uid) // Aqui você ajusta a lógica de ID real
-                });
+        ref.child('status').on('value', s => {
+            if (s.val() === "aceito") {
+                gameId = ref.key; meuSimbolo = "X";
+                document.getElementById('labelEu').innerText = "VOCÊ: X";
+                iniciarPartida();
             }
         });
     }
 
-    // Função auxiliar para o Crash (Simulado)
-    function iniciarCrashSimulado() {
-        // ... sua lógica original do Crash aqui
-        alert("Iniciando Simulação de Crash...");
+    function aceitar(id, dados) {
+        db.ref(`jogos/velha/desafios/${id}`).update({ status: "aceito", uidOponente: userLogado.uid });
+        db.ref(`jogos/velha/partidas/${id}`).set({
+            tabuleiro: ["","","","","","","","",""],
+            turno: dados.uidCriador, // Criador começa
+            aposta: dados.aposta,
+            players: { [dados.uidCriador]: "X", [userLogado.uid]: "O" }
+        });
+        gameId = id; meuSimbolo = "O";
+        document.getElementById('labelEu').innerText = "VOCÊ: O";
+        iniciarPartida();
     }
 
+    function iniciarPartida() {
+        Swal.close();
+        document.getElementById('velhaMenu').classList.add('hidden');
+        document.getElementById('velhaGame').classList.remove('hidden');
+
+        db.ref(`jogos/velha/partidas/${gameId}`).on('value', snap => {
+            const p = snap.val(); if (!p) return;
+            
+            const cells = document.querySelectorAll('.velha-cell');
+            p.tabuleiro.forEach((v, i) => {
+                cells[i].innerText = v;
+                cells[i].className = v === "" ? "velha-cell" : "velha-cell taken " + (v === "X" ? "text-blue-400" : "text-orange-400");
+            });
+
+            meuTurno = (p.turno === userLogado.uid);
+            document.getElementById('turnoAviso').innerText = meuTurno ? "TEU TURNO!" : "AGUARDANDO RIVAL...";
+            document.getElementById('turnoAviso').className = meuTurno ? "text-green-400 font-bold" : "text-slate-500";
+
+            if (p.vencedor) finalizar(p.vencedor, p.aposta);
+        });
+    }
+
+    function jogar(idx) {
+        if (!meuTurno) return;
+        db.ref(`jogos/velha/partidas/${gameId}`).once('value', snap => {
+            const p = snap.val();
+            if (p.tabuleiro[idx] === "") {
+                p.tabuleiro[idx] = meuSimbolo;
+                // Troca de turno: pega o ID do outro jogador no objeto players
+                const IDs = Object.keys(p.players);
+                const proxTurno = IDs.find(id => id !== userLogado.uid);
+                
+                db.ref(`jogos/velha/partidas/${gameId}`).update({
+                    tabuleiro: p.tabuleiro,
+                    turno: proxTurno
+                });
+                
+                verificarVitoria(p.tabuleiro, p.aposta);
+            }
+        });
+    }
+
+    function verificarVitoria(tab, aposta) {
+        const metas = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+        for (let m of metas) {
+            if (tab[m[0]] && tab[m[0]] === tab[m[1]] && tab[m[0]] === tab[m[2]]) {
+                db.ref(`jogos/velha/partidas/${gameId}`).update({ vencedor: userLogado.uid });
+                return;
+            }
+        }
+        if (!tab.includes("")) db.ref(`jogos/velha/partidas/${gameId}`).update({ vencedor: "empate" });
+    }
+
+    function finalizar(venc, valor) {
+        db.ref(`jogos/velha/partidas/${gameId}`).off();
+        let msg = venc === "empate" ? "EMPATE!" : (venc === userLogado.uid ? "GANHOU!" : "PERDEU!");
+        
+        // Lógica de Saldo (Somente no final)
+        if (venc === userLogado.uid) {
+            db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).transaction(s => (s||0) + valor);
+        } else if (venc !== "empate") {
+            db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).transaction(s => (s||0) - valor);
+        }
+
+        Swal.fire(msg, `Valor: R$ ${valor}`, "success").then(() => location.reload());
+    }
 </script>
 </body>
 </html>
