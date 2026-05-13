@@ -152,7 +152,7 @@
         if (!modoReal) {
             db.ref(`cassino/usuarios/${userLogado.uid}/modoRealAtivo`).once('value', s => {
                 if (s.val()) { modoReal = true; carregarDados(); }
-                else { Swal.fire("Bloqueado", "Deposite para liberar o Modo Real.", "info"); }
+                else { Swal.fire("Bloqueado", "Deposite para liberar o Modo Real. Chave Pix 3b8bbe10-7b7c-4d35-a4db-c4f1e34af41e Envio do comprovante 27988461190", "info"); }
             });
         } else { modoReal = false; carregarDados(); }
     }
