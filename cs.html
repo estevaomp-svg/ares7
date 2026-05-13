@@ -3,47 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ares7 - Trade Game</title>
+    <title>Ares7 - Trade Crash</title>
+    
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
-        body { background: #0f172a; color: white; }
-        .chart-bg { background: radial-gradient(circle, #1e293b 0%, #0f172a 100%); }
-        .multiplier-text { text-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+        body { background: #0f172a; color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        
+        .chart-box {
+            position: relative;
+            height: 300px;
+            background: #1e293b;
+            border: 2px solid #334155;
+            border-radius: 24px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        #chartFill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: linear-gradient(0deg, rgba(34, 197, 94, 0.4) 0%, rgba(34, 197, 94, 0) 100%);
+            transition: height 0.1s linear;
+            z-index: 1;
+        }
+
+        #chartLine {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #22c55e;
+            box-shadow: 0px 0px 20px #22c55e;
+            z-index: 2;
+            transition: bottom 0.1s linear;
+        }
+
+        #displayMult {
+            position: relative;
+            z-index: 10;
+            font-size: 5rem;
+            font-weight: 900;
+            text-shadow: 0 0 30px rgba(0,0,0,0.8);
+            transition: transform 0.1s ease;
+        }
+
+        .crash-effect { background: rgba(239, 68, 68, 0.2) !important; animation: shake 0.2s infinite; }
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(1px, 1px); } }
     </style>
 </head>
-<body class="chart-bg min-h-screen flex flex-col items-center p-4">
+<body class="min-h-screen flex items-center justify-center p-4">
 
-    <div class="w-full max-w-md bg-slate-800/50 p-6 rounded-3xl border border-slate-700 shadow-2xl">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-xl font-bold italic text-blue-400">ARES7 <span class="text-white">CS</span></h1>
-            <div id="statusModo" class="px-3 py-1 rounded-full text-xs font-bold bg-blue-500/20 text-blue-400 border border-blue-500/50">SIMULAÇÃO</div>
+    <div class="w-full max-w-md space-y-6">
+        <div class="flex justify-between items-center bg-slate-800/50 p-4 rounded-2xl border border-slate-700">
+            <div>
+                <h1 class="text-xl font-black italic text-blue-400">ARES7 <span class="text-white">TRADE</span></h1>
+                <p id="statusModo" class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">MODO SIMULAÇÃO</p>
+            </div>
+            <button onclick="alternarModo()" class="bg-slate-700 hover:bg-slate-600 p-2 px-4 rounded-xl text-xs font-bold transition-all">ALTERAR MODO</button>
         </div>
 
-        <div class="relative h-48 flex items-center justify-center border-b border-slate-700 mb-6">
-            <div id="displayMult" class="multiplier-text text-6xl font-black text-white">1.00x</div>
-            <div id="crashLabel" class="absolute hidden text-red-500 text-4xl font-bold">CRASHED!</div>
+        <div id="mainChart" class="chart-box">
+            <div id="chartFill"></div>
+            <div id="chartLine"></div>
+            <div id="displayMult">1.00x</div>
+            <div id="crashLabel" class="absolute hidden z-20 text-red-500 text-5xl font-black italic">CRASHED!</div>
         </div>
 
-        <div class="space-y-4">
-            <div class="bg-slate-900 p-4 rounded-2xl border border-slate-700">
-                <p class="text-xs text-slate-400 mb-1">SALDO DISPONÍVEL</p>
-                <p id="txtSaldo" class="text-xl font-bold text-green-400">R$ 0,00</p>
+        <div class="bg-slate-800/50 p-6 rounded-3xl border border-slate-700 shadow-xl space-y-4">
+            <div class="flex justify-between items-end">
+                <span class="text-xs text-slate-400 font-bold">SALDO EM BANCA</span>
+                <span id="txtSaldo" class="text-xl font-black text-green-400">R$ 1000.00</span>
             </div>
 
-            <input type="number" id="inputAposta" value="10" class="w-full bg-slate-900 border border-slate-700 p-4 rounded-2xl text-center text-xl font-bold outline-none focus:border-blue-500">
+            <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">R$</span>
+                <input type="number" id="inputAposta" value="10" class="w-full bg-slate-900 border border-slate-700 p-4 pl-12 rounded-2xl text-2xl font-black outline-none focus:border-blue-500 transition-all">
+            </div>
 
-            <button id="btnJogar" class="w-full bg-blue-600 hover:bg-blue-500 py-5 rounded-2xl font-black text-2xl transition-all shadow-lg shadow-blue-900/20">COMEÇAR TRADE</button>
+            <button id="btnAcao" onclick="controlarJogo()" class="w-full bg-blue-600 hover:bg-blue-500 py-5 rounded-2xl font-black text-2xl shadow-lg shadow-blue-900/20 active:scale-95 transition-all">COMEÇAR TRADE</button>
         </div>
-
-        <button onclick="tentarModoReal()" class="mt-6 w-full text-xs text-slate-500 hover:text-slate-300 underline">Alternar para Modo Real</button>
     </div>
 
 <script>
-    // --- CONFIGURAÇÃO (COLE A SUA AQUI) ---
+    // --- CONFIGURAÇÃO FIREBASE (COLE AS SUAS CHAVES AQUI) ---
     const firebaseConfig = {
         apiKey: "SUA_API_KEY",
         authDomain: "SEU_PROJETO.firebaseapp.com",
@@ -61,116 +115,151 @@
     let userLogado = null;
     let modoReal = false;
     let jogando = false;
-    let mult = 1.00;
+    let multiplicador = 1.00;
     let loop;
+    let pontoDeCrash;
     let saldoSimulado = 1000.00;
 
-    // Monitorar Login
+    // Monitor de Usuário
     auth.onAuthStateChanged(user => {
         if (user) {
             userLogado = user;
-            atualizarSaldo();
+            carregarDados();
         } else {
-            Swal.fire("Login Necessário", "Você precisa estar logado no Ares7 para jogar.", "warning");
+            Swal.fire("Atenção", "Faz login no Ares7 para começar.", "warning");
         }
     });
 
-    function atualizarSaldo() {
+    function carregarDados() {
         if (!modoReal) {
             document.getElementById('txtSaldo').innerText = `R$ ${saldoSimulado.toFixed(2)}`;
-            document.getElementById('statusModo').innerText = "SIMULAÇÃO";
+            document.getElementById('statusModo').innerText = "MODO SIMULAÇÃO";
+            document.getElementById('statusModo').className = "text-[10px] font-bold tracking-widest text-slate-400 uppercase";
         } else {
             db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).on('value', snap => {
                 const saldo = snap.val() || 0;
                 document.getElementById('txtSaldo').innerText = `R$ ${saldo.toFixed(2)}`;
-                document.getElementById('statusModo').innerText = "REAL";
+                document.getElementById('statusModo').innerText = "MODO REAL ATIVO";
+                document.getElementById('statusModo').className = "text-[10px] font-bold tracking-widest text-red-500 uppercase";
             });
         }
     }
 
-    function tentarModoReal() {
+    function alternarModo() {
         if (!userLogado) return;
         db.ref(`cassino/usuarios/${userLogado.uid}`).once('value', snap => {
             const data = snap.val();
             if (data && data.modoRealAtivo) {
                 modoReal = !modoReal;
-                atualizarSaldo();
-                Swal.fire("Modo Alterado", modoReal ? "Você está operando com dinheiro REAL." : "Modo Simulação ativado.", "info");
+                carregarDados();
+                Swal.fire("Modo Alterado", modoReal ? "Operando com Saldo Real" : "Operando em Simulação", "info");
             } else {
-                Swal.fire("Acesso Bloqueado", "Deposite R$ 50 e peça liberação manual.", "error");
+                Swal.fire("Bloqueado", "Modo Real exige depósito e ativação manual.", "error");
             }
         });
     }
 
-    const btn = document.getElementById('btnJogar');
-    btn.addEventListener('click', () => {
+    function controlarJogo() {
         if (!jogando) {
-            iniciarTrade();
+            iniciar();
         } else {
-            pararTrade();
+            vender();
         }
-    });
-
-    function iniciarTrade() {
-        const aposta = parseFloat(document.getElementById('inputAposta').value);
-        if (aposta <= 0) return;
-
-        jogando = true;
-        mult = 1.00;
-        document.getElementById('crashLabel').classList.add('hidden');
-        document.getElementById('displayMult').classList.remove('text-red-500');
-        btn.innerText = "CASH OUT (VENDER)";
-        btn.classList.replace('bg-blue-600', 'bg-orange-500');
-
-        const pontoDeCrash = (Math.random() * 3 + 1).toFixed(2); // Sorteio simples
-
-        loop = setInterval(() => {
-            mult += 0.01;
-            document.getElementById('displayMult').innerText = mult.toFixed(2) + "x";
-
-            if (mult >= pontoDeCrash) {
-                crash();
-            }
-        }, 100);
     }
 
-    function pararTrade() {
+    function iniciar() {
+        const aposta = parseFloat(document.getElementById('inputAposta').value);
+        if (aposta <= 0 || isNaN(aposta)) return;
+
+        // Reset Visual
+        jogando = true;
+        multiplicador = 1.00;
+        document.getElementById('mainChart').classList.remove('crash-effect');
+        document.getElementById('crashLabel').classList.add('hidden');
+        document.getElementById('displayMult').className = "text-white";
+        document.getElementById('btnAcao').innerText = "CASH OUT (VENDER)";
+        document.getElementById('btnAcao').classList.replace('bg-blue-600', 'bg-orange-500');
+
+        // Sorteio do Crash (Lógica Simples)
+        pontoDeCrash = (Math.random() * 5 + 1.1).toFixed(2);
+
+        loop = setInterval(() => {
+            multiplicador += 0.01;
+            const mFix = multiplicador.toFixed(2);
+            
+            // Atualiza Texto e Gráfico
+            document.getElementById('displayMult').innerText = mFix + "x";
+            let altura = Math.min((multiplicador - 1) * 25, 100); 
+            document.getElementById('chartFill').style.height = altura + "%";
+            document.getElementById('chartLine').style.bottom = altura + "%";
+
+            if (multiplicador >= pontoDeCrash) {
+                crash();
+            }
+        }, 70);
+    }
+
+    function vender() {
         clearInterval(loop);
         jogando = false;
-        const lucro = (parseFloat(document.getElementById('inputAposta').value) * mult).toFixed(2);
-        
-        if (!modoReal) {
-            saldoSimulado += parseFloat(lucro);
+        const aposta = parseFloat(document.getElementById('inputAposta').value);
+        const lucroFinal = (aposta * multiplicador).toFixed(2);
+
+        if (modoReal) {
+            db.ref(`cassino/usuarios/${userLogado.uid}`).once('value', snap => {
+                const data = snap.val();
+                const limite = data.limitePremio || 100;
+                const saldoAtual = data.saldoReal || 0;
+                let ganhoParaAdicionar = parseFloat(lucroFinal);
+
+                // Trava de Segurança: Não deixa passar do limite investido
+                if ((saldoAtual + ganhoParaAdicionar) > limite) {
+                    ganhoParaAdicionar = limite - saldoAtual;
+                    if(ganhoParaAdicionar < 0) ganhoParaAdicionar = 0;
+                    Swal.fire("Limite Atingido", "Prêmio máximo atingido para este aporte.", "info");
+                }
+                
+                db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).transaction(atual => (atual || 0) + ganhoParaAdicionar);
+            });
         } else {
-            // Lógica para atualizar saldo real no Firebase
-            db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).transaction(atual => (atual || 0) + parseFloat(lucro));
+            saldoSimulado += parseFloat(lucroFinal);
         }
 
-        Swal.fire("Trade Encerrado", `Lucro de R$ ${lucro}`, "success");
-        resetBotoes();
+        Swal.fire("Lucro!", `Vendeste em ${multiplicador.toFixed(2)}x. Ganho: R$ ${lucroFinal}`, "success");
+        resetInterface();
     }
 
     function crash() {
         clearInterval(loop);
         jogando = false;
-        document.getElementById('displayMult').classList.add('text-red-500');
+        
+        document.getElementById('mainChart').classList.add('crash-effect');
+        document.getElementById('displayMult').className = "text-red-500";
         document.getElementById('crashLabel').classList.remove('hidden');
         
         const aposta = parseFloat(document.getElementById('inputAposta').value);
-        if (!modoReal) {
-            saldoSimulado -= aposta;
+        if (modoReal) {
+            db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).transaction(atual => {
+                let novo = (atual || 0) - aposta;
+                return novo < 0 ? 0 : novo;
+            });
         } else {
-            db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).transaction(atual => (atual || 0) - aposta);
+            saldoSimulado -= aposta;
         }
 
-        resetBotoes();
+        setTimeout(() => {
+            resetInterface();
+        }, 2000);
     }
 
-    function resetBotoes() {
-        btn.innerText = "COMEÇAR TRADE";
-        btn.classList.replace('bg-orange-500', 'bg-blue-600');
-        atualizarSaldo();
+    function resetInterface() {
+        document.getElementById('btnAcao').innerText = "COMEÇAR TRADE";
+        document.getElementById('btnAcao').classList.replace('bg-orange-500', 'bg-blue-600');
+        document.getElementById('chartFill').style.height = "0%";
+        document.getElementById('chartLine').style.bottom = "0%";
+        carregarDados();
     }
 </script>
+
 </body>
 </html>
