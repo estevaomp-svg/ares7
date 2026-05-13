@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ares7 - Duelos Reais</title>
+    <title>Ares7 - Trade & Duelos</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
@@ -20,7 +20,8 @@
             border: 2px solid #334155; border-radius: 24px; overflow: hidden;
             display: flex; align-items: center; justify-content: center;
         }
-        
+        #chartFill { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(0deg, rgba(59, 130, 246, 0.3) 0%, transparent 100%); transition: 0.1s linear; }
+
         .velha-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .velha-cell { 
             aspect-ratio: 1; background: #334155; border-radius: 12px; 
@@ -33,42 +34,52 @@
         .game-active { filter: blur(0); pointer-events: auto; opacity: 1; transition: 0.5s; }
     </style>
 </head>
-<body class="p-4">
+<body class="p-4 pb-24">
 
     <div id="gameContainer" class="max-w-md mx-auto space-y-6 opacity-0 transition-opacity">
         
-        <div class="flex justify-between items-center bg-slate-800/80 p-4 rounded-2xl border border-slate-700">
-            <div>
+        <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700 space-y-3">
+            <div class="flex justify-between items-center">
                 <h1 class="text-xl font-black italic text-blue-400">ARES7 <span class="text-white">CS</span></h1>
-                <p id="statusModo" class="text-[10px] font-bold tracking-widest uppercase">CARREGANDO...</p>
+                <button onclick="alternarModo()" class="bg-blue-600 p-2 px-4 rounded-xl text-xs font-bold shadow-lg">ALTERNAR MODO</button>
             </div>
-            <button onclick="alternarModo()" class="bg-blue-600 p-2 px-4 rounded-xl text-xs font-bold">ALTERNAR MODO</button>
+            <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-700">
+                <div class="text-center">
+                    <p class="text-[9px] uppercase text-slate-400 font-bold">Simulado (Crash)</p>
+                    <p id="txtSaldoSim" class="text-blue-400 font-black">R$ 0,00</p>
+                </div>
+                <div class="text-center border-l border-slate-700">
+                    <p class="text-[9px] uppercase text-slate-400 font-bold">Saldo Real (Duelo)</p>
+                    <p id="txtSaldoReal" class="text-green-400 font-black">R$ 0,00</p>
+                </div>
+            </div>
+            <p id="statusModo" class="text-center text-[10px] font-bold tracking-widest uppercase">CARREGANDO...</p>
         </div>
 
         <div id="sectionCrash" class="bg-slate-800/50 p-4 rounded-3xl border border-slate-700 space-y-4">
-            <h2 class="text-xs font-bold text-blue-400 uppercase">Ares7 Trade (Simulador)</h2>
+            <h2 class="text-xs font-bold text-blue-400 uppercase">Ares7 Trade Simulator</h2>
             <div class="chart-box">
-                <div id="displayMult" class="text-4xl font-black">1.00x</div>
+                <div id="chartFill"></div>
+                <div id="displayMult" class="text-4xl font-black relative z-10">1.00x</div>
             </div>
-            <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl">
-                <span id="txtSaldo" class="text-lg font-black text-green-400">R$ 0,00</span>
-                <input type="number" id="inputAposta" value="10" class="w-20 bg-transparent text-right font-bold outline-none">
+            <div class="flex gap-2">
+                <input type="number" id="inputAposta" value="10" class="flex-1 bg-slate-900 p-3 rounded-xl font-bold outline-none text-blue-400">
+                <button id="btnCrash" onclick="controlarCrash()" class="bg-blue-600 px-6 rounded-xl font-bold">TREINAR</button>
             </div>
-            <button onclick="controlarJogo()" class="w-full bg-blue-600 py-3 rounded-xl font-bold">TREINAR</button>
         </div>
 
         <div id="sectionVelha" class="bg-slate-800/50 p-4 rounded-3xl border border-slate-700 space-y-4">
-            <h2 class="text-xs font-bold text-orange-400 uppercase">Duelo Real (Jogo da Velha)</h2>
+            <h2 class="text-xs font-bold text-orange-400 uppercase">Duelo Jogo da Velha (Real)</h2>
             
             <div id="velhaMenu">
                 <div class="flex gap-2">
-                    <input type="number" id="apostaVelha" value="5" class="flex-1 bg-slate-900 p-3 rounded-xl font-bold outline-none">
+                    <input type="number" id="apostaVelha" value="5" class="flex-1 bg-slate-900 p-3 rounded-xl font-bold outline-none text-orange-400">
                     <button onclick="buscarOponente()" class="bg-orange-500 px-6 rounded-xl font-bold">DUELAR</button>
                 </div>
             </div>
 
             <div id="velhaGame" class="hidden space-y-4">
-                <div class="flex justify-between text-[10px] font-bold">
+                <div class="flex justify-between text-[10px] font-bold uppercase">
                     <span id="labelEu">VOCÊ: -</span>
                     <span id="turnoAviso" class="animate-pulse">AGUARDANDO...</span>
                 </div>
@@ -106,9 +117,11 @@
     let userLogado = null;
     let modoReal = false;
     let gameId = null;
-    let meuSimbolo = ""; // X ou O
+    let meuSimbolo = ""; 
     let meuTurno = false;
+    let saldoRealAtual = 0;
 
+    // --- LOGICA DE INÍCIO E SALDO ---
     auth.onAuthStateChanged(user => {
         if (user) {
             userLogado = user;
@@ -121,11 +134,14 @@
     function carregarDados() {
         db.ref(`cassino/usuarios/${userLogado.uid}`).on('value', snap => {
             const d = snap.val() || {};
-            const saldo = modoReal ? (d.saldoReal || 0) : (d.saldoSimulado || 1000);
+            const saldoSim = d.saldoSimulado !== undefined ? d.saldoSimulado : 1000;
+            saldoRealAtual = d.saldoReal || 0;
             
-            document.getElementById('txtSaldo').innerText = `R$ ${saldo.toFixed(2)}`;
-            document.getElementById('statusModo').innerText = modoReal ? "MODO REAL" : "MODO SIMULADO";
-            document.getElementById('statusModo').className = modoReal ? "text-[10px] font-bold text-red-500" : "text-[10px] font-bold text-blue-400";
+            document.getElementById('txtSaldoSim').innerText = `R$ ${saldoSim.toFixed(2)}`;
+            document.getElementById('txtSaldoReal').innerText = `R$ ${saldoRealAtual.toFixed(2)}`;
+            
+            document.getElementById('statusModo').innerText = modoReal ? "MODO REAL ATIVO" : "MODO SIMULADOR ATIVO";
+            document.getElementById('statusModo').className = modoReal ? "text-center text-[10px] font-bold text-red-500" : "text-center text-[10px] font-bold text-blue-400";
             
             document.getElementById('sectionCrash').className = modoReal ? "game-disabled" : "game-active";
             document.getElementById('sectionVelha').className = modoReal ? "game-active" : "game-disabled";
@@ -136,20 +152,72 @@
         if (!modoReal) {
             db.ref(`cassino/usuarios/${userLogado.uid}/modoRealAtivo`).once('value', s => {
                 if (s.val()) { modoReal = true; carregarDados(); }
-                else { Swal.fire("Bloqueado", "Ative o modo real no painel.", "info"); }
+                else { Swal.fire("Bloqueado", "Deposite para liberar o Modo Real.", "info"); }
             });
         } else { modoReal = false; carregarDados(); }
     }
 
-    // LÓGICA DO DUELO
+    // --- LÓGICA DO JOGO 1: CRASH SIMULADO ---
+    let crashInterval = null;
+    let multiplicador = 1.00;
+    let emJogoCrash = false;
+
+    function controlarCrash() {
+        if (modoReal) return;
+        const btn = document.getElementById('btnCrash');
+        if (!emJogoCrash) {
+            multiplicador = 1.00;
+            emJogoCrash = true;
+            btn.innerText = "PARAR";
+            btn.className = "bg-red-600 px-6 rounded-xl font-bold";
+            iniciarLoopCrash();
+        } else {
+            pararCrash(true);
+        }
+    }
+
+    function iniciarLoopCrash() {
+        const crashPonto = (Math.random() * 5 + 1).toFixed(2);
+        crashInterval = setInterval(() => {
+            multiplicador += 0.01;
+            document.getElementById('displayMult').innerText = multiplicador.toFixed(2) + "x";
+            document.getElementById('chartFill').style.height = (multiplicador * 10) + "%";
+
+            if (multiplicador >= crashPonto) {
+                pararCrash(false);
+            }
+        }, 100);
+    }
+
+    function pararCrash(ganhou) {
+        clearInterval(crashInterval);
+        emJogoCrash = false;
+        const btn = document.getElementById('btnCrash');
+        btn.innerText = "TREINAR";
+        btn.className = "bg-blue-600 px-6 rounded-xl font-bold";
+        
+        if (ganhou) {
+            Swal.fire("Boa!", `Você saiu em ${multiplicador.toFixed(2)}x`, "success");
+        } else {
+            document.getElementById('displayMult').className = "text-4xl font-black text-red-500 relative z-10";
+            setTimeout(() => { document.getElementById('displayMult').className = "text-4xl font-black relative z-10"; }, 1000);
+            Swal.fire("Crash!", "O simulador parou.", "error");
+        }
+        document.getElementById('chartFill').style.height = "0%";
+    }
+
+    // --- LÓGICA DO JOGO 2: VELHA REAL ---
     function ouvirDesafios() {
         db.ref('jogos/velha/desafios').on('child_added', snap => {
             const des = snap.val();
             if (modoReal && des.status === "aberto" && des.uidCriador !== userLogado.uid) {
                 Swal.fire({
-                    title: "DESAFIO!",
-                    text: `Aposta: R$ ${des.aposta}`,
-                    showCancelButton: true, confirmButtonText: "ACEITAR"
+                    title: "DESAFIO RECEBIDO!",
+                    text: `Aposta: R$ ${des.aposta.toFixed(2)}`,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "ACEITAR",
+                    background: "#1e293b", color: "#fff"
                 }).then(r => { if(r.isConfirmed) aceitar(snap.key, des); });
             }
         });
@@ -157,10 +225,14 @@
 
     function buscarOponente() {
         const valor = parseFloat(document.getElementById('apostaVelha').value);
+        if (saldoRealAtual < valor) return Swal.fire("Sem Saldo", "Você não tem saldo real suficiente.", "error");
+
         const ref = db.ref('jogos/velha/desafios').push();
         ref.set({ uidCriador: userLogado.uid, aposta: valor, status: "aberto" });
         
-        Swal.fire({ title: "Buscando...", showCancelButton: true }).then(r => { if(!r.isConfirmed) ref.remove(); });
+        Swal.fire({ title: "Buscando Rival...", text: "Aguarde alguém aceitar", showCancelButton: true }).then(r => { 
+            if(!r.isConfirmed) ref.remove(); 
+        });
 
         ref.child('status').on('value', s => {
             if (s.val() === "aceito") {
@@ -172,10 +244,12 @@
     }
 
     function aceitar(id, dados) {
+        if (saldoRealAtual < dados.aposta) return Swal.fire("Sem Saldo", "Você precisa de saldo para aceitar.", "error");
+
         db.ref(`jogos/velha/desafios/${id}`).update({ status: "aceito", uidOponente: userLogado.uid });
         db.ref(`jogos/velha/partidas/${id}`).set({
             tabuleiro: ["","","","","","","","",""],
-            turno: dados.uidCriador, // Criador começa
+            turno: dados.uidCriador,
             aposta: dados.aposta,
             players: { [dados.uidCriador]: "X", [userLogado.uid]: "O" }
         });
@@ -191,18 +265,14 @@
 
         db.ref(`jogos/velha/partidas/${gameId}`).on('value', snap => {
             const p = snap.val(); if (!p) return;
-            
             const cells = document.querySelectorAll('.velha-cell');
             p.tabuleiro.forEach((v, i) => {
                 cells[i].innerText = v;
                 cells[i].className = v === "" ? "velha-cell" : "velha-cell taken " + (v === "X" ? "text-blue-400" : "text-orange-400");
             });
-
             meuTurno = (p.turno === userLogado.uid);
-            document.getElementById('turnoAviso').innerText = meuTurno ? "TEU TURNO!" : "AGUARDANDO RIVAL...";
-            document.getElementById('turnoAviso').className = meuTurno ? "text-green-400 font-bold" : "text-slate-500";
-
-            if (p.vencedor) finalizar(p.vencedor, p.aposta);
+            document.getElementById('turnoAviso').innerText = meuTurno ? "SEU TURNO" : "TURNO DO RIVAL";
+            if (p.vencedor) finalizarDuelo(p.vencedor, p.aposta);
         });
     }
 
@@ -212,21 +282,14 @@
             const p = snap.val();
             if (p.tabuleiro[idx] === "") {
                 p.tabuleiro[idx] = meuSimbolo;
-                // Troca de turno: pega o ID do outro jogador no objeto players
-                const IDs = Object.keys(p.players);
-                const proxTurno = IDs.find(id => id !== userLogado.uid);
-                
-                db.ref(`jogos/velha/partidas/${gameId}`).update({
-                    tabuleiro: p.tabuleiro,
-                    turno: proxTurno
-                });
-                
-                verificarVitoria(p.tabuleiro, p.aposta);
+                const oponenteId = Object.keys(p.players).find(id => id !== userLogado.uid);
+                db.ref(`jogos/velha/partidas/${gameId}`).update({ tabuleiro: p.tabuleiro, turno: oponenteId });
+                verificarFimDeJogo(p.tabuleiro);
             }
         });
     }
 
-    function verificarVitoria(tab, aposta) {
+    function verificarFimDeJogo(tab) {
         const metas = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
         for (let m of metas) {
             if (tab[m[0]] && tab[m[0]] === tab[m[1]] && tab[m[0]] === tab[m[2]]) {
@@ -237,18 +300,22 @@
         if (!tab.includes("")) db.ref(`jogos/velha/partidas/${gameId}`).update({ vencedor: "empate" });
     }
 
-    function finalizar(venc, valor) {
+    function finalizarDuelo(venc, valor) {
         db.ref(`jogos/velha/partidas/${gameId}`).off();
-        let msg = venc === "empate" ? "EMPATE!" : (venc === userLogado.uid ? "GANHOU!" : "PERDEU!");
+        db.ref(`jogos/velha/desafios/${gameId}`).remove();
         
-        // Lógica de Saldo (Somente no final)
+        let msg = "FIM DE JOGO";
         if (venc === userLogado.uid) {
+            msg = "VITÓRIA! + R$ " + valor;
             db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).transaction(s => (s||0) + valor);
-        } else if (venc !== "empate") {
+        } else if (venc === "empate") {
+            msg = "EMPATE!";
+        } else {
+            msg = "DERROTA! - R$ " + valor;
             db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).transaction(s => (s||0) - valor);
         }
 
-        Swal.fire(msg, `Valor: R$ ${valor}`, "success").then(() => location.reload());
+        Swal.fire(msg, "", venc === userLogado.uid ? "success" : "info").then(() => location.reload());
     }
 </script>
 </body>
