@@ -298,8 +298,7 @@
             <input type="password" id="login-pass" placeholder="Sua Senha">
             <button class="btn-auth" onclick="fazerLogin()">Aceder</button>
             <div style="text-align: center; margin-top: 10px;">
-    <a href="https://wa.me/5527988461190?text=Olá!%20Esqueci%20minha%20senha.%20Meu%20E-mail%20é:%20____%20e%20meu%20Nick%20é:%20____" 
-       target="_blank" 
+    <a href="#" onclick="recuperarSenha()" 
        style="color: #64748b; font-size: 11px; text-decoration: none; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; font-family: sans-serif;">
         Esqueci minha senha
     </a>
@@ -776,6 +775,52 @@
                     else { alert("Ocorreu um erro ao tentar entrar. Tente novamente."); }
                 });
         }
+
+        function recuperarSenha() {
+    const email = document.getElementById('login-email').value;
+
+    if (!email) {
+        Swal.fire({
+            title: 'Atenção',
+            text: 'Por favor, digite seu e-mail no campo acima primeiro.',
+            icon: 'info',
+            confirmButtonColor: '#3b82f6',
+            background: '#1e293b',
+            color: '#fff'
+        });
+        return;
+    }
+
+    // Configura para o e-mail chegar em Português
+    firebase.auth().languageCode = 'pt-br';
+
+    firebase.auth().sendPasswordResetEmail(email)
+        .then(() => {
+            Swal.fire({
+                title: 'E-mail Enviado!',
+                text: 'O link de redefinição foi enviado para: ' + email,
+                icon: 'success',
+                confirmButtonColor: '#3b82f6',
+                background: '#1e293b',
+                color: '#fff'
+            });
+        })
+        .catch((error) => {
+            let mensagemErro = "Erro ao enviar e-mail.";
+            if (error.code === 'auth/user-not-found') {
+                mensagemErro = "Este e-mail não está cadastrado.";
+            }
+            
+            Swal.fire({
+                title: 'Erro',
+                text: mensagemErro,
+                icon: 'error',
+                confirmButtonColor: '#ef4444',
+                background: '#1e293b',
+                color: '#fff'
+            });
+        });
+}
 
         function fazerCadastro() {
             const nick = document.getElementById('reg-nick').value;
