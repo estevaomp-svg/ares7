@@ -777,13 +777,16 @@
         }
 
         function recuperarSenha() {
-    const email = document.getElementById('login-email').value;
+    // 1. Pega o valor que está no campo de login
+    const emailInput = document.getElementById('login-email');
+    const emailValue = emailInput ? emailInput.value.trim() : "";
 
-    if (!email) {
+    // 2. Se estiver vazio, avisa o usuário e para o processo
+    if (!emailValue) {
         Swal.fire({
-            title: 'Atenção',
-            text: 'Por favor, digite seu e-mail no campo acima primeiro.',
-            icon: 'info',
+            title: 'E-mail necessário',
+            text: 'Por favor, digite seu e-mail no campo acima para podermos enviar o link de recuperação.',
+            icon: 'warning',
             confirmButtonColor: '#3b82f6',
             background: '#1e293b',
             color: '#fff'
@@ -791,14 +794,13 @@
         return;
     }
 
-    // Configura para o e-mail chegar em Português
-    firebase.auth().languageCode = 'pt-br';
-
-    firebase.auth().sendPasswordResetEmail(email)
+    // 3. Se tiver e-mail, envia para o Firebase
+    firebase.auth().languageCode = 'pt-br'; // Garante o e-mail em português
+    firebase.auth().sendPasswordResetEmail(emailValue)
         .then(() => {
             Swal.fire({
-                title: 'E-mail Enviado!',
-                text: 'O link de redefinição foi enviado para: ' + email,
+                title: 'Link Enviado!',
+                text: 'Verifique a caixa de entrada de ' + emailValue + ' (olhe também o spam).',
                 icon: 'success',
                 confirmButtonColor: '#3b82f6',
                 background: '#1e293b',
@@ -806,14 +808,16 @@
             });
         })
         .catch((error) => {
-            let mensagemErro = "Erro ao enviar e-mail.";
+            let mensagem = "Erro ao processar pedido.";
             if (error.code === 'auth/user-not-found') {
-                mensagemErro = "Este e-mail não está cadastrado.";
+                mensagem = "Este e-mail não foi encontrado no sistema.";
+            } else if (error.code === 'auth/invalid-email') {
+                mensagem = "O formato do e-mail digitado é inválido.";
             }
             
             Swal.fire({
                 title: 'Erro',
-                text: mensagemErro,
+                text: mensagem,
                 icon: 'error',
                 confirmButtonColor: '#ef4444',
                 background: '#1e293b',
