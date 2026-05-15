@@ -198,12 +198,12 @@ function jogarJokenpo(escolhaUsuario) {
             let res = (escolhaUsuario === bot) ? "empate" : ((escolhaUsuario==='pedra'&&bot==='tesoura')||(escolhaUsuario==='papel'&&bot==='pedra')||(escolhaUsuario==='tesoura'&&bot==='papel')) ? "ganhou" : "perdeu";
             if (res === "ganhou") {
                 db.ref(`cassino/usuarios/${userLogado.uid}/saldoSimulado`).transaction(s => (s||0)+valor);
-                Swal.fire("Vitória!", `Bot usou ${bot.toUpperCase()}. +R$ ${valor}`, "success");
+                Swal.fire("Vitória!", `Ele (ela) usou ${bot.toUpperCase()}. +R$ ${valor}`, "success");
             } else if (res === "empate") {
-                Swal.fire("Empate!", `Bot também usou ${bot.toUpperCase()}`, "info");
+                Swal.fire("Empate!", `Ele (ela) também usou ${bot.toUpperCase()}`, "info");
             } else {
                 db.ref(`cassino/usuarios/${userLogado.uid}/saldoSimulado`).transaction(s => Math.max(0,(s||0)-valor));
-                Swal.fire("Derrota!", `Bot usou ${bot.toUpperCase()}. -R$ ${valor}`, "error");
+                Swal.fire("Derrota!", `Ele (ela) usou ${bot.toUpperCase()}. -R$ ${valor}`, "error");
             }
         });
     } else {
