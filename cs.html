@@ -107,6 +107,8 @@
             </select>
         </div>
 
+        <div id="listaDuelosJokenpo" class="space-y-2 mb-4"></div>
+
         <div class="flex gap-2 mb-6">
             <div class="flex-1 bg-slate-900 p-3 rounded-xl border border-slate-700">
                 <p class="text-[10px] text-slate-400 uppercase font-bold">Valor da Aposta</p>
@@ -172,61 +174,143 @@
             
             document.getElementById('sectionCrash').className = modoReal ? "game-disabled" : "game-active";
             document.getElementById('sectionVelha').className = modoReal ? "game-active" : "game-disabled";
+
+             function carregarDados() {
+
+db.ref(`cassino/usuarios/${userLogado.uid}`).on('value', snap => {
         });
     }
 
-    function jogarJokenpo(escolhaUsuario) {
-        const opcoes = ['pedra', 'papel', 'tesoura'];
-        const escolhaBot = opcoes[Math.floor(Math.random() * 3)];
-        const valorAposta = parseFloat(document.getElementById('apostaJokenpo').value) || 0;
-        const tipoConta = document.getElementById('tipoContaJokenpo').value;
-        const resDiv = document.getElementById('resultadoJokenpo');
-        const campoSaldo = tipoConta === 'real' ? 'saldoReal' : 'saldoSimulado';
+    let jokenpoPartidaId = null;
 
-        if (valorAposta <= 0) {
-            Swal.fire("Ops!", "Insira um valor para aposta.", "warning");
-            return;
+function jogarJokenpo(escolhaUsuario) {
+    const valor = parseFloat(document.getElementById('apostaJokenpo').value) || 0;
+    const tipoConta = document.getElementById('tipoContaJokenpo').value;
+    const campoSaldo = tipoConta === 'real' ? 'saldoReal' : 'saldoSimulado';
+
+    if (valor <= 0) return Swal.fire("Ops", "Insira um valor!", "warning");
+
+    // MODO SIMULADO: Mantém a lógica contra o Bot
+    if (tipoConta === 'simulado') {
+        executarJokenpoBot(escolhaUsuario, valor);
+    } 
+    // MODO REAL: Lógica Multiplayer (Igual ao Jogo da Velha)
+    else {
+        if (saldoRealAtual < valor) return Swal.fire("Erro", "Saldo real insuficiente!", "error");
+        
+        const ref = db.ref('jogos/jokenpo/desafios').push();
+        jokenpoPartidaId = ref.key;
+        ref.set({ uidCriador: userLogado.uid, aposta: valor, status: "aberto" });
+
+        Swal.fire({ 
+            title: "Buscando Oponente...", 
+            text: "Aguarde alguém aceitar seu desafio", 
+            showCancelButton: true,
+            background: "#1e293b", color: "#fff"
+        }).then(r => { if(!r.isConfirmed) ref.remove(); });
+
+        // Aguarda alguém aceitar e envia a jogada automaticamente
+        ref.child('status').on('value', s => {
+            if (s.val() === "jogando") {
+                Swal.close();
+                db.ref(`jogos/jokenpo/desafios/${jokenpoPartidaId}`).update({ escolhaP1: escolhaUsuario });
+                ouvirResultadoJokenpo(jokenpoPartidaId);
+            }
+        });
+    }
+}
+
+function ouvirDuelosJokenpo() {
+    db.ref('jogos/jokenpo/desafios').on('value', snap => {
+        const lista = document.getElementById('listaDuelosJokenpo');
+        if(!lista) return;
+        lista.innerHTML = "";
+        snap.forEach(d => {
+            const p = d.val();
+            if (p.status === "aberto" && p.uidCriador !== userLogado.uid) {
+                lista.innerHTML += `
+                <div class="flex justify-between items-center bg-slate-900 p-2 rounded-lg border border-blue-500/30">
+                    <span class="text-[10px] font-bold text-blue-400">DESAFIO JOKENPÔ: R$ ${p.aposta.toFixed(2)}</span>
+                    <button onclick="aceitarDueloJokenpo('${d.key}', ${p.aposta})" class="bg-blue-600 text-[10px] px-3 py-1 rounded-lg font-bold uppercase">Aceitar</button>
+                </div>`;
+            }
+        });
+    });
+}
+
+function aceitarDueloJokenpo(id, valor) {
+    if (saldoRealAtual < valor) return Swal.fire("Erro", "Saldo insuficiente!", "error");
+
+    Swal.fire({
+        title: "Escolha sua jogada!",
+        input: 'radio',
+        inputOptions: { 'pedra': '✊ Pedra', 'papel': '✋ Papel', 'tesoura': '✌️ Tesoura' },
+        background: "#1e293b", color: "#fff",
+        preConfirm: (value) => { if (!value) Swal.showValidationMessage('Selecione uma opção'); return value; }
+    }).then(r => {
+        if (r.isConfirmed) {
+            db.ref(`jogos/jokenpo/desafios/${id}`).update({ 
+                uidOponente: userLogado.uid, 
+                status: "jogando", 
+                escolhaP2: r.value 
+            });
+            ouvirResultadoJokenpo(id);
         }
+    });
+}
 
-        db.ref(`cassino/usuarios/${userLogado.uid}/${campoSaldo}`).once('value').then(snap => {
-            const saldoAtual = snap.val() || 0;
+function ouvirResultadoJokenpo(id) {
+    db.ref(`jogos/jokenpo/desafios/${id}`).on('value', snap => {
+        const p = snap.val();
+        if (p && p.escolhaP1 && p.escolhaP2) {
+            db.ref(`jogos/jokenpo/desafios/${id}`).off();
+            processarVitoriaJokenpo(p, id);
+        }
+    });
+}
 
-            if (saldoAtual < valorAposta) {
-                Swal.fire("Sem Saldo", `Saldo insuficiente na conta ${tipoConta}.`, "error");
-                return;
-            }
+function processarVitoriaJokenpo(p, id) {
+    const c1 = p.escolhaP1; const c2 = p.escolhaP2;
+    let vencedor = (c1 === c2) ? "empate" : 
+                   ((c1==='pedra'&&c2==='tesoura')||(c1==='papel'&&c2==='pedra')||(c1==='tesoura'&&c2==='papel')) ? p.uidCriador : p.uidOponente;
 
-            let msg = "";
-            let final = "";
-
-            if (escolhaUsuario === escolhaBot) {
-                msg = `EMPATE! AMBOS USARAM ${escolhaBot.toUpperCase()}`;
-                final = "empate";
-            } else if (
-                (escolhaUsuario === 'pedra' && escolhaBot === 'tesoura') ||
-                (escolhaUsuario === 'papel' && escolhaBot === 'pedra') ||
-                (escolhaUsuario === 'tesoura' && escolhaBot === 'papel')
-            ) {
-                msg = `VITÓRIA! O BOT USOU ${escolhaBot.toUpperCase()}`;
-                final = "ganhou";
-            } else {
-                msg = `DERROTA! O BOT USOU ${escolhaBot.toUpperCase()}`;
-                final = "perdeu";
-            }
-
-            if (final === "ganhou") {
-                db.ref(`cassino/usuarios/${userLogado.uid}/${campoSaldo}`).transaction(s => (s || 0) + valorAposta);
-                resDiv.className = "text-center p-3 rounded-xl bg-green-900/30 border border-green-500 flex items-center justify-center font-bold text-green-400";
-            } else if (final === "perdeu") {
-                db.ref(`cassino/usuarios/${userLogado.uid}/${campoSaldo}`).transaction(s => Math.max(0, (s || 0) - valorAposta));
-                resDiv.className = "text-center p-3 rounded-xl bg-red-900/30 border border-red-500 flex items-center justify-center font-bold text-red-400";
-            } else {
-                resDiv.className = "text-center p-3 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-center font-bold text-yellow-400";
-            }
-
-            resDiv.innerText = msg;
-        });
+    let msg = "";
+    if (vencedor === "empate") {
+        msg = `EMPATE! Ambos usaram ${c1.toUpperCase()}`;
+    } else if (vencedor === userLogado.uid) {
+        msg = `VITÓRIA! Ganhou R$ ${p.aposta.toFixed(2)}`;
+        db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).transaction(s => (s||0) + p.aposta);
+    } else {
+        msg = `DERROTA! Perdeu R$ ${p.aposta.toFixed(2)}`;
+        db.ref(`cassino/usuarios/${userLogado.uid}/saldoReal`).transaction(s => Math.max(0, (s||0) - p.aposta));
     }
+
+    Swal.fire(msg, "", vencedor === userLogado.uid ? "success" : "info");
+    db.ref(`jogos/jokenpo/desafios/${id}`).remove();
+    jokenpoPartidaId = null;
+}
+
+// Auxiliar para manter o modo Simulado funcionando
+function executarJokenpoBot(escolhaUsuario, valor) {
+    const opcoes = ['pedra', 'papel', 'tesoura'];
+    const bot = opcoes[Math.floor(Math.random() * 3)];
+    db.ref(`cassino/usuarios/${userLogado.uid}/saldoSimulado`).once('value').then(snap => {
+        if ((snap.val() || 0) < valor) return Swal.fire("Erro", "Saldo simulado insuficiente!", "error");
+        
+        let win = (escolhaUsuario === bot) ? "draw" : 
+                  ((escolhaUsuario==='pedra'&&bot==='tesoura')||(escolhaUsuario==='papel'&&bot==='pedra')||(escolhaUsuario==='tesoura'&&bot==='papel')) ? "win" : "loss";
+
+        if (win === "win") {
+            db.ref(`cassino/usuarios/${userLogado.uid}/saldoSimulado`).transaction(s => (s||0) + valor);
+            Swal.fire("Boa!", `Bot usou ${bot.toUpperCase()}. +R$ ${valor}`, "success");
+        } else if (win === "draw") {
+            Swal.fire("Empate!", `Bot também usou ${bot.toUpperCase()}`, "info");
+        } else {
+            db.ref(`cassino/usuarios/${userLogado.uid}/saldoSimulado`).transaction(s => Math.max(0, (s||0) - valor));
+            Swal.fire("Perdeu!", `Bot usou ${bot.toUpperCase()}. -R$ ${valor}`, "error");
+        }
+    });
+}
 
     function alternarModo() {
         if (!modoReal) {
