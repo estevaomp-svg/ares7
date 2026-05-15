@@ -98,6 +98,33 @@
         </div>
     </div>
 
+    <div class="bg-slate-800 p-6 rounded-3xl border-2 border-slate-700 mt-6 max-w-md mx-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold">✊ Jokenpô</h2>
+            <select id="tipoContaJokenpo" class="bg-slate-900 text-[10px] border border-blue-500 rounded-lg px-2 py-1 outline-none text-blue-400 font-bold">
+                <option value="simulado">CONTA SIMULADA</option>
+                <option value="real">CONTA REAL</option>
+            </select>
+        </div>
+
+        <div class="flex gap-2 mb-6">
+            <div class="flex-1 bg-slate-900 p-3 rounded-xl border border-slate-700">
+                <p class="text-[10px] text-slate-400 uppercase font-bold">Valor da Aposta</p>
+                <input type="number" id="apostaJokenpo" value="10" class="w-full bg-transparent text-xl font-bold outline-none text-blue-400">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 mb-6">
+            <button onclick="jogarJokenpo('pedra')" class="bg-slate-700 hover:bg-blue-600 p-4 rounded-2xl transition-all text-2xl shadow-lg">✊</button>
+            <button onclick="jogarJokenpo('papel')" class="bg-slate-700 hover:bg-blue-600 p-4 rounded-2xl transition-all text-2xl shadow-lg">✋</button>
+            <button onclick="jogarJokenpo('tesoura')" class="bg-slate-700 hover:bg-blue-600 p-4 rounded-2xl transition-all text-2xl shadow-lg">✌️</button>
+        </div>
+
+        <div id="resultadoJokenpo" class="text-center p-3 rounded-xl bg-slate-900 border border-slate-700 min-h-[50px] flex items-center justify-center font-bold text-sm">
+            ESCOLHA UMA OPÇÃO!
+        </div>
+    </div>
+
 <script>
     // CONFIGURAÇÃO FIREBASE
     const firebaseConfig = {
@@ -145,6 +172,59 @@
             
             document.getElementById('sectionCrash').className = modoReal ? "game-disabled" : "game-active";
             document.getElementById('sectionVelha').className = modoReal ? "game-active" : "game-disabled";
+        });
+    }
+
+    function jogarJokenpo(escolhaUsuario) {
+        const opcoes = ['pedra', 'papel', 'tesoura'];
+        const escolhaBot = opcoes[Math.floor(Math.random() * 3)];
+        const valorAposta = parseFloat(document.getElementById('apostaJokenpo').value) || 0;
+        const tipoConta = document.getElementById('tipoContaJokenpo').value;
+        const resDiv = document.getElementById('resultadoJokenpo');
+        const campoSaldo = tipoConta === 'real' ? 'saldoReal' : 'saldoSimulado';
+
+        if (valorAposta <= 0) {
+            Swal.fire("Ops!", "Insira um valor para aposta.", "warning");
+            return;
+        }
+
+        db.ref(`cassino/usuarios/${userLogado.uid}/${campoSaldo}`).once('value').then(snap => {
+            const saldoAtual = snap.val() || 0;
+
+            if (saldoAtual < valorAposta) {
+                Swal.fire("Sem Saldo", `Saldo insuficiente na conta ${tipoConta}.`, "error");
+                return;
+            }
+
+            let msg = "";
+            let final = "";
+
+            if (escolhaUsuario === escolhaBot) {
+                msg = `EMPATE! AMBOS USARAM ${escolhaBot.toUpperCase()}`;
+                final = "empate";
+            } else if (
+                (escolhaUsuario === 'pedra' && escolhaBot === 'tesoura') ||
+                (escolhaUsuario === 'papel' && escolhaBot === 'pedra') ||
+                (escolhaUsuario === 'tesoura' && escolhaBot === 'papel')
+            ) {
+                msg = `VITÓRIA! O BOT USOU ${escolhaBot.toUpperCase()}`;
+                final = "ganhou";
+            } else {
+                msg = `DERROTA! O BOT USOU ${escolhaBot.toUpperCase()}`;
+                final = "perdeu";
+            }
+
+            if (final === "ganhou") {
+                db.ref(`cassino/usuarios/${userLogado.uid}/${campoSaldo}`).transaction(s => (s || 0) + valorAposta);
+                resDiv.className = "text-center p-3 rounded-xl bg-green-900/30 border border-green-500 flex items-center justify-center font-bold text-green-400";
+            } else if (final === "perdeu") {
+                db.ref(`cassino/usuarios/${userLogado.uid}/${campoSaldo}`).transaction(s => Math.max(0, (s || 0) - valorAposta));
+                resDiv.className = "text-center p-3 rounded-xl bg-red-900/30 border border-red-500 flex items-center justify-center font-bold text-red-400";
+            } else {
+                resDiv.className = "text-center p-3 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-center font-bold text-yellow-400";
+            }
+
+            resDiv.innerText = msg;
         });
     }
 
