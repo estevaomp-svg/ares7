@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ares7 Blog - Nutrição, Treino e Ciência</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        body {
+            background-color: #0f172a; /* Slate 900 */
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;  
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="text-white min-h-screen font-sans">
+
+    <header class="bg-slate-900/80 backdrop-blur border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-xl mx-auto px-4 h-14 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="text-xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">ARES7</span>
+                <span class="bg-blue-500/10 text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded border border-blue-500/20">BLOG</span>
+            </div>
+            <a href="https://www.ares7.com.br" class="text-xs bg-slate-800 hover:bg-slate-700 text-gray-300 px-3 py-1.5 rounded-lg font-bold transition-all">
+                Voltar ao App
+            </a>
+        </div>
+    </header>
+
+    <main class="max-w-xl mx-auto p-4 pb-20">
+        
+        <div id="header-blog" class="mb-6 py-4 border-b border-slate-800">
+            <h1 class="text-2xl font-black mb-1">Evolução Absoluta</h1>
+            <p class="text-xs text-gray-400 leading-relaxed">Artigos diretos e sem rodeios sobre Nutrição, Treino Pesado, Ciência Biológica e Mentalidade de Alta Performance.</p>
+        </div>
+
+        <div id="feed-blog" class="space-y-4">
+            
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl hover:border-blue-500/40 transition-all cursor-pointer group" onclick="abrirArtigo('post-guerra-quimica')">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="bg-blue-500/10 text-blue-400 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Nutrição & Ciência</span>
+                    <span class="text-[10px] text-gray-500">19/05/2026</span>
+                </div>
+                <h2 class="text-lg font-bold leading-snug group-hover:text-blue-400 transition-colors mb-2">
+                    A Guerra Química no Seu Prato: Por que a natureza não queria que você comesse feijão
+                </h2>
+                <p class="text-sm text-gray-400 line-clamp-2">
+                    Você já parou para pensar que quase tudo o que colocamos no prato todos os dias passou por uma verdadeira "engenharia" humana para não nos fazer mal? Entenda o porquê...
+                </p>
+                <div class="mt-4 flex justify-between items-center text-xs">
+                    <span class="text-gray-500 font-medium">Leitura de 3 min</span>
+                    <span class="text-blue-400 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">Ler matéria ➔</span>
+                </div>
+            </div>
+
+            </div>
+
+        <article id="artigo-completo" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl animate-fade-in">
+            <button onclick="fecharArtigo()" class="text-xs text-gray-400 hover:text-white mb-6 flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-xl transition-all font-bold">
+                ⬅ Voltar para a lista
+            </button>
+            
+            <div id="conteudo-dinamico" class="space-y-4 text-gray-300 text-sm leading-relaxed">
+                </div>
+        </article>
+
+    </main>
+
+    <script>
+        // Banco de dados interno dos teus artigos (Fácil de atualizar)
+        const bancoDeArtigos = {
+            'post-guerra-quimica': `
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="bg-blue-500/10 text-blue-400 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase">Nutrição & Ciência</span>
+                    <span class="text-xs text-gray-500">19/05/2026</span>
+                </div>
+                <h1 class="text-xl font-black text-white mb-4 border-b border-slate-800 pb-3 leading-tight">A Guerra Química no Seu Prato: Por que a natureza não queria que você comesse feijão (e por que o arroz branco está salvo)</h1>
+                
+                <p>Você já parou para pensar que quase tudo o que colocamos no prato todos os dias passou por uma verdadeira "engenharia" humana para não nos fazer mal?</p>
+                
+                <p>Existe um conceito fascinante na biologia que a maioria das pessoas desconhece: <strong class="text-blue-400">na natureza, nenhum alimento quer ser comido de graça.</strong> Com exceção da polpa das frutas, quase tudo o que consideramos saudável hoje possui sistemas de defesa complexos para garantir a sobrevivência da espécie.</p>
+                
+                <h2 class="text-base font-bold text-white mt-6 mb-2">1. A Fruta: O único "suborno" da natureza</h2>
+                <p>Do ponto de vista evolutivo, a polpa de uma fruta madura é o único alimento que quer ser consumido. A árvore usa uma estratégia inteligente: ela gasta energia colocando água, açúcar (frutose) e sabores irresistíveis na polpa para atrair animais. O objetivo é que o bicho coma a polpa e espalhe a semente longe. Por isso, a polpa vem pronta: sem fitatos ou travas químicas.</p>
+                
+                <h2 class="text-base font-bold text-white mt-6 mb-2">2. Grãos e Sementes: Os bebês blindados das plantas</h2>
+                <p>Se a fruta quer ser comida, os grãos e sementes querem o oposto. O feijão, o arroz integral, a aveia e o trigo são os bebês das plantas. Como não podem correr ou lutar, desenvolveram uma guerra química silenciosa: os chamados <strong>antinutrientes</strong>. O mais famoso deles é o <strong>ácido fítico (ou fitato)</strong>.</p>
+                
+                <div class="bg-slate-950 p-4 border-l-4 border-blue-500 rounded-xl my-4 text-xs italic text-gray-400">
+                    <strong>A Ironia do Feijão:</strong> Todo mundo cresce ouvindo que o feijão é rico em ferro. Mas, por causa do fitato, ele vem com uma trava química que "sequestra" o próprio ferro, o zinco e o cálcio no teu intestino, impedindo que o corpo absorva boa parte deles.
+                </div>
+                
+                <h3 class="text-sm font-bold text-blue-400 mt-4">O Paradoxo do Arroz Integral vs. Arroz Branco</h3>
+                <p>O arroz integral mantém a casca protetora, cheia de fibras, mas também mantém o fitato intacto, bloqueando os minerais da refeição. Já o arroz branco passa por um polimento onde perde a casca e <strong>zera o ácido fítico</strong>. Na prática, o arroz branco limpa o caminho para o teu intestino absorver muito melhor o ferro e os nutrientes do feijão e da carne que estão no prato!</p>
+                
+                <h2 class="text-base font-bold text-white mt-6 mb-2">3. O Leite: O combustível de outra espécie</h2>
+                <p>O leite de vaca foi desenhado para fazer um bezerro sair de 40 kg para 300 kg em poucos meses. Ele é carregado de hormônios de crescimento da própria espécie e proteínas densas (como a caseína). O ser humano é o único animal que continua a tomar leite na idade adulta e de outra espécie, gerando tantas intolerâncias.</p>
+                
+                <h2 class="text-base font-bold text-white mt-6 mb-2">Como a humanidade "hackeou" o sistema?</h2>
+                <p>Nossos antepassados criaram métodos essenciais: Deixar grãos de <strong>remolho por 12 a 24 horas</strong> ativa enzimas que destroem o ácido fítico; a <strong>fermentação natural</strong> quebra as defesas do trigo antes de assar o pão; e a produção de queijos curados elimina a lactose.</p>
+                
+                <div class="mt-6 pt-4 border-t border-slate-800 text-center text-xs text-gray-500">
+                    Ares7 Blog — Conteúdo focado em performance real.
+                </div>
+            `
+        };
+
+        // Função para abrir e ler um artigo
+        function abrirArtigo(idArtigo) {
+            const conteudo = bancoDeArtigos[idArtigo];
+            if (conteudo) {
+                document.getElementById('conteudo-dinamico').innerHTML = conteudo;
+                document.getElementById('feed-blog').classList.add('hidden');
+                document.getElementById('header-blog').classList.add('hidden');
+                document.getElementById('artigo-completo').classList.remove('hidden');
+                window.scrollTo(0, 0); // Sobe a página para o topo
+            }
+        }
+
+        // Função para fechar o artigo e voltar ao feed
+        function fecharArtigo() {
+            document.getElementById('artigo-completo').classList.add('hidden');
+            document.getElementById('feed-blog').classList.remove('hidden');
+            document.getElementById('header-blog').classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
