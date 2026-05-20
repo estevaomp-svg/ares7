@@ -397,8 +397,12 @@
 
                 <div id="lista-missoes-pessoais" style="margin-bottom:15px"></div>
                 
-                <input type="text" id="missao-input" placeholder="Nova missão ou item...">
-                
+                <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+        <input type="text" id="missao-input" placeholder="Nova missão ou item..." style="flex: 1; margin-bottom: 0;">
+        <button id="btnVoiceMission" type="button" onclick="iniciarGravacaoMissao()" style="background: #3b82f6; color: white; padding: 0 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 0.9rem;">
+            🎤 Falar
+        </button>
+    </div>
                 <label style="font-size: 12px; color: #94a3b8; display: block; margin-top: 5px;">Data e Hora limite (Opcional):</label>
                 <input type="datetime-local" id="missao-data-input">
 
@@ -408,7 +412,7 @@
                     <option value="5">🛒 Lista de Compras (+5 XP)</option>
                     <option value="-500">⚠️ Hábito Sombrio (-500 XP)</option>
                 </select>
-                <button onclick="addMissao()" style="background:#3b82f6; width:100%">Registar Missão</button>
+                <button onclick="addMissao()" style="background:#3b82f6; width:100%">Registrar Missão</button>
             </div> <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 12px; align-items: center;">
                 <button onclick="abrirModalRanking('modal-ranking-honra')" 
                     style="background: #334155; color: #94a3b8; border: none; padding: 6px 15px; border-radius: 6px; font-size: 0.65rem; font-weight: bold; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 5px; border: 1px solid rgba(148, 163, 184, 0.1); width: 85%;">
@@ -824,6 +828,71 @@
                 color: '#fff'
             });
         });
+}
+
+        function iniciarGravacaoMissao() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+        Swal.fire({
+            text: "Seu navegador não suporta reconhecimento de voz. Tente usar o Google Chrome.",
+            icon: "error",
+            confirmButtonColor: '#3b82f6',
+            background: '#1e293b',
+            color: '#fff'
+        });
+        return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'pt-BR';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    const btn = document.getElementById('btnVoiceMission');
+    const inputMissao = document.getElementById('missao-input');
+
+    btn.innerHTML = "🛑 Ouvindo...";
+    btn.style.background = "#ef4444";
+
+    recognition.start();
+
+    recognition.onresult = function(event) {
+        const textoGravado = event.results[0][0].transcript;
+        
+        if (inputMissao) {
+            inputMissao.value = textoGravado;
+            
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: `Entendido: "${textoGravado}"`,
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#1e293b',
+                color: '#fff'
+            });
+        }
+    };
+
+    recognition.onerror = function(event) {
+        console.error("Erro no reconhecimento de voz: ", event.error);
+        restaurarBotaoVoz(btn);
+        
+        if(event.error === 'not-allowed') {
+            Swal.fire({ text: "Permissão de microfone negada.", icon: "error", background: '#1e293b', color: '#fff' });
+        }
+    };
+
+    recognition.onend = function() {
+        restaurarBotaoVoz(btn);
+    };
+}
+
+function restaurarBotaoVoz(botao) {
+    botao.innerHTML = "🎤 Falar";
+    botao.style.background = "#3b82f6";
 }
 
         function fazerCadastro() {
