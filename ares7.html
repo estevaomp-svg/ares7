@@ -43,6 +43,23 @@
 
         <div id="feed-blog" class="space-y-4">
 
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl hover:border-amber-500/40 transition-all cursor-pointer group" onclick="abrirArtigo('post-primeiro-biohack-leite')">
+    <div class="flex items-center gap-2 mb-3">
+        <span class="bg-amber-500/10 text-amber-400 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Biohacking & História</span>
+        <span class="text-[10px] text-gray-500">22/05/2026</span>
+    </div>
+    <h2 class="text-lg font-bold leading-snug group-hover:text-amber-400 transition-colors mb-2">
+        O Primeiro Biohack da História: Como o Queijo Alterou Nosso DNA e o Perigo Oculto da Caseína Moderna
+    </h2>
+    <p class="text-sm text-gray-400 line-clamp-2">
+        Descubra como nossos antepassados driblaram a própria biologia para conseguir consumir laticínios e entenda por que a caseína A1 é a verdadeira vilã inflamatória.
+    </p>
+    <div class="mt-4 flex justify-between items-center text-xs">
+        <span class="text-gray-500 font-medium">Leitura de 4 min</span>
+        <span class="text-amber-400 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">Ler matéria ➔</span>
+    </div>
+</div>
+
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl hover:border-red-500/40 transition-all cursor-pointer group" onclick="abrirArtigo('post-guerra-dos-antinutrientes')">
     <div class="flex items-center gap-2 mb-3">
         <span class="bg-red-500/10 text-red-400 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">Biohacking & Nutrição</span>
@@ -358,7 +375,73 @@
         <div class="mt-6 pt-4 border-t border-slate-800 text-center text-xs text-gray-500">
             Ares7 Blog — A ciência por trás da performance humana.
         </div>
-    `      
+    `,
+            // Banco de dados interno dos teus artigos (Fácil de atualizar)
+        const bancoDeArtigos = {
+            'post-primeiro-biohack-leite': `
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="bg-amber-500/10 text-amber-400 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase">Biohacking & História</span>
+                    <span class="text-xs text-gray-500">22/05/2026</span>
+                </div>
+                <h1 class="text-xl font-black text-white mb-4 border-b border-slate-800 pb-3 leading-tight">O Primeiro Biohack da História: Como o Queijo Alterou Nosso DNA e o Perigo Oculto da Caseína Moderna</h1>
+                
+                <p>Se você pudesse voltar 10.000 anos no tempo e oferecesse um copo de leite de vaca puro para um homem adulto daquela época, você provavelmente o mataria. Não por envenenamento, mas por uma desidratação severa causada por uma diarreia violenta. A verdade nua e crua da evolução é que <strong>o ser humano não foi feito para tomar leite na fase adulta</strong>.</p>
+                
+                <p>Ainda assim, hoje as pessoas tomam shakes de whey, comem queijo e bebem leite diariamente. Como a humanidade conseguiu virar o jogo contra a própria biologia? A resposta revela o primeiro e maior "biohack" cultural da história, mas também abre margem para um problema moderno e silencioso: o perigo inflamatório da <strong>caseína</strong>.</p>
+
+                <h2 class="text-base font-bold text-white mt-6 mb-2">Fase 1: O Hack Cultural (O Queijo Veio Primeiro)</h2>
+                <p>Há cerca de 11.000 anos, no início da domesticação de animais, os adultos humanos eram 100% intolerantes à lactose. O leite era visto como um desperdício perigoso. Porém, nossos antepassados perceberam um fenômeno: quando o leite era deixado em repouso, ele azedava, fermentava e coagulava.</p>
+                
+                <p>Ao separar a parte sólida (a coalhada) do soro líquido e prensá-la, eles criaram o <strong>queijo</strong>. O segredo biológico desse processo é que as bactérias da fermentação se alimentavam de quase toda a lactose (o açúcar do leite). O queijo, principalmente o curado, tornou-se um alimento seguro, denso em calorias e gorduras, livrando populações inteiras da fome no inverno sem causar distúrbios intestinais.</p>
+
+                <h2 class="text-base font-bold text-white mt-6 mb-2">Fase 2: O Hack Genético (A Mutação do DNA)</h2>
+                <p>A humanidade conseguiu manter o consumo de queijos e derivados por gerações de forma tão insistente que a própria natureza teve que se adaptar. Há cerca de 7.000 anos, em regiões com climas brutais (como o norte da Europa e partes da África), ocorreu uma mutação no DNA humano conhecida como <strong>Persistência da Lactase</strong>.</p>
+                
+                <blockquote class="bg-slate-950 p-4 border-l-4 border-amber-500 rounded-xl my-4 text-xs italic text-gray-400">
+                    <strong>A Virada de Chave:</strong> Indivíduos que nasciam com essa mutação continuavam produzindo a enzima lactase ao longo de toda a vida adulta. Eles ganharam uma vantagem absurda de sobrevivência, pois podiam beber o leite cru e fluido direto do animal em épocas de seca crônica. O queijo foi a ponte tecnológica que forçou o nosso DNA a mudar.
+                </blockquote>
+
+                <h2 class="text-base font-bold text-white mt-6 mb-2">O Plot Twist Moderno: O Verdadeiro Inimigo não é a Lactose</h2>
+                <p>Para quem busca o topo da performance, estética e clareza mental, a história mudou. Hoje, o maior problema do leite de caixinha industrial não é a lactose (um açúcar facilmente contornável), mas sim a <strong>Caseína</strong>, a principal proteína do leite.</p>
+                
+                <p>As vacas modernas passaram por mutações severas devido à seleção industrial. A esmagadora maioria do leite consumido hoje possui a chamada <strong>Caseína A1</strong>. E é aqui que o biohacking entra em alerta máximo.</p>
+
+                <h2 class="text-base font-bold text-white mt-6 mb-2">Como a Caseína A1 Age e Destrói seu Organismo</h2>
+                <p>Quando você ingere o leite comum, o seu sistema digestivo tenta quebrar a caseína A1. Durante esse processo, é liberado um peptídeo (um fragmento de proteína) altamente reativo chamado <strong>BCM-7 (Beta-casomorfina-7)</strong>. Essa substância age no corpo como um verdadeiro sabotador de performance:</p>
+
+                <ul class="list-disc pl-5 my-2 space-y-2 text-gray-400 text-sm">
+                    <li><strong class="text-red-400">Inflamação Intestinal Crônica:</strong> O BCM-7 irrita as paredes do intestino, rompendo as junções celulares (causando o intestino permeável). Isso faz com que toxinas caiam direto na sua corrente sanguínea.</li>
+                    <li><strong class="text-white">Aumento Súbito de Muco e Pigarro:</strong> A caseína estimula as glândulas de muco no sistema respiratório. Se você vive com o nariz entupido ou pigarro crônico que atrapalha o seu rendimento no cárdio, a culpa geralmente é dela.</li>
+                    <li><strong class="text-red-400">Explosão de Acne e Oleosidade:</strong> Por ser altamente inflamatória e elevar os níveis de IGF-1 (fator de crescimento semelhante à insulina), a caseína estimula as glândulas sebáceas, detonando a estética da sua pele com espinhas persistentes.</li>
+                    <li><strong class="text-white">Névoa Mental (Brain Fog):</strong> O BCM-7 tem propriedades que mimetizam opioides no cérebro. Ele pode lentificar as respostas cognitivas, gerando aquela sensação de cansaço mental e falta de foco logo após o consumo.</li>
+                </ul>
+
+                <div class="my-6 bg-slate-950 border border-slate-800 rounded-xl overflow-hidden text-xs">
+                    <div class="bg-slate-900 px-4 py-2 border-b border-slate-800 font-bold text-amber-400 uppercase tracking-wider">
+                        O Guia de Elite para Laticínios: Como Consumir Sem se Inflamar
+                    </div>
+                    <div class="p-4 space-y-3 text-gray-300">
+                        <p>Para manter seu shape limpo, sua digestão perfeita e seus hormônios no topo, você deve filtrar o que entra na sua rotina:</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+                            <div class="p-3 bg-red-950/10 border border-red-900/30 rounded-lg">
+                                <span class="font-bold text-red-400 block mb-1">❌ ELIMINE OU EVITE:</span>
+                                Leite de caixinha tradicional (A1), queijos frescos ultraprocessados (como requeijão comum e queijo minas frescal industrial) e excesso de laticínios combinados com refeições ricas em ferro.
+                            </div>
+                            <div class="p-3 bg-emerald-950/10 border border-emerald-900/30 rounded-lg">
+                                <span class="font-bold text-emerald-400 block mb-1">✔️ LIBERADOS (FONTES LIMPAS):</span>
+                                Manteiga Ghee (zero caseína e lactose), Whey Protein Isolado/Hidrolisado (onde a caseína foi totalmente filtrada), Queijos Curados Longamente (Parmesão/Provolone) e Leite Tipo A2 (livre da mutação inflamatória).
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p>A humanidade realizou uma jogada de mestre ao inventar o queijo para digerir o leite no passado. No entanto, o biohacker moderno precisa dar o próximo passo: entender que o foco mudou da digestão do açúcar (lactose) para o controle da inflamação da proteína (caseína). Escolha suas fontes com inteligência e mantenha sua máquina biológica operando em alto nível.</p>
+
+                <div class="mt-6 pt-4 border-t border-slate-800 text-center text-xs text-gray-500">
+                    Ares7 Blog — A ciência por trás da performance humana.
+                </div>
+            `,
+            'post-guerra-quimica': `
         };
 
         // Função para abrir e ler um artigo
