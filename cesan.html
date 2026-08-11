@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulado CESAN - Adjunto Administrativo</title>
+    <style>
+        :root {
+            --primary: #0056b3;
+            --bg: #f4f6f9;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --correct: #28a745;
+            --incorrect: #dc3545;
+            --border: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 24px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 { margin: 0 0 8px 0; font-size: 1.8rem; }
+        header p { margin: 0; opacity: 0.9; font-size: 0.95rem; }
+
+        .text-box {
+            background: #eef4fc;
+            border-left: 4px solid var(--primary);
+            padding: 18px;
+            margin-bottom: 24px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95rem;
+        }
+
+        .section-title {
+            background: #2c3e50;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 6px;
+            margin: 30px 0 15px 0;
+            font-size: 1.1rem;
+        }
+
+        .question-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+            transition: border-color 0.2s;
+        }
+
+        .question-card.correct-card { border: 2px solid var(--correct); background-color: #f8fff9; }
+        .question-card.incorrect-card { border: 2px solid var(--incorrect); background-color: #fff8f8; }
+
+        .question-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .options-list li {
+            margin-bottom: 8px;
+        }
+
+        .options-list label {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .options-list label:hover {
+            background-color: #f0f4f8;
+        }
+
+        .options-list input[type="radio"] {
+            margin-right: 12px;
+        }
+
+        .feedback {
+            margin-top: 10px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .correct-text { color: var(--correct); }
+        .incorrect-text { color: var(--incorrect); }
+
+        .actions {
+            position: sticky;
+            bottom: 20px;
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn:hover { opacity: 0.9; }
+
+        #score-board {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>CESAN - Companhia Espírito Santense de Saneamento</h1>
+        <p>Cargo: Faixa Funcional III – A (Adjunto Administrativo) | Edital 001/2011</p>
+    </header>
+
+    <div class="text-box">
+        <h3>Texto para as questões de Língua Portuguesa</h3>
+        <h4>A arca do tesouro da biologia</h4>
+        <p>A maioria das pessoas vive a ilusão de que o planeta funciona exclusivamente como um sistema físico, no qual condições climáticas adequadas permitiram o surgimento e a manutenção da vida. Na realidade, a terra possui outro sistema vital, o biológico. Um depende do outro, e os dois são intimamente interligados. Os níveis anormais de gases do efeito estufa na atmosfera em relação aos da era pré-industrial causaram um aumento de 0,75 grau na temperatura do planeta. Esses gases são consequência do distúrbio promovido pelo homem na biologia do planeta: da queima, simultânea em toda a terra, de produtos provenientes da biologia antiga, como carvão, petróleo e gás. Também são resultantes, em quantidade aproximadamente igual, da destruição e da degradação de ecossistemas modernos.</p>
+        <p>A Amazônia é um elemento fundamental para os dois sistemas, tanto os de escala planetária quanto os da América do Sul. A floresta também é imprescindível para o futuro do Brasil, pelos seus vínculos negativos e positivos com as mudanças climáticas globais e também pelos seus enlaces com o clima regional. À medida que o Brasil e o mundo começam a eleger bens e serviços ecológicos como as melhores opções para uma economia sustentável e para o bem-estar humano, aumentam as promessas de preservação e de cuidado com a floresta. Entender a importância da Amazônia para o Brasil e para o mundo deverá ser o aspecto central para o desenvolvimento de uma política para a região.</p>
+        <p>Nos últimos anos, o Brasil avançou muito na redução do desmatamento da Amazônia, e é essencial que esses esforços e que a redução continuem. No passado, o índice de desmatamento flutuou sob a influência de vários fatores, como preços de commodities e vontade política. Há muito em jogo para permitir o declínio dessa tendência promissora. Pagar pelos serviços prestados pela floresta em termos de armazenagem e sequestro de carbono para fins climáticos é uma saída para impedir que haja mais degradação.</p>
+        <p>Chegou a hora de construir sobre os avanços já conseguidos, de desenvolver uma nova política sustentável e de grande alcance para a floresta – uma política que garanta a importância da Amazônia para o Brasil e para o resto do mundo. <em>(Thomas Lovejoy, VEJA – Edição Especial, dez. 2010 / Fragmento)</em></p>
+    </div>
+
+    <form id="quiz-form">
+        <!-- LÍNGUA PORTUGUESA -->
+        <div class="section-title">Língua Portuguesa (Questões 1 a 10)</div>
+
+        <div class="question-card" id="q1">
+            <div class="question-title">01) De acordo com o texto de Thomas Lovejoy, marque V para as afirmativas verdadeiras e F para as falsas:</div>
+            <p>( ) É necessário entender a importância da floresta Amazônica para o Brasil e para o mundo.<br>
+               ( ) Os níveis anormais de gases do efeito estufa na atmosfera causaram aumento na temperatura do planeta.<br>
+               ( ) É essencial que a redução do desmatamento da Amazônia continue.</p>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q1" value="A"> A) V, V, F</label></li>
+                <li><label><input type="radio" name="q1" value="B"> B) F, F, V</label></li>
+                <li><label><input type="radio" name="q1" value="C"> C) V, F, V</label></li>
+                <li><label><input type="radio" name="q1" value="D"> D) F, V, F</label></li>
+                <li><label><input type="radio" name="q1" value="E"> E) V, V, V</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q2">
+            <div class="question-title">02) Infere-se do texto que a floresta Amazônica:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q2" value="A"> A) Apresenta condições climáticas adequadas.</label></li>
+                <li><label><input type="radio" name="q2" value="B"> B) É imprescindível para o futuro do Brasil.</label></li>
+                <li><label><input type="radio" name="q2" value="C"> C) Nos últimos anos, o Brasil contribuiu para o aumento do desmatamento da Amazônia.</label></li>
+                <li><label><input type="radio" name="q2" value="D"> D) Não há saída para impedir que haja mais degradação da floresta.</label></li>
+                <li><label><input type="radio" name="q2" value="E"> E) As promessas de preservação e de cuidado com a floresta diminuíram.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q3">
+            <div class="question-title">03) Em “Há muito em jogo para permitir o declínio dessa tendência promissora.” a palavra destacada apresenta como significado correto:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q3" value="A"> A) Abundante.</label></li>
+                <li><label><input type="radio" name="q3" value="B"> B) Profunda.</label></li>
+                <li><label><input type="radio" name="q3" value="C"> C) Deserta.</label></li>
+                <li><label><input type="radio" name="q3" value="D"> D) Lamentável.</label></li>
+                <li><label><input type="radio" name="q3" value="E"> E) Próspera.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q4">
+            <div class="question-title">04) Em “Esses gases são consequência do distúrbio promovido pelo homem na biologia do planeta: da queima, simultânea em toda a terra, de produtos provenientes da biologia antiga, como carvão, petróleo e gás.” os dois pontos (:) foram utilizados para:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q4" value="A"> A) Dar início a fala no diálogo.</label></li>
+                <li><label><input type="radio" name="q4" value="B"> B) Separar itens de uma enumeração.</label></li>
+                <li><label><input type="radio" name="q4" value="C"> C) Iniciar uma sequência que explica uma ideia anterior.</label></li>
+                <li><label><input type="radio" name="q4" value="D"> D) Substituir a dupla vírgula.</label></li>
+                <li><label><input type="radio" name="q4" value="E"> E) Marcar a omissão do verbo.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q5">
+            <div class="question-title">05) Assinale a alternativa que relaciona INCORRETAMENTE as classes de palavras:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q5" value="A"> A) “Entender a importância da Amazônia para o Brasil...” (preposição)</label></li>
+                <li><label><input type="radio" name="q5" value="B"> B) “Também são resultantes, em quantidade aproximadamente igual,...” (adjetivo)</label></li>
+                <li><label><input type="radio" name="q5" value="C"> C) “Chegou a hora de construir sobre os avanços já conseguidos,...” (advérbio)</label></li>
+                <li><label><input type="radio" name="q5" value="D"> D) “No passado, o índice de desmatamento flutuou...” (substantivo)</label></li>
+                <li><label><input type="radio" name="q5" value="E"> E) “Um depende do outro, e...” (verbo)</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q6">
+            <div class="question-title">06) A acentuação das palavras está corretamente justificada em:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q6" value="A"> A) também: paroxítona terminada em “em”.</label></li>
+                <li><label><input type="radio" name="q6" value="B"> B) físico: proparoxítona.</label></li>
+                <li><label><input type="radio" name="q6" value="C"> C) índice: paroxítona terminada em ditongo.</label></li>
+                <li><label><input type="radio" name="q6" value="D"> D) há: monossílaba átona.</label></li>
+                <li><label><input type="radio" name="q6" value="E"> E) sustentável: oxítona terminada em “l”.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q7">
+            <div class="question-title">07) Assinale a afirmativa INCORRETA quanto à regência:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q7" value="A"> A) Chegamos finalmente ao Brasil.</label></li>
+                <li><label><input type="radio" name="q7" value="B"> B) Todos os males procedem da mudança climática.</label></li>
+                <li><label><input type="radio" name="q7" value="C"> C) Os biólogos assistiram ao filme.</label></li>
+                <li><label><input type="radio" name="q7" value="D"> D) O indígena assiste na floresta Amazônica.</label></li>
+                <li><label><input type="radio" name="q7" value="E"> E) Entrou e saiu da floresta.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q8">
+            <div class="question-title">08) A palavra “ecossistema” apresenta:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q8" value="A"> A) Dígrafo.</label></li>
+                <li><label><input type="radio" name="q8" value="B"> B) Hiato.</label></li>
+                <li><label><input type="radio" name="q8" value="C"> C) Tritongo.</label></li>
+                <li><label><input type="radio" name="q8" value="D"> D) Ditongo crescente.</label></li>
+                <li><label><input type="radio" name="q8" value="E"> E) Encontro vocálico.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q9">
+            <div class="question-title">09) “À medida que o Brasil e o mundo começam a eleger bens e serviços ecológicos...” A expressão destacada exprime circunstância de:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q9" value="A"> A) Tempo.</label></li>
+                <li><label><input type="radio" name="q9" value="B"> B) Adequação.</label></li>
+                <li><label><input type="radio" name="q9" value="C"> C) Proporção.</label></li>
+                <li><label><input type="radio" name="q9" value="D"> D) Comparação.</label></li>
+                <li><label><input type="radio" name="q9" value="E"> E) Causa.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q10">
+            <div class="question-title">10) Quanto à concordância nominal, assinale a afirmativa INCORRETA:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q10" value="A"> A) Havia menos desmatamento na floresta.</label></li>
+                <li><label><input type="radio" name="q10" value="B"> B) Bastantes gases causaram aumento na temperatura do planeta.</label></li>
+                <li><label><input type="radio" name="q10" value="C"> C) É proibida a devastação da floresta Amazônica.</label></li>
+                <li><label><input type="radio" name="q10" value="D"> D) Os biólogos tinham iniciado a pesquisa.</label></li>
+                <li><label><input type="radio" name="q10" value="E"> E) Nós próprio fizemos o pedido.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <!-- NOÇÕES DE INFORMÁTICA -->
+        <div class="section-title">Noções de Informática (Questões 11 a 20)</div>
+
+        <div class="question-card" id="q11">
+            <div class="question-title">11) “O histórico de um navegador é utilizado para registrar as páginas acessadas no computador em um período de tempo.” Utilizando o navegador Internet Explorer 8 (configuração padrão), qual a tecla de atalho aciona o histórico do navegador?</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q11" value="A"> A) Ctrl + H</label></li>
+                <li><label><input type="radio" name="q11" value="B"> B) Ctrl + I</label></li>
+                <li><label><input type="radio" name="q11" value="C"> C) Ctrl + F</label></li>
+                <li><label><input type="radio" name="q11" value="D"> D) Alt + H</label></li>
+                <li><label><input type="radio" name="q11" value="E"> E) Alt + I</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q12">
+            <div class="question-title">12) “Os comentários no Microsoft Office Word 2003 (configuração padrão) são observações ou anotações que um autor ou revisor adiciona a um documento.” Para adicionar comentários, deve-se acessar a seguinte opção:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q12" value="A"> A) Exibir – Comentário.</label></li>
+                <li><label><input type="radio" name="q12" value="B"> B) Inserir – Comentário.</label></li>
+                <li><label><input type="radio" name="q12" value="C"> C) Formatar – Documento – Inserir Comentário.</label></li>
+                <li><label><input type="radio" name="q12" value="D"> D) Inserir – Referência – Comentário.</label></li>
+                <li><label><input type="radio" name="q12" value="E"> E) Inserir – Novo Comentário.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q13">
+            <div class="question-title">13) A ferramenta Microsoft Office Word 2003 (configuração padrão) proporciona ao usuário diversos recursos para a produção de documentos. Com base na funcionalidade desses recursos, assinale a alternativa INCORRETA:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q13" value="A"> A) O recurso Marcadores e numeração, permite adicionar diferentes estilos de marcadores na montagem de tópicos em um documento.</label></li>
+                <li><label><input type="radio" name="q13" value="B"> B) Para efetuar a correção gramatical de um documento, deve-se utilizar o recurso de Ortografia e Gramática.</label></li>
+                <li><label><input type="radio" name="q13" value="C"> C) O comando visualizar página apresenta ao usuário como o documento será realmente impresso.</label></li>
+                <li><label><input type="radio" name="q13" value="D"> D) Para a padronização de um documento, pode-se criar um cabeçalho e rodapé padrão, que são aplicados de forma idêntica em todas as páginas do documento.</label></li>
+                <li><label><input type="radio" name="q13" value="E"> E) Um documento pode ser proibido para leitura e alteração através de senhas configuradas no menu de opções do Word.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q14">
+            <div class="question-title">14) O Sistema Operacional Microsoft Windows XP é considerado um software básico indispensável para o funcionamento do computador. NÃO é considerado um software padrão do Windows XP:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q14" value="A"> A) WordPad: aplicativo utilizado para elaboração e edição de textos.</label></li>
+                <li><label><input type="radio" name="q14" value="B"> B) Bloco de Notas: aplicativo utilizado para realização de pequenas anotações.</label></li>
+                <li><label><input type="radio" name="q14" value="C"> C) Paint: aplicativo utilizado para criação e edição de desenhos e imagens.</label></li>
+                <li><label><input type="radio" name="q14" value="D"> D) Windows Movie Maker: aplicativo utilizado para criação e edição de vídeos.</label></li>
+                <li><label><input type="radio" name="q14" value="E"> E) Adobe Reader: aplicativo utilizado para leitura de arquivos no formato PDF.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q15">
+            <div class="question-title">15) Para navegação na Internet é utilizado um software específico denominado Browser ou navegador. Considere os softwares a seguir: I. Netscape, II. Google Chrome, III. Android, IV. Opera, V. Mozilla, VI. Safari, VII. Thunderbird. NÃO são navegadores os seguintes softwares:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q15" value="A"> A) III, VI, VII</label></li>
+                <li><label><input type="radio" name="q15" value="B"> B) I, III, VII</label></li>
+                <li><label><input type="radio" name="q15" value="C"> C) III, VII</label></li>
+                <li><label><input type="radio" name="q15" value="D"> D) VI, VII</label></li>
+                <li><label><input type="radio" name="q15" value="E"> E) I, III</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q16">
+            <div class="question-title">16) Para diminuir a lentidão e outros problemas, o Windows possui o menu ferramentas do sistema para a manutenção do computador. São itens deste menu:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q16" value="A"> A) Backup, Desfragmentador de disco, Limpeza de disco e Restauração do Sistema.</label></li>
+                <li><label><input type="radio" name="q16" value="B"> B) Gerenciador de utilitários, Desfragmentador de disco, Limpeza de disco e Restauração do Sistema.</label></li>
+                <li><label><input type="radio" name="q16" value="C"> C) Backup, Desfragmentador de disco, Limpeza de disco e Conexão de área de trabalho remota.</label></li>
+                <li><label><input type="radio" name="q16" value="D"> D) Backup, Organizador de disco, Limpeza de disco e Restauração do Sistema.</label></li>
+                <li><label><input type="radio" name="q16" value="E"> E) Gerenciador de utilitários, Desfragmentador de disco, Limpeza de disco e Windows Update.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q17">
+            <div class="question-title">17) O software Microsoft Office PowerPoint 2003 (configuração padrão) é utilizado para criação de slides. NÃO é um recurso do PowerPoint:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q17" value="A"> A) Design: opção que permite selecionar um modelo de slide pré-definido.</label></li>
+                <li><label><input type="radio" name="q17" value="B"> B) Esquemas de animação: opção que permite adicionar efeitos ao slide.</label></li>
+                <li><label><input type="radio" name="q17" value="C"> C) Plano de Fundo: opção utilizada para criar um slide com plano de fundo personalizado.</label></li>
+                <li><label><input type="radio" name="q17" value="D"> D) Inserir gráfico: opção que permite a inserção de gráficos no slide.</label></li>
+                <li><label><input type="radio" name="q17" value="E"> E) Formatação condicional: opção que aplica uma formatação a um slide de forma automática, caso a condição informada seja estabelecida.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q18">
+            <div class="question-title">18) No Microsoft Office Excel 2003, a opção utilizada para unir uma ou mais células, formando apenas uma, é:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q18" value="A"> A) Unir Células.</label></li>
+                <li><label><input type="radio" name="q18" value="B"> B) AutoSoma.</label></li>
+                <li><label><input type="radio" name="q18" value="C"> C) Mesclar Células.</label></li>
+                <li><label><input type="radio" name="q18" value="D"> D) Auto ajuste da seleção.</label></li>
+                <li><label><input type="radio" name="q18" value="E"> E) Juntar Células.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q19">
+            <div class="question-title">19) Considere as afirmativas sobre o Microsoft Office Excel 2003:<br>
+            I. “Radar” é um tipo de gráfico encontrado na opção assistente de gráfico.<br>
+            II. A função “SE” é utilizada para efetuar a pesquisa de dados em uma planilha.<br>
+            III. A opção “Formatar – Coluna – Auto ajuste da seleção” ajusta a largura da coluna.<br>
+            IV. A opção “AutoFormatação” é utilizada para formatar de acordo com condição pré-estabelecida.<br>
+            V. A função “AGORA” insere data e hora atuais.<br>
+            São FALSAS apenas as afirmativas:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q19" value="A"> A) I, IV</label></li>
+                <li><label><input type="radio" name="q19" value="B"> B) I, V</label></li>
+                <li><label><input type="radio" name="q19" value="C"> C) II, IV</label></li>
+                <li><label><input type="radio" name="q19" value="D"> D) II, V</label></li>
+                <li><label><input type="radio" name="q19" value="E"> E) I, II, IV</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q20">
+            <div class="question-title">20) Para realizar a média de valores da célula A1 até A7 em uma planilha do Microsoft Office Excel 2003, deve-se utilizar a seguinte fórmula:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q20" value="A"> A) =MEDIA(A1:A7)</label></li>
+                <li><label><input type="radio" name="q20" value="B"> B) =MEDIA(A1;A7)</label></li>
+                <li><label><input type="radio" name="q20" value="C"> C) MEDIA(A1:A7)</label></li>
+                <li><label><input type="radio" name="q20" value="D"> D) =SOMA(A1:A7)</label></li>
+                <li><label><input type="radio" name="q20" value="E"> E) =((A1 + A7)/7)</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <!-- CONHECIMENTOS GERAIS -->
+        <div class="section-title">Conhecimentos Gerais / Atualidades (Questões 21 a 30)</div>
+
+        <div class="question-card" id="q21">
+            <div class="question-title">21) Sobre a lista de bilionários divulgada pela revista Forbes em março de 2011, é correto afirmar:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q21" value="A"> A) Houve alteração na liderança com Bill Gates assumindo novamente o primeiro lugar.</label></li>
+                <li><label><input type="radio" name="q21" value="B"> B) Os países do BRIC destacados foram Brasil, Rússia, Itália e China.</label></li>
+                <li><label><input type="radio" name="q21" value="C"> C) Embora tenha aumentado sua fortuna, Eike Batista se manteve na oitava posição da lista e com o status de homem mais rico do Brasil.</label></li>
+                <li><label><input type="radio" name="q21" value="D"> D) Os países desenvolvidos foram os principais responsáveis pelo aumento no número de bilionários.</label></li>
+                <li><label><input type="radio" name="q21" value="E"> E) O segundo brasileiro mais rico é Joseph Safra, fundador da AmBev.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q22">
+            <div class="question-title">22) Acerca da política e economia norte-americana durante a administração de George W. Bush (2001-2009), analise as afirmativas:<br>
+            I. Lançou a “Guerra ao Terror” e o conceito de “Eixo do Mal”.<br>
+            II. Lançou campanha militar no Afeganistão contra o Talibã em 2001.<br>
+            III. Invadiu o Iraque com prévia aprovação do Conselho de Segurança da ONU.<br>
+            Está(ão) INCORRETA(S) apenas a(s) afirmativa(s):</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q22" value="A"> A) I, II</label></li>
+                <li><label><input type="radio" name="q22" value="B"> B) III</label></li>
+                <li><label><input type="radio" name="q22" value="C"> C) II, III</label></li>
+                <li><label><input type="radio" name="q22" value="D"> D) I</label></li>
+                <li><label><input type="radio" name="q22" value="E"> E) I, III</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q23">
+            <div class="question-title">23) A Constituição de 1988 foi denominada pelo Presidente da Assembleia Nacional Constituinte, Ulisses Guimarães, de:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q23" value="A"> A) Constituição Democrática.</label></li>
+                <li><label><input type="radio" name="q23" value="B"> B) Constituição do Povo.</label></li>
+                <li><label><input type="radio" name="q23" value="C"> C) Constituição Social.</label></li>
+                <li><label><input type="radio" name="q23" value="D"> D) Constituição Cidadã.</label></li>
+                <li><label><input type="radio" name="q23" value="E"> E) Constituição do Milênio.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q24">
+            <div class="question-title">24) Sobre o aquecimento global, é correto afirmar, EXCETO:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q24" value="A"> A) O aumento da emissão de CO2 é a principal causa apontada para a elevação de temperatura.</label></li>
+                <li><label><input type="radio" name="q24" value="B"> B) O nível do mar apresenta trajetória constante de aumento pelo derretimento de calotas polar.</label></li>
+                <li><label><input type="radio" name="q24" value="C"> C) China, EUA, UE, Rússia e Índia são os maiores emissores de CO2 em números absolutos.</label></li>
+                <li><label><input type="radio" name="q24" value="D"> D) O Protocolo de Kyoto é o único documento com metas assinado por todas as grandes potências mundiais.</label></li>
+                <li><label><input type="radio" name="q24" value="E"> E) A temperatura média da superfície do planeta sofreu aumento durante o século 20.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q25">
+            <div class="question-title">25) NÃO se pode considerar fonte renovável de energia:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q25" value="A"> A) Carvão mineral e derivados.</label></li>
+                <li><label><input type="radio" name="q25" value="B"> B) Cana-de-açúcar e derivados.</label></li>
+                <li><label><input type="radio" name="q25" value="C"> C) Hidráulica.</label></li>
+                <li><label><input type="radio" name="q25" value="D"> D) Carvão vegetal e lenha.</label></li>
+                <li><label><input type="radio" name="q25" value="E"> E) À base do Vento e da luz solar.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q26">
+            <div class="question-title">26) A inserção de José Alencar na carreira política foi resultado de seu destaque como:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q26" value="A"> A) Secretário de Governo de Aécio Neves.</label></li>
+                <li><label><input type="radio" name="q26" value="B"> B) Presidente da Petrobrás no governo de Itamar Franco.</label></li>
+                <li><label><input type="radio" name="q26" value="C"> C) Governador de Minas Gerais na década de 1990.</label></li>
+                <li><label><input type="radio" name="q26" value="D"> D) Empresário fundador da Companhia de Tecidos Norte de Minas – Coteminas – e representante de entidades industriais como Fiemg e CNI.</label></li>
+                <li><label><input type="radio" name="q26" value="E"> E) Jurista de destaque no Superior Tribunal de Justiça.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q27">
+            <div class="question-title">27) Sobre o retorno do povo judeu à região da Palestina, é correto afirmar:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q27" value="A"> A) Foi proclamado o Estado de Israel em 1948 com apoio direto dos países árabes.</label></li>
+                <li><label><input type="radio" name="q27" value="B"> B) Israel ainda não possui o reconhecimento oficial da ONU.</label></li>
+                <li><label><input type="radio" name="q27" value="C"> C) A criação do estado ocorreu após a II Guerra Mundial e o holocausto, com significativo apoio internacional.</label></li>
+                <li><label><input type="radio" name="q27" value="D"> D) A OLP ratificou acordos reconhecendo formalmente Israel sob Ariel Sharon.</label></li>
+                <li><label><input type="radio" name="q27" value="E"> E) O estado foi estabelecido apenas na década de 1970 por causa da imigração soviética.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q28">
+            <div class="question-title">28) "Com menos de 20 anos de idade, ambas são empresas jovens oriundas de universidades americanas (Stanford e Harvard)..." A afirmativa trata-se de:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q28" value="A"> A) Google e Facebook.</label></li>
+                <li><label><input type="radio" name="q28" value="B"> B) Coca-cola e Pepsi.</label></li>
+                <li><label><input type="radio" name="q28" value="C"> C) Shell e Exxon Mobil.</label></li>
+                <li><label><input type="radio" name="q28" value="D"> D) Microsoft e Apple.</label></li>
+                <li><label><input type="radio" name="q28" value="E"> E) AT&T e Telefónica.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q29">
+            <div class="question-title">29) Conflitos no Egito, Líbia e Tunísia ocorreram na sub-região do continente africano denominada:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q29" value="A"> A) África Setentrional.</label></li>
+                <li><label><input type="radio" name="q29" value="B"> B) África do Sul.</label></li>
+                <li><label><input type="radio" name="q29" value="C"> C) África Subsaariana.</label></li>
+                <li><label><input type="radio" name="q29" value="D"> D) Sahel.</label></li>
+                <li><label><input type="radio" name="q29" value="E"> E) África Negra.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q30">
+            <div class="question-title">30) "Pior do que está não fica." Com este slogan nas eleições de 2010, o candidato eleito deputado federal é conhecido como:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q30" value="A"> A) Enéias.</label></li>
+                <li><label><input type="radio" name="q30" value="B"> B) Netinho.</label></li>
+                <li><label><input type="radio" name="q30" value="C"> C) Tiririca.</label></li>
+                <li><label><input type="radio" name="q30" value="D"> D) Chico da Força.</label></li>
+                <li><label><input type="radio" name="q30" value="E"> E) Garotinho.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <!-- CONHECIMENTOS ESPECÍFICOS -->
+        <div class="section-title">Conhecimentos Específicos (Questões 31 a 40)</div>
+
+        <div class="question-card" id="q31">
+            <div class="question-title">31) Correspondência externa usada com órgãos públicos para solicitar providências, encaminhar documentos ou propor acordos:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q31" value="A"> A) Carta comercial.</label></li>
+                <li><label><input type="radio" name="q31" value="B"> B) Memorando.</label></li>
+                <li><label><input type="radio" name="q31" value="C"> C) Ofício.</label></li>
+                <li><label><input type="radio" name="q31" value="D"> D) Circular.</label></li>
+                <li><label><input type="radio" name="q31" value="E"> E) Requerimento.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q32">
+            <div class="question-title">32) Analise V ou F para a comunicação humana:<br>
+            ( ) É um erro pensar que somente nos comunicamos com palavras e escrita.<br>
+            ( ) As formas de proceder, de sorrir, de trajar não constituem elementos básicos da comunicação.<br>
+            ( ) A boa comunicação resulta de um procedimento que deve refletir a média das opiniões da comunidade.<br>
+            A sequência está correta em:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q32" value="A"> A) V, V, F</label></li>
+                <li><label><input type="radio" name="q32" value="B"> B) F, V, V</label></li>
+                <li><label><input type="radio" name="q32" value="C"> C) F, F, V</label></li>
+                <li><label><input type="radio" name="q32" value="D"> D) V, F, V</label></li>
+                <li><label><input type="radio" name="q32" value="E"> E) V, V, V</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q33">
+            <div class="question-title">33) Os conjuntos de documentos vinculados aos objetivos imediatos, conservados junto aos órgãos produtores em razão da vigência e frequência de uso, são:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q33" value="A"> A) Arquivos Intermediários.</label></li>
+                <li><label><input type="radio" name="q33" value="B"> B) Arquivos Permanentes.</label></li>
+                <li><label><input type="radio" name="q33" value="C"> C) Arquivos Correntes.</label></li>
+                <li><label><input type="radio" name="q33" value="D"> D) Arquivos Mortos.</label></li>
+                <li><label><input type="radio" name="q33" value="E"> E) N.R.A.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q34">
+            <div class="question-title">34) A respeito dos princípios da Redação Oficial, é INCORRETO afirmar que:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q34" value="A"> A) Não se concebe um documento oficial redigido de forma obscura.</label></li>
+                <li><label><input type="radio" name="q34" value="B"> B) O tratamento impessoal decorre da ausência de impressões individuais.</label></li>
+                <li><label><input type="radio" name="q34" value="C"> C) Em alguns documentos oficiais, podem ser externadas impressões pessoais.</label></li>
+                <li><label><input type="radio" name="q34" value="D"> D) Expressões de circulação restrita, como gíria e jargão, dificultam a compreensão.</label></li>
+                <li><label><input type="radio" name="q34" value="E"> E) O padrão culto não implica emprego de linguagem muito requintada.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q35">
+            <div class="question-title">35) Qual deve ser o pronome de tratamento adequado para o Governador do Estado no endereçamento de uma correspondência oficial da CESAN?</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q35" value="A"> A) Ilustríssimo Senhor.</label></li>
+                <li><label><input type="radio" name="q35" value="B"> B) Senhor.</label></li>
+                <li><label><input type="radio" name="q35" value="C"> C) Excelentíssimo Senhor.</label></li>
+                <li><label><input type="radio" name="q35" value="D"> D) Vossa Senhoria.</label></li>
+                <li><label><input type="radio" name="q35" value="E"> E) Digníssimo Senhor.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q36">
+            <div class="question-title">36) Numa entidade, seja qual for sua personalidade jurídica ou atividade econômica, o objeto da contabilidade é:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q36" value="A"> A) A apuração de lucros ou prejuízos de determinado período.</label></li>
+                <li><label><input type="radio" name="q36" value="B"> B) O controle patrimonial.</label></li>
+                <li><label><input type="radio" name="q36" value="C"> C) O fornecimento de informações aos diversos usuários.</label></li>
+                <li><label><input type="radio" name="q36" value="D"> D) O patrimônio.</label></li>
+                <li><label><input type="radio" name="q36" value="E"> E) O controle das disponibilidades financeiras.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q37">
+            <div class="question-title">37) Analise as afirmativas contábeis:<br>
+            I. A contabilidade permite controle permanente do patrimônio.<br>
+            II. Patrimônio é o conjunto de bens, direitos e obrigações.<br>
+            III. Bens e Direitos formam o Patrimônio Líquido da entidade.<br>
+            IV. Passivo representa obrigações com terceiros.<br>
+            Está(ão) INCORRETA(S) apenas a(s) afirmativa(s):</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q37" value="A"> A) I, IV</label></li>
+                <li><label><input type="radio" name="q37" value="B"> B) III</label></li>
+                <li><label><input type="radio" name="q37" value="C"> C) II</label></li>
+                <li><label><input type="radio" name="q37" value="D"> D) IV</label></li>
+                <li><label><input type="radio" name="q37" value="E"> E) II, III</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q38">
+            <div class="question-title">38) Marque a alternativa onde estão descritas somente obrigações que compõem o balanço patrimonial:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q38" value="A"> A) Fornecedores, Estoque de Materiais, Impostos e Contribuições a Recolher.</label></li>
+                <li><label><input type="radio" name="q38" value="B"> B) Financiamentos, Provisão para Férias e Encargos, Duplicatas a Pagar.</label></li>
+                <li><label><input type="radio" name="q38" value="C"> C) Créditos de Acionistas, Participação de Empregados, Caixa.</label></li>
+                <li><label><input type="radio" name="q38" value="D"> D) Impostos a Recuperar, Investimentos, Provisão para Contingências.</label></li>
+                <li><label><input type="radio" name="q38" value="E"> E) Aplicações Financeiras, Créditos a Receber, Adiantamento a Empregados.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q39">
+            <div class="question-title">39) Dados: Estoque Inicial = R$20.000,00 | Compras = R$50.000,00 | Custo das Mercadorias Vendidas (CMV) = R$40.000,00. O valor do Estoque Final é:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q39" value="A"> A) R$ 25.000,00</label></li>
+                <li><label><input type="radio" name="q39" value="B"> B) R$ 110.000,00</label></li>
+                <li><label><input type="radio" name="q39" value="C"> C) R$ 30.000,00</label></li>
+                <li><label><input type="radio" name="q39" value="D"> D) R$ 70.000,00</label></li>
+                <li><label><input type="radio" name="q39" value="E"> E) R$ 50.000,00</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="question-card" id="q40">
+            <div class="question-title">40) A respeito das licitações (Lei nº 8.666/93), são condições necessárias para a licitação de obras e serviços, EXCETO:</div>
+            <ul class="options-list">
+                <li><label><input type="radio" name="q40" value="A"> A) Projeto básico aprovado pela autoridade competente.</label></li>
+                <li><label><input type="radio" name="q40" value="B"> B) Orçamento detalhado em planilhas de custos unitários.</label></li>
+                <li><label><input type="radio" name="q40" value="C"> C) Previsão de recursos orçamentários que assegurem os pagamentos do exercício.</label></li>
+                <li><label><input type="radio" name="q40" value="D"> D) Produto contemplado no Plano Plurianual (PPA), quando couber.</label></li>
+                <li><label><input type="radio" name="q40" value="E"> E) Os recursos financeiros estejam disponíveis em caixa para pagamento antecipado da contratação.</label></li>
+            </ul>
+            <div class="feedback"></div>
+        </div>
+
+        <div class="actions">
+            <div id="score-board">Pontuação: - / 40</div>
+            <button type="button" class="btn" onclick="checkAnswers()">Corrigir Prova</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    const answerKey = {
+        q1: 'E', q2: 'B', q3: 'E', q4: 'C', q5: 'B',
+        q6: 'B', q7: 'E', q8: 'A', q9: 'C', q10: 'E',
+        q11: 'A', q12: 'B', q13: 'C', q14: 'E', q15: 'C',
+        q16: 'A', q17: 'E', q18: 'C', q19: 'C', q20: 'A',
+        q21: 'C', q22: 'B', q23: 'D', q24: 'D', q25: 'A',
+        q26: 'D', q27: 'C', q28: 'A', q29: 'A', q30: 'C',
+        q31: 'C', q32: 'D', q33: 'C', q34: 'C', q35: 'C',
+        q36: 'D', q37: 'B', q38: 'B', q39: 'C', q40: 'E'
+    };
+
+    function checkAnswers() {
+        let score = 0;
+        const total = Object.keys(answerKey).length;
+
+        for (let i = 1; i <= total; i++) {
+            const qKey = 'q' + i;
+            const card = document.getElementById(qKey);
+            const selected = document.querySelector(`input[name="${qKey}"]:checked`);
+            const feedback = card.querySelector('.feedback');
+            const correctOption = answerKey[qKey];
+
+            card.classList.remove('correct-card', 'incorrect-card');
+            feedback.style.display = 'block';
+
+            if (selected) {
+                if (selected.value === correctOption) {
+                    score++;
+                    card.classList.add('correct-card');
+                    feedback.innerHTML = `<span class="correct-text">✓ Correto! Resposta: ${correctOption}</span>`;
+                } else {
+                    card.classList.add('incorrect-card');
+                    feedback.innerHTML = `<span class="incorrect-text">✗ Incorreto. Sua resposta: ${selected.value} | Gabarito Oficial: ${correctOption}</span>`;
+                }
+            } else {
+                card.classList.add('incorrect-card');
+                feedback.innerHTML = `<span class="incorrect-text">⚠ Não respondida. Gabarito Oficial: ${correctOption}</span>`;
+            }
+        }
+
+        document.getElementById('score-board').innerText = `Pontuação: ${score} / ${total} (${((score/total)*100).toFixed(1)}%)`;
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>
