@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apoio / Doação - ARES</title>
+    <meta http-equiv="refresh" content="3;url=https://streamlabs.com/canaldoares7/tip">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        .card {
+            background: #161b22;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            border: 1px solid #30363d;
+            max-width: 400px;
+            width: 90%;
+        }
+        h1 {
+            color: #58a6ff;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 0.95rem;
+            color: #8b949e;
+            margin-bottom: 24px;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #238636;
+            color: white;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .btn:hover {
+            background-color: #2ea043;
+        }
+        .spinner {
+            margin: 20px auto 0 auto;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #30363d;
+            border-top: 3px solid #58a6ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>Redirecionando para o Apoio...</h1>
+    <p>Você será levado para a página segura de doações do canal em instantes.</p>
+    
+    <a href="https://streamlabs.com/canaldoares7/tip" class="btn">Clique aqui se não redirecionar</a>
+    
+    <div class="spinner"></div>
+</div>
+
+<script>
+    // Redirecionamento instantâneo via script caso o meta refresh falhe
+    setTimeout(function() {
+        window.location.href = "https://streamlabs.com/canaldoares7/tip";
+    }, 2500);
+</script>
+
+</body>
+</html>
